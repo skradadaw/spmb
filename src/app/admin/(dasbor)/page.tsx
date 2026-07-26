@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui";
 import { LABEL_VERIFIKASI, type StatusVerifikasi } from "@/lib/status";
-import MagloStatCard from "@/components/admin/MagloStatCard";
+import MagloHeaderCards from "@/components/admin/MagloHeaderCards";
 import ApplicantChart from "@/components/admin/ApplicantChart";
 import QuickActionDeck from "@/components/admin/QuickActionDeck";
 
@@ -17,11 +17,10 @@ export default async function AdminHome() {
     return q;
   };
 
-  const [total, belumVerifikasi, diterima, perluPerbaikan] = await Promise.all([
+  const [total, belumVerifikasi, diterima] = await Promise.all([
     hitung(),
     hitung({ kolom: "status_verifikasi", nilai: "menunggu" }),
     hitung({ kolom: "status_penerimaan", nilai: "diterima" }),
-    hitung({ kolom: "status_verifikasi", nilai: "perlu_perbaikan" }),
   ]);
 
   const totalVal = total.count ?? 0;
@@ -36,93 +35,81 @@ export default async function AdminHome() {
     .order("created_at", { ascending: false })
     .limit(5);
 
-  // Data analitik dummy chart berbasis data riil
-  const chartData = [
-    { label: "Okt 26", terverifikasi: 2, menunggu: 1, diterima: 2 },
-    { label: "Nov 26", terverifikasi: 3, menunggu: 1, diterima: 2 },
-    { label: "Des 26", terverifikasi: 4, menunggu: 2, diterima: 3 },
-    { label: "Jan 27", terverifikasi: totalVal, menunggu: belumVal, diterima: diterimaVal },
-  ];
-
   return (
     <div className="space-y-8">
-      {/* Maglo Baris 1: Grid Kartu Statistik Metrik */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <MagloStatCard
-          title="Total Calon Siswa"
-          value={totalVal}
-          total={totalVal}
-          icon="👥"
-          trendText="+100% TA 27/28"
-          colorTheme="dark"
-        />
-        <MagloStatCard
-          title="Menunggu Verifikasi"
-          value={belumVal}
-          total={totalVal}
-          icon="⏳"
-          trendText="Tindakan Panitia"
-          colorTheme="amber"
-        />
-        <MagloStatCard
-          title="Siswa Diterima"
-          value={diterimaVal}
-          total={totalVal}
-          icon="🎉"
-          trendText="Lulus Seleksi"
-          colorTheme="lime"
-        />
-      </div>
+      {/* Maglo Header Cards (Unified 3-Section Stat Header) */}
+      <MagloHeaderCards total={totalVal} menunggu={belumVal} diterima={diterimaVal} />
 
-      {/* Maglo Baris 2: Grid Utama */}
+      {/* Maglo Main Grid Layout (2 Span Content + 1 Span Right Wallet Deck) */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Konten Kiri (2 Span) */}
+        {/* Left Column (2 Span) */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Grafik Analitik Tren Pendaftaran */}
-          <ApplicantChart data={chartData} />
+          {/* Dual Curved Line Working Capital Chart */}
+          <ApplicantChart />
 
-          {/* Tabel Pendaftar Perlu Verifikasi Segera */}
+          {/* Maglo Recent Transactions Table */}
           <div className="rounded-3xl border border-slate-200/80 dark:border-[#282541] bg-white dark:bg-[#201e34] p-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#282541] pb-4 mb-4">
               <div>
-                <h3 className="text-base font-black text-[#1c1a2e] dark:text-white">Perlu Verifikasi Segera</h3>
-                <p className="text-xs font-medium text-slate-400">Berkas pendaftar baru yang menunggu tindakan panitia</p>
+                <h3 className="text-base font-black text-[#1c1a2e] dark:text-white">Pendaftar Terbaru (Perlu Verifikasi)</h3>
+                <p className="text-xs font-medium text-slate-400">Berkas calon siswa yang menunggu pemeriksaan panitia</p>
               </div>
-              <Link href="/admin/pendaftar?verifikasi=menunggu" className="text-xs font-bold text-emerald-700 dark:text-[#c8ee44] hover:underline">
+              <Link href="/admin/pendaftar?verifikasi=menunggu" className="text-xs font-bold text-[#14b8a6] hover:underline">
                 Lihat Semua →
               </Link>
             </div>
 
             {(terbarubelum ?? []).length > 0 ? (
-              <div className="divide-y divide-slate-100 dark:divide-[#282541]">
-                {(terbarubelum ?? []).map((p) => (
-                  <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3.5 hover:bg-slate-50/50 dark:hover:bg-[#282541]/50 px-2 rounded-xl transition-colors">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-emerald-700 dark:text-[#c8ee44]">{p.nomor_pendaftaran}</span>
-                        <Badge warna="abu">{LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}</Badge>
-                      </div>
-                      <p className="mt-1 font-bold text-[#1c1a2e] dark:text-white text-sm">{p.nama_lengkap}</p>
-                      <p className="text-xs text-slate-400">TK: {p.asal_tk || "-"}</p>
-                    </div>
-                    <Link
-                      href={`/admin/pendaftar/${p.id}`}
-                      className="rounded-xl bg-[#c8ee44] px-4 py-2 text-xs font-bold text-[#1c1a2e] hover:bg-[#b5da35] transition-all shadow-sm"
-                    >
-                      Verifikasi Berkas →
-                    </Link>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-semibold">
+                  <thead className="border-b border-slate-100 dark:border-[#282541] text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <tr>
+                      <th className="pb-3">Siswa / No. pendaftaran</th>
+                      <th className="pb-3">Asal TK</th>
+                      <th className="pb-3">Status</th>
+                      <th className="pb-3 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#282541]">
+                    {(terbarubelum ?? []).map((p) => (
+                      <tr key={p.id} className="hover:bg-slate-50/60 dark:hover:bg-[#282541]/40 transition-colors">
+                        <td className="py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#c8ee44] text-[#1c1a2e] font-black">
+                              👤
+                            </div>
+                            <div>
+                              <p className="font-extrabold text-[#1c1a2e] dark:text-white">{p.nama_lengkap}</p>
+                              <p className="font-mono text-[10px] text-slate-400">{p.nomor_pendaftaran}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 text-slate-500 font-medium">{p.asal_tk || "-"}</td>
+                        <td className="py-3.5">
+                          <Badge warna="abu">{LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}</Badge>
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <Link
+                            href={`/admin/pendaftar/${p.id}`}
+                            className="rounded-xl bg-[#c8ee44] px-3.5 py-1.5 text-xs font-black text-[#1c1a2e] hover:bg-[#b5da35] transition-all shadow-sm"
+                          >
+                            Verifikasi →
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
-              <div className="p-8 text-center text-xs text-slate-500 font-medium">
+              <div className="p-8 text-center text-xs text-slate-400 font-medium">
                 ✨ Semua berkas pendaftar saat ini telah diverifikasi!
               </div>
             )}
           </div>
         </div>
 
-        {/* Panel Samping Kanan */}
+        {/* Right Column (1 Span: Maglo Wallet Deck) */}
         <div>
           <QuickActionDeck pendingCount={belumVal} totalCount={totalVal} />
         </div>
