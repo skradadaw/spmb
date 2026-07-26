@@ -16,15 +16,15 @@ export default function ApplicantChart({ data }: Props) {
   );
 
   return (
-    <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+    <div className="rounded-3xl border border-slate-200/80 dark:border-[#282541] bg-white dark:bg-[#201e34] p-6 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 dark:border-[#282541] pb-4">
         <div>
-          <h3 className="text-base font-black text-[#1c1a2e]">Analitik Tren Pendaftaran</h3>
+          <h3 className="text-base font-black text-[#1c1a2e] dark:text-white">Analitik Tren Pendaftaran</h3>
           <p className="text-xs font-medium text-slate-400">Distribusi status berkas & seleksi penerimaan</p>
         </div>
 
         {/* Legend Map Maglo Style */}
-        <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
+        <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
           <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-[#c8ee44] border border-[#1c1a2e]" />
             <span>Diterima</span>
@@ -34,7 +34,7 @@ export default function ApplicantChart({ data }: Props) {
             <span>Menunggu</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-[#1c1a2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#1c1a2e] dark:bg-white" />
             <span>Terverifikasi</span>
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function ApplicantChart({ data }: Props) {
               <div className="flex items-end gap-1.5 h-full w-full justify-center">
                 {/* Bar Terverifikasi */}
                 <div
-                  className="w-3.5 sm:w-4 rounded-t-lg bg-[#1c1a2e] group-hover:bg-[#282541] transition-all"
+                  className="w-3.5 sm:w-4 rounded-t-lg bg-[#1c1a2e] dark:bg-white group-hover:bg-[#282541] dark:group-hover:bg-slate-200 transition-all"
                   style={{ height: `${Math.max(hTerverifikasi, 8)}%` }}
                   title={`Terverifikasi: ${item.terverifikasi}`}
                 />
@@ -69,7 +69,7 @@ export default function ApplicantChart({ data }: Props) {
                   title={`Diterima: ${item.diterima}`}
                 />
               </div>
-              <span className="text-[11px] font-bold text-slate-500">{item.label}</span>
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{item.label}</span>
             </div>
           );
         })}

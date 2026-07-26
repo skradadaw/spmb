@@ -27,7 +27,6 @@ export default async function AdminHome() {
   const totalVal = total.count ?? 0;
   const belumVal = belumVerifikasi.count ?? 0;
   const diterimaVal = diterima.count ?? 0;
-  const perbaikanVal = perluPerbaikan.count ?? 0;
 
   // Query 5 pendaftar terbaru yang belum diverifikasi
   const { data: terbarubelum } = await supabase
@@ -75,7 +74,7 @@ export default async function AdminHome() {
         />
       </div>
 
-      {/* Maglo Baris 2: Grid Utam (Kiri 2 Span: Analitik & Tabel; Kanan 1 Span: Side Deck) */}
+      {/* Maglo Baris 2: Grid Utama */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Konten Kiri (2 Span) */}
         <div className="lg:col-span-2 space-y-8">
@@ -83,32 +82,32 @@ export default async function AdminHome() {
           <ApplicantChart data={chartData} />
 
           {/* Tabel Pendaftar Perlu Verifikasi Segera */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+          <div className="rounded-3xl border border-slate-200/80 dark:border-[#282541] bg-white dark:bg-[#201e34] p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#282541] pb-4 mb-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900">Perlu Verifikasi Segera</h3>
-                <p className="text-xs text-slate-400">Berkas pendaftar baru yang menunggu tindakan panitia</p>
+                <h3 className="text-base font-black text-[#1c1a2e] dark:text-white">Perlu Verifikasi Segera</h3>
+                <p className="text-xs font-medium text-slate-400">Berkas pendaftar baru yang menunggu tindakan panitia</p>
               </div>
-              <Link href="/admin/pendaftar?verifikasi=menunggu" className="text-xs font-bold text-emerald-700 hover:underline">
+              <Link href="/admin/pendaftar?verifikasi=menunggu" className="text-xs font-bold text-emerald-700 dark:text-[#c8ee44] hover:underline">
                 Lihat Semua →
               </Link>
             </div>
 
             {(terbarubelum ?? []).length > 0 ? (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-[#282541]">
                 {(terbarubelum ?? []).map((p) => (
-                  <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3.5 hover:bg-slate-50/50 px-2 rounded-xl transition-colors">
+                  <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3.5 hover:bg-slate-50/50 dark:hover:bg-[#282541]/50 px-2 rounded-xl transition-colors">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-emerald-700">{p.nomor_pendaftaran}</span>
+                        <span className="font-mono text-xs font-bold text-emerald-700 dark:text-[#c8ee44]">{p.nomor_pendaftaran}</span>
                         <Badge warna="abu">{LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}</Badge>
                       </div>
-                      <p className="mt-1 font-bold text-slate-900 text-sm">{p.nama_lengkap}</p>
+                      <p className="mt-1 font-bold text-[#1c1a2e] dark:text-white text-sm">{p.nama_lengkap}</p>
                       <p className="text-xs text-slate-400">TK: {p.asal_tk || "-"}</p>
                     </div>
                     <Link
                       href={`/admin/pendaftar/${p.id}`}
-                      className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors shadow-sm"
+                      className="rounded-xl bg-[#c8ee44] px-4 py-2 text-xs font-bold text-[#1c1a2e] hover:bg-[#b5da35] transition-all shadow-sm"
                     >
                       Verifikasi Berkas →
                     </Link>
@@ -116,14 +115,14 @@ export default async function AdminHome() {
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center text-xs text-slate-500">
+              <div className="p-8 text-center text-xs text-slate-500 font-medium">
                 ✨ Semua berkas pendaftar saat ini telah diverifikasi!
               </div>
             )}
           </div>
         </div>
 
-        {/* Panel Samping Kanan (1 Span: QuickActionDeck Maglo) */}
+        {/* Panel Samping Kanan */}
         <div>
           <QuickActionDeck pendingCount={belumVal} totalCount={totalVal} />
         </div>

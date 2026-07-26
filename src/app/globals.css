@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --font-kumbh: 'Kumbh Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --maglo-dark: #1c1a2e;
@@ -15,6 +17,12 @@ body {
   font-family: var(--font-kumbh);
   background-color: var(--maglo-bg);
   color: var(--maglo-dark);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark body {
+  background-color: #1c1a2e;
+  color: #ffffff;
 }
 
 @media print {
