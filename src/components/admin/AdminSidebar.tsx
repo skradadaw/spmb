@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/admin/login/actions";
 
@@ -13,9 +14,9 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
   const pathname = usePathname();
 
   const navItems = [
-    { label: "Dashboard", href: "/admin", icon: "📊" },
-    { label: "Transactions", href: "/admin/pendaftar", icon: "👥" },
-    { label: "Settings", href: "/admin/konten", icon: "📝" },
+    { label: "Dashboard", href: "/admin", iconSvg: "/icons/dashboard.svg" },
+    { label: "Transactions", href: "/admin/pendaftar", iconSvg: "/icons/transactions.svg" },
+    { label: "Settings", href: "/admin/konten", iconSvg: "/icons/settings.svg" },
   ];
 
   function isActive(href: string) {
@@ -62,7 +63,13 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
                     : "text-[#929eae] hover:bg-slate-200/60 dark:hover:bg-[#282541] hover:text-[#1b212d] dark:hover:text-white"
                 }`}
               >
-                <span className="text-base">{item.icon}</span>
+                <Image
+                  src={item.iconSvg}
+                  alt={item.label}
+                  width={20}
+                  height={20}
+                  className="h-5 w-5 opacity-80"
+                />
                 <span>{item.label}</span>
               </Link>
             );
@@ -86,7 +93,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
             type="submit"
             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-[#282541] bg-white dark:bg-[#201e34] px-4 py-3 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shadow-sm"
           >
-            <span>🚪</span>
+            <Image src="/icons/logout.svg" alt="Logout" width={18} height={18} />
             <span>Logout</span>
           </button>
         </form>
