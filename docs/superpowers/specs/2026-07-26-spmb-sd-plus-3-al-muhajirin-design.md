@@ -33,7 +33,7 @@ mengakses lewat HP.
 |---|---|
 | `/` | Landing page: hero SPMB 2027/2028, jadwal & alur pendaftaran, syarat & biaya, FAQ, kontak panitia, tombol menonjol "Daftar Sekarang". |
 | `/daftar` | Form pendaftaran wizard 3 langkah: ① data calon siswa → ② data orang tua/wali → ③ upload dokumen. |
-| `/daftar/sukses` | Bukti pendaftaran: nomor pendaftaran, ringkasan data, tombol cetak (gaya cetak khusus, bisa disimpan sebagai PDF lewat browser). |
+| `/daftar/sukses` | Bukti pendaftaran: nomor pendaftaran, ringkasan data, tombol cetak (gaya cetak khusus, bisa disimpan sebagai PDF lewat browser). Data diambil dari respons submit yang baru selesai (state klien), bukan dari parameter URL — jika halaman ditutup/di-refresh, pengguna diarahkan memakai `/cek-status`. |
 | `/cek-status` | Input nomor pendaftaran + tanggal lahir → tampil nama, status verifikasi, status penerimaan, dan catatan admin. |
 
 ### Halaman admin (diproteksi login)
