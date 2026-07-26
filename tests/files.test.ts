@@ -18,6 +18,12 @@ describe("validasiDokumen", () => {
   it("menolak file kosong", () => {
     expect(validasiDokumen({ type: "image/jpeg", size: 0 })).not.toBeNull();
   });
+  it("menolak tipe yang hanya diwarisi dari Object.prototype", () => {
+    expect(validasiDokumen({ type: "constructor", size: 1000 })).toMatch(/JPG, PNG, atau PDF/);
+    expect(validasiDokumen({ type: "toString", size: 1000 })).toMatch(/JPG, PNG, atau PDF/);
+    expect(validasiDokumen({ type: "valueOf", size: 1000 })).toMatch(/JPG, PNG, atau PDF/);
+    expect(validasiDokumen({ type: "hasOwnProperty", size: 1000 })).toMatch(/JPG, PNG, atau PDF/);
+  });
 });
 
 describe("konstanta", () => {

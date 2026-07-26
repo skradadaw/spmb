@@ -9,11 +9,13 @@ export const LABEL_DOKUMEN: Record<JenisDokumen, string> = {
 
 export const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
-export const ALLOWED_TYPES: Record<string, string> = {
+// Object.create(null): tanpa Object.prototype, jadi ALLOWED_TYPES["constructor"]
+// (atau "toString"/"valueOf"/dst) tidak lagi merambat ke nilai warisan.
+export const ALLOWED_TYPES: Record<string, string> = Object.assign(Object.create(null), {
   "image/jpeg": "jpg",
   "image/png": "png",
   "application/pdf": "pdf",
-};
+});
 
 export function validasiDokumen(file: { type: string; size: number }): string | null {
   if (!ALLOWED_TYPES[file.type]) return "Tipe file harus JPG, PNG, atau PDF";
