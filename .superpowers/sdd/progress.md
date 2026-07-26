@@ -14,3 +14,4 @@ Task 12: complete (commit 47bfc40, review clean; Dasbor Admin `/admin` dengan ka
 Task 13: complete (commit 3dc0e5e, review clean; Detail Pendaftar `/admin/pendaftar/[id]`, preview dokumen signed URL, ubah status verifikasi/penerimaan & catatan panitia)
 Task 14: complete (commit c6a466b, review clean; Route Handler `/admin/pendaftar/export` menghasilkan berkas Excel `.xlsx` 21 kolom sesuai filter)
 Task 15: complete (commit 186b6e1, review clean; Editor Konten `/admin/konten` untuk mengelola Jadwal, Syarat, Biaya, FAQ, & Kontak dengan revalidatePath ke landing page)
+Task 16: complete (commit 8d1c653, review clean; Verifikasi menyeluruh: 33 unit test lulus, Next.js build sukses, README.md setup & Vercel deployment terbuat)
