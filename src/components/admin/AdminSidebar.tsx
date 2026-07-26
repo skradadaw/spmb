@@ -24,32 +24,32 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
   }
 
   const content = (
-    <div className="flex h-full flex-col justify-between bg-slate-900 p-4 text-slate-100">
+    <div className="flex h-full flex-col justify-between bg-[#1c1a2e] p-5 text-white">
       <div>
-        {/* Brand Header */}
-        <div className="mb-8 flex items-center justify-between border-b border-slate-800 pb-4">
+        {/* Brand Header Maglo Style */}
+        <div className="mb-8 flex items-center justify-between border-b border-[#282541] pb-5">
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 font-bold text-white shadow-md">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#c8ee44] font-black text-[#1c1a2e] shadow-lg shadow-[#c8ee44]/20 text-base">
               SD3
             </div>
             <div>
-              <p className="text-sm font-bold leading-tight text-white">SPMB Console</p>
-              <p className="text-xs text-slate-400">SD Plus 3 Al-Muhajirin</p>
+              <p className="text-base font-extrabold tracking-tight text-white leading-tight">SPMB Console</p>
+              <p className="text-[11px] font-medium text-slate-400">SD Plus 3 Al-Muhajirin</p>
             </div>
           </Link>
           <button
             onClick={() => setMobileOpen(false)}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 md:hidden"
+            className="rounded-xl p-1 text-slate-400 hover:bg-[#282541] md:hidden"
           >
             ✕
           </button>
         </div>
 
-        {/* Navigation Menu */}
-        <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-          Menu Panitia
+        {/* Navigation Menu Maglo Style */}
+        <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          Menu Utama
         </p>
-        <nav className="space-y-1">
+        <nav className="space-y-1.5">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
@@ -57,10 +57,10 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
+                className={`flex items-center gap-3.5 rounded-2xl px-4 py-3 text-xs font-bold transition-all ${
                   active
-                    ? "bg-emerald-600 font-semibold text-white shadow-sm"
-                    : "text-slate-300 hover:bg-slate-800/80 hover:text-white"
+                    ? "bg-[#c8ee44] text-[#1c1a2e] shadow-md shadow-[#c8ee44]/20"
+                    : "text-slate-300 hover:bg-[#282541] hover:text-white"
                 }`}
               >
                 <span className="text-base">{item.icon}</span>
@@ -71,21 +71,21 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
         </nav>
       </div>
 
-      {/* Admin Profile & Logout */}
-      <div className="border-t border-slate-800 pt-4">
-        <div className="mb-3 flex items-center gap-3 px-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 font-semibold text-emerald-400">
+      {/* Profile & Logout Footer */}
+      <div className="border-t border-[#282541] pt-5">
+        <div className="mb-4 flex items-center gap-3 px-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#201e34] font-bold text-[#c8ee44] border border-[#282541]">
             P
           </div>
           <div className="overflow-hidden text-xs">
-            <p className="truncate font-semibold text-slate-200">Panitia SPMB</p>
-            <p className="truncate text-slate-400">admin@sdplus3almuhajirin.sch.id</p>
+            <p className="truncate font-extrabold text-white">Panitia SPMB</p>
+            <p className="truncate text-[11px] text-slate-400">admin@sdplus3almuhajirin.sch.id</p>
           </div>
         </div>
         <form action={logout}>
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-800/40 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-950/40 hover:text-red-300 transition-colors"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#282541] bg-[#201e34] px-4 py-2.5 text-xs font-bold text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition-all"
           >
             <span>🚪</span>
             <span>Keluar Sesi</span>
@@ -98,7 +98,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-slate-800 md:block">
+      <aside className="hidden w-64 shrink-0 border-r border-[#282541] md:block">
         {content}
       </aside>
 
@@ -106,7 +106,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-[#1c1a2e]/70 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
           <div className="relative z-10 w-72 max-w-[80vw] h-full shadow-2xl">

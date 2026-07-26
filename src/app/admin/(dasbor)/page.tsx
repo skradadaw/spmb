@@ -55,7 +55,7 @@ export default async function AdminHome() {
           total={totalVal}
           icon="👥"
           trendText="+100% TA 27/28"
-          colorTheme="slate"
+          colorTheme="dark"
         />
         <MagloStatCard
           title="Menunggu Verifikasi"
@@ -71,7 +71,7 @@ export default async function AdminHome() {
           total={totalVal}
           icon="🎉"
           trendText="Lulus Seleksi"
-          colorTheme="emerald"
+          colorTheme="lime"
         />
       </div>
 

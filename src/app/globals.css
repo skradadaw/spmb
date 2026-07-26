@@ -1,7 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+:root {
+  --font-kumbh: 'Kumbh Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --maglo-dark: #1c1a2e;
+  --maglo-dark-card: #201e34;
+  --maglo-dark-hover: #282541;
+  --maglo-lime: #c8ee44;
+  --maglo-lime-hover: #b5da35;
+  --maglo-bg: #f8f8f8;
+}
+
+body {
+  font-family: var(--font-kumbh);
+  background-color: var(--maglo-bg);
+  color: var(--maglo-dark);
+}
+
 @media print {
-  .no-print {
+  header, footer, nav, button, .no-print {
     display: none !important;
   }
   body {

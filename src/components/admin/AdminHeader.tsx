@@ -21,22 +21,22 @@ export default function AdminHeader({ setMobileOpen, pendingCount = 0 }: Props) 
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200/80 bg-white/90 px-6 backdrop-blur-md">
+      <div className="flex items-center gap-4">
         {/* Mobile Hamburger Button */}
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 md:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-[#1c1a2e] hover:bg-slate-100 md:hidden font-bold"
           aria-label="Buka Menu Navigasi"
         >
           ☰
         </button>
 
         <div>
-          <h1 className="text-base font-bold text-slate-900 sm:text-lg">{getTitle()}</h1>
-          <p className="hidden text-xs text-slate-500 sm:block">
-            Sistem Penerimaan Murid Baru TA 2027/2028
+          <h1 className="text-lg font-black tracking-tight text-[#1c1a2e] sm:text-xl">{getTitle()}</h1>
+          <p className="hidden text-xs font-medium text-slate-400 sm:block">
+            Sistem Penerimaan Murid Baru SD Plus 3 Al-Muhajirin TA 2027/2028
           </p>
         </div>
       </div>
@@ -45,9 +45,9 @@ export default function AdminHeader({ setMobileOpen, pendingCount = 0 }: Props) 
         {pendingCount > 0 && (
           <Link
             href="/admin/pendaftar?verifikasi=menunggu"
-            className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors"
+            className="flex items-center gap-2 rounded-2xl bg-[#c8ee44]/30 px-4 py-2 text-xs font-bold text-[#1c1a2e] border border-[#c8ee44] hover:bg-[#c8ee44]/50 transition-colors"
           >
-            <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="flex h-2.5 w-2.5 rounded-full bg-[#1c1a2e] animate-pulse" />
             <span>{pendingCount} Verifikasi Menunggu</span>
           </Link>
         )}
@@ -55,10 +55,10 @@ export default function AdminHeader({ setMobileOpen, pendingCount = 0 }: Props) 
         <Link
           href="/"
           target="_blank"
-          className="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 sm:flex sm:items-center sm:gap-1.5"
+          className="hidden rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-[#1c1a2e] hover:bg-slate-100 sm:flex sm:items-center sm:gap-2 transition-colors"
         >
           <span>🌐</span>
-          <span>Lihat Situs Publik</span>
+          <span>Situs Publik</span>
         </Link>
       </div>
     </header>

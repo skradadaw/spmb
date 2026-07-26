@@ -19,22 +19,22 @@ export default function ApplicantChart({ data }: Props) {
     <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900">Analitik Tren Pendaftaran</h3>
-          <p className="text-xs text-slate-400">Distribusi status berkas dan penerimaan calon siswa</p>
+          <h3 className="text-base font-black text-[#1c1a2e]">Analitik Tren Pendaftaran</h3>
+          <p className="text-xs font-medium text-slate-400">Distribusi status berkas & seleksi penerimaan</p>
         </div>
 
         {/* Legend Map Maglo Style */}
-        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
+        <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-emerald-600" />
+            <span className="h-3 w-3 rounded-full bg-[#c8ee44] border border-[#1c1a2e]" />
             <span>Diterima</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-amber-500" />
+            <span className="h-3 w-3 rounded-full bg-amber-400" />
             <span>Menunggu</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-slate-800" />
+            <span className="h-3 w-3 rounded-full bg-[#1c1a2e]" />
             <span>Terverifikasi</span>
           </div>
         </div>
@@ -52,24 +52,24 @@ export default function ApplicantChart({ data }: Props) {
               <div className="flex items-end gap-1.5 h-full w-full justify-center">
                 {/* Bar Terverifikasi */}
                 <div
-                  className="w-3 sm:w-4 rounded-t-lg bg-slate-800 group-hover:bg-slate-700 transition-all"
+                  className="w-3.5 sm:w-4 rounded-t-lg bg-[#1c1a2e] group-hover:bg-[#282541] transition-all"
                   style={{ height: `${Math.max(hTerverifikasi, 8)}%` }}
                   title={`Terverifikasi: ${item.terverifikasi}`}
                 />
                 {/* Bar Menunggu */}
                 <div
-                  className="w-3 sm:w-4 rounded-t-lg bg-amber-500 group-hover:bg-amber-400 transition-all"
+                  className="w-3.5 sm:w-4 rounded-t-lg bg-amber-400 group-hover:bg-amber-300 transition-all"
                   style={{ height: `${Math.max(hMenunggu, 8)}%` }}
                   title={`Menunggu: ${item.menunggu}`}
                 />
                 {/* Bar Diterima */}
                 <div
-                  className="w-3 sm:w-4 rounded-t-lg bg-emerald-600 group-hover:bg-emerald-500 transition-all"
+                  className="w-3.5 sm:w-4 rounded-t-lg bg-[#c8ee44] border border-[#1c1a2e]/30 group-hover:bg-[#b5da35] transition-all"
                   style={{ height: `${Math.max(hDiterima, 8)}%` }}
                   title={`Diterima: ${item.diterima}`}
                 />
               </div>
-              <span className="text-[11px] font-semibold text-slate-500">{item.label}</span>
+              <span className="text-[11px] font-bold text-slate-500">{item.label}</span>
             </div>
           );
         })}
