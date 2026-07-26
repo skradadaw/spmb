@@ -48,52 +48,49 @@ export default async function AdminHome() {
           <ApplicantChart />
 
           {/* Maglo Recent Transactions Table */}
-          <div className="rounded-3xl border border-slate-200/80 dark:border-[#282541] bg-white dark:bg-[#201e34] p-6 shadow-sm">
+          <div className="rounded-3xl border border-slate-200/60 dark:border-[#282541] bg-white dark:bg-[#201e34] p-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#282541] pb-4 mb-4">
               <div>
-                <h3 className="text-base font-black text-[#1c1a2e] dark:text-white">Pendaftar Terbaru (Perlu Verifikasi)</h3>
-                <p className="text-xs font-medium text-slate-400">Berkas calon siswa yang menunggu pemeriksaan panitia</p>
+                <h3 className="text-lg font-bold text-[#1b212d] dark:text-white">Recent Transaction</h3>
               </div>
-              <Link href="/admin/pendaftar?verifikasi=menunggu" className="text-xs font-bold text-[#14b8a6] hover:underline">
-                Lihat Semua →
+              <Link href="/admin/pendaftar?verifikasi=menunggu" className="text-xs font-semibold text-[#29a073] hover:underline">
+                View All &gt;
               </Link>
             </div>
 
             {(terbarubelum ?? []).length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-semibold">
-                  <thead className="border-b border-slate-100 dark:border-[#282541] text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <table className="w-full text-left text-xs font-medium">
+                  <thead className="border-b border-slate-100 dark:border-[#282541] text-[11px] font-semibold tracking-wider text-[#929eae]">
                     <tr>
-                      <th className="pb-3">Siswa / No. pendaftaran</th>
-                      <th className="pb-3">Asal TK</th>
-                      <th className="pb-3">Status</th>
-                      <th className="pb-3 text-right">Aksi</th>
+                      <th className="pb-3">NAME/BUSINESS</th>
+                      <th className="pb-3">TYPE</th>
+                      <th className="pb-3">AMOUNT</th>
+                      <th className="pb-3 text-right">DATE</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-[#282541]">
                     {(terbarubelum ?? []).map((p) => (
                       <tr key={p.id} className="hover:bg-slate-50/60 dark:hover:bg-[#282541]/40 transition-colors">
-                        <td className="py-3.5">
+                        <td className="py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#c8ee44] text-[#1c1a2e] font-black">
-                              👤
+                            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#e4f1ff] text-[#1b212d] font-bold">
+                              📱
                             </div>
                             <div>
-                              <p className="font-extrabold text-[#1c1a2e] dark:text-white">{p.nama_lengkap}</p>
-                              <p className="font-mono text-[10px] text-slate-400">{p.nomor_pendaftaran}</p>
+                              <p className="font-semibold text-[#1b212d] dark:text-white text-sm">{p.nama_lengkap}</p>
+                              <p className="font-mono text-[11px] text-[#929eae]">{p.nomor_pendaftaran}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3.5 text-slate-500 font-medium">{p.asal_tk || "-"}</td>
-                        <td className="py-3.5">
-                          <Badge warna="abu">{LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}</Badge>
-                        </td>
-                        <td className="py-3.5 text-right">
+                        <td className="py-4 text-[#929eae] font-medium">{p.asal_tk || "Siswa Baru"}</td>
+                        <td className="py-4 font-semibold text-[#1b212d] dark:text-white">$420.84</td>
+                        <td className="py-4 text-right">
                           <Link
                             href={`/admin/pendaftar/${p.id}`}
-                            className="rounded-xl bg-[#c8ee44] px-3.5 py-1.5 text-xs font-black text-[#1c1a2e] hover:bg-[#b5da35] transition-all shadow-sm"
+                            className="rounded-xl bg-[#29a073] px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 transition-all shadow-sm"
                           >
-                            Verifikasi →
+                            Detail →
                           </Link>
                         </td>
                       </tr>
@@ -102,7 +99,7 @@ export default async function AdminHome() {
                 </table>
               </div>
             ) : (
-              <div className="p-8 text-center text-xs text-slate-400 font-medium">
+              <div className="p-8 text-center text-xs text-[#929eae] font-medium">
                 ✨ Semua berkas pendaftar saat ini telah diverifikasi!
               </div>
             )}
