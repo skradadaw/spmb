@@ -49,11 +49,37 @@ describe("ortuSchema", () => {
   it("menerima data valid (wali kosong)", () => {
     expect(ortuSchema.safeParse(ortuValid).success).toBe(true);
   });
-  it("menolak nomor WhatsApp tidak diawali 08", () => {
-    expect(ortuSchema.safeParse({ ...ortuValid, no_whatsapp: "62812345678" }).success).toBe(false);
+  it("menormalisasi berbagai format nomor WhatsApp menjadi 08...", () => {
+    const kasus = [
+      "081234567890",
+      "+6281234567890",
+      "6281234567890",
+      "+62 812-3456-7890",
+      "0812 3456 7890",
+      "006281234567890",
+    ];
+    for (const no_whatsapp of kasus) {
+      const r = ortuSchema.safeParse({ ...ortuValid, no_whatsapp });
+      expect(r.success).toBe(true);
+      if (r.success) {
+        expect(r.data.no_whatsapp).toBe("081234567890");
+      }
+    }
+  });
+  it("menolak nomor WhatsApp tanpa awalan 0 atau 62", () => {
+    expect(ortuSchema.safeParse({ ...ortuValid, no_whatsapp: "81234567890" }).success).toBe(false);
   });
   it("menolak nomor WhatsApp terlalu pendek", () => {
     expect(ortuSchema.safeParse({ ...ortuValid, no_whatsapp: "0812345" }).success).toBe(false);
+  });
+  it("menolak nomor WhatsApp terlalu panjang", () => {
+    expect(ortuSchema.safeParse({ ...ortuValid, no_whatsapp: "08123456789012345" }).success).toBe(false);
+  });
+  it("menolak nomor WhatsApp berisi huruf", () => {
+    expect(ortuSchema.safeParse({ ...ortuValid, no_whatsapp: "0812abc45678" }).success).toBe(false);
+  });
+  it("menolak nomor WhatsApp kosong", () => {
+    expect(ortuSchema.safeParse({ ...ortuValid, no_whatsapp: "" }).success).toBe(false);
   });
 });
 

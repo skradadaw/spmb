@@ -25,6 +25,17 @@ export const siswaSchema = z.object({
   asal_tk: opsional,
 });
 
+const PESAN_WHATSAPP_INVALID = "Nomor WhatsApp tidak valid (contoh: 081234567890)";
+
+/** Normalisasi nomor WhatsApp ke bentuk kanonik 08...: buang pemisah, ubah awalan +62/0062/62 jadi 0. */
+function normalisasiWhatsapp(nilai: string): string {
+  const bersih = nilai.replace(/[\s.\-()]/g, "");
+  if (bersih.startsWith("+62")) return `0${bersih.slice(3)}`;
+  if (bersih.startsWith("0062")) return `0${bersih.slice(4)}`;
+  if (bersih.startsWith("62")) return `0${bersih.slice(2)}`;
+  return bersih;
+}
+
 export const ortuSchema = z.object({
   nama_ayah: wajib("Nama ayah", 3),
   pekerjaan_ayah: wajib("Pekerjaan ayah"),
@@ -36,7 +47,8 @@ export const ortuSchema = z.object({
   pekerjaan_wali: opsional,
   no_whatsapp: z
     .string()
-    .regex(/^08\d{8,11}$/, "Nomor WhatsApp tidak valid (contoh: 081234567890)"),
+    .transform(normalisasiWhatsapp)
+    .refine((v) => /^08\d{8,11}$/.test(v), PESAN_WHATSAPP_INVALID),
 });
 
 export const pendaftarSchema = siswaSchema.merge(ortuSchema);
