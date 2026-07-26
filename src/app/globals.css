@@ -5,23 +5,31 @@
 
 :root {
   --font-kumbh: 'Kumbh Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --figma-bg: #fafafa;
-  --figma-text-dark: #1b212d;
-  --figma-text-muted: #929eae;
-  --figma-lime: #c8ee44;
-  --figma-teal: #29a073;
+  --maglo-canvas-light: #fafafa;
+  --maglo-canvas-dark: #1c1a2e;
+  --maglo-card-light: #ffffff;
+  --maglo-card-dark: #201e34;
+  --maglo-card-hover-dark: #282541;
+  --maglo-text-light: #1b212d;
+  --maglo-text-dark: #ffffff;
+  --maglo-muted-light: #929eae;
+  --maglo-muted-dark: #78778b;
+  --maglo-lime: #c8ee44;
+  --maglo-teal: #29a073;
+  --maglo-teal-bg-light: #eefef2;
+  --maglo-teal-bg-dark: #1a3131;
 }
 
 body {
   font-family: var(--font-kumbh);
-  background-color: var(--figma-bg);
-  color: var(--figma-text-dark);
+  background-color: var(--maglo-canvas-light);
+  color: var(--maglo-text-light);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html.dark body {
-  background-color: #1c1a2e;
-  color: #ffffff;
+  background-color: var(--maglo-canvas-dark);
+  color: var(--maglo-text-dark);
 }
 
 @media print {

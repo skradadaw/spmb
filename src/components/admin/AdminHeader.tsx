@@ -35,18 +35,18 @@ export default function AdminHeader({ setMobileOpen, pendingCount = 0 }: Props) 
         </button>
 
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1b212d] dark:text-white">{getTitle()}</h1>
+          <h1 className="text-[25px] font-bold tracking-tight text-[#1b212d] dark:text-white leading-none">{getTitle()}</h1>
         </div>
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Search Icon Pill */}
-        <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#201e34] text-slate-500 shadow-sm border border-slate-200/60 dark:border-[#282541]">
+        <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#201e34] text-[#929eae] dark:text-[#78778b] shadow-sm border border-slate-200/60 dark:border-[#282541]">
           🔍
         </div>
 
         {/* Bell Notification Bing */}
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#201e34] text-slate-500 shadow-sm border border-slate-200/60 dark:border-[#282541]">
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#201e34] text-[#929eae] dark:text-[#78778b] shadow-sm border border-slate-200/60 dark:border-[#282541]">
           🔔
           {pendingCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#29a073] text-[9px] font-bold text-white">
@@ -66,7 +66,7 @@ export default function AdminHeader({ setMobileOpen, pendingCount = 0 }: Props) 
           <span className="hidden text-xs font-semibold text-[#1b212d] dark:text-white sm:inline">
             Mahfuzul Nabil
           </span>
-          <span className="text-[10px] text-slate-400">▼</span>
+          <span className="text-[10px] text-[#929eae] dark:text-[#78778b]">▼</span>
         </div>
       </div>
     </header>

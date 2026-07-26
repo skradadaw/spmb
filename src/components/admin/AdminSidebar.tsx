@@ -37,7 +37,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
               <p className="text-xl font-extrabold tracking-tight text-[#1b212d] dark:text-white leading-tight">
                 Maglo<span className="text-[#29a073]">.</span>
               </p>
-              <p className="text-[11px] font-semibold text-[#929eae]">SPMB SD Plus 3</p>
+              <p className="text-[11px] font-semibold text-[#929eae] dark:text-[#78778b]">SPMB SD Plus 3</p>
             </div>
           </Link>
           <button
@@ -60,7 +60,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
                 className={`flex items-center gap-3.5 rounded-2xl px-4 py-3.5 text-xs font-semibold transition-all ${
                   active
                     ? "bg-[#c8ee44] text-[#1b212d] font-bold shadow-sm"
-                    : "text-[#929eae] hover:bg-slate-200/60 dark:hover:bg-[#282541] hover:text-[#1b212d] dark:hover:text-white"
+                    : "text-[#929eae] dark:text-[#78778b] hover:bg-slate-200/60 dark:hover:bg-[#282541] hover:text-[#1b212d] dark:hover:text-white"
                 }`}
               >
                 <Image
@@ -85,7 +85,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
           </div>
           <div className="overflow-hidden text-xs">
             <p className="truncate font-bold text-[#1b212d] dark:text-white">Panitia SPMB</p>
-            <p className="truncate text-[11px] font-medium text-[#929eae]">admin@sdplus3almuhajirin.sch.id</p>
+            <p className="truncate text-[11px] font-medium text-[#929eae] dark:text-[#78778b]">admin@sdplus3almuhajirin.sch.id</p>
           </div>
         </div>
         <form action={logout}>
