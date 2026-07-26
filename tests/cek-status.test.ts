@@ -17,7 +17,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 vi.mock("server-only", () => ({}));
 
-import { cekStatus } from "@/app/cek-status/actions";
+import { cekStatus } from "@/app/(publik)/cek-status/actions";
 
 beforeEach(() => {
   state.row = null;

@@ -73,7 +73,7 @@ function fakeClient() {
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => fakeClient() }));
 vi.mock("server-only", () => ({}));
 
-import { submitPendaftaran } from "@/app/daftar/actions";
+import { submitPendaftaran } from "@/app/(publik)/daftar/actions";
 
 function fileValid(nama: string) {
   return new File([new Uint8Array(1024)], nama, { type: "image/jpeg" });

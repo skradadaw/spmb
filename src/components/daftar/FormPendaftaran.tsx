@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { siswaSchema, ortuSchema, petaError } from "@/lib/validation/pendaftar";
 import { JENIS_DOKUMEN, LABEL_DOKUMEN, validasiDokumen, type JenisDokumen } from "@/lib/files";
-import { submitPendaftaran } from "@/app/daftar/actions";
+import { submitPendaftaran } from "@/app/(publik)/daftar/actions";
 import StepSiswa from "./StepSiswa";
 import StepOrtu from "./StepOrtu";
 import StepDokumen from "./StepDokumen";
