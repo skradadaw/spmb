@@ -36,14 +36,18 @@ export default function StatusForm(awal: Props) {
     setMemuat(false);
     setPesan(
       hasil.ok
-        ? { ok: true, teks: "Perubahan tersimpan." }
+        ? { ok: true, teks: "✅ Perubahan status berhasil disimpan!" }
         : { ok: false, teks: hasil.error ?? "Gagal menyimpan." }
     );
   }
 
   return (
-    <form onSubmit={simpan} className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="mb-4 font-bold text-emerald-900">Ubah Status</h2>
+    <form onSubmit={simpan} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+        <span className="text-xl">⚙️</span>
+        <h2 className="font-bold text-slate-900">Ubah Status & Catatan Panitia</h2>
+      </div>
+
       <Field label="Status Verifikasi Berkas">
         <select className={inputCls} value={verifikasi} onChange={(e) => setVerifikasi(e.target.value)}>
           {STATUS_VERIFIKASI.map((s) => (
@@ -51,6 +55,7 @@ export default function StatusForm(awal: Props) {
           ))}
         </select>
       </Field>
+
       <Field label="Status Penerimaan">
         <select className={inputCls} value={penerimaan} onChange={(e) => setPenerimaan(e.target.value)}>
           {STATUS_PENERIMAAN.map((s) => (
@@ -58,25 +63,28 @@ export default function StatusForm(awal: Props) {
           ))}
         </select>
       </Field>
-      <Field label="Catatan untuk Pendaftar (tampil di halaman Cek Status)">
+
+      <Field label="Catatan untuk Pendaftar (Ditampilkan di Cek Status Publik)">
         <textarea
           className={inputCls}
           rows={3}
           value={catatan}
           onChange={(e) => setCatatan(e.target.value)}
-          placeholder="Contoh: Foto Kartu Keluarga buram, mohon hubungi panitia."
+          placeholder="Contoh: Foto KK kurang jelas, silakan hubungi panitia..."
         />
       </Field>
+
       {pesan && (
-        <p className={`mb-3 text-sm ${pesan.ok ? "text-emerald-700" : "text-red-600"}`}>
+        <div className={`mb-4 rounded-xl p-3 text-xs font-semibold ${pesan.ok ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
           {pesan.teks}
-        </p>
+        </div>
       )}
+
       <button
         disabled={memuat}
-        className="w-full rounded-xl bg-emerald-700 py-3 font-semibold text-white hover:bg-emerald-800 disabled:opacity-60 sm:w-auto sm:px-6"
+        className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-60 transition-colors shadow-md"
       >
-        {memuat ? "Menyimpan..." : "Simpan Perubahan"}
+        {memuat ? "Menyimpan Perubahan..." : "Simpan Perubahan Status"}
       </button>
     </form>
   );

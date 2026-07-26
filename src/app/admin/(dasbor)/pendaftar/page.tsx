@@ -14,8 +14,17 @@ export const dynamic = "force-dynamic";
 
 type Params = { q?: string; verifikasi?: string; penerimaan?: string };
 
-const WARNA_VERIFIKASI = { menunggu: "abu", terverifikasi: "hijau", perlu_perbaikan: "kuning" } as const;
-const WARNA_PENERIMAAN = { menunggu: "abu", diterima: "hijau", tidak_diterima: "merah" } as const;
+const WARNA_VERIFIKASI = {
+  menunggu: "abu",
+  terverifikasi: "hijau",
+  perlu_perbaikan: "kuning",
+} as const;
+
+const WARNA_PENERIMAAN = {
+  menunggu: "abu",
+  diterima: "hijau",
+  tidak_diterima: "merah",
+} as const;
 
 export default async function PendaftarPage({
   searchParams,
@@ -28,9 +37,10 @@ export default async function PendaftarPage({
   let query = supabase
     .from("pendaftar")
     .select(
-      "id, nomor_pendaftaran, nama_lengkap, no_whatsapp, status_verifikasi, status_penerimaan"
+      "id, nomor_pendaftaran, nama_lengkap, no_whatsapp, status_verifikasi, status_penerimaan, created_at"
     )
     .order("nomor_urut", { ascending: true });
+
   if (q) query = query.or(`nama_lengkap.ilike.%${q}%,nomor_pendaftaran.ilike.%${q}%`);
   if (verifikasi) query = query.eq("status_verifikasi", verifikasi);
   if (penerimaan) query = query.eq("status_penerimaan", penerimaan);
@@ -42,55 +52,92 @@ export default async function PendaftarPage({
   if (penerimaan) paramExport.set("penerimaan", penerimaan);
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-emerald-900">Pendaftar</h1>
+    <div className="space-y-6">
+      {/* Header & Export Action */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+        <div>
+          <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Daftar Pendaftar SPMB</h1>
+          <p className="text-xs text-slate-500 sm:text-sm mt-0.5">
+            Total {daftar?.length ?? 0} data calon siswa yang sesuai kriteria pencarian.
+          </p>
+        </div>
         <a
           href={`/admin/pendaftar/export?${paramExport.toString()}`}
-          className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-emerald-500 transition-colors"
         >
-          Export Excel
+          <span>📊</span>
+          <span>Export Excel (.xlsx)</span>
         </a>
       </div>
 
-      {/* Filter */}
-      <form method="get" className="mt-4 grid grid-cols-1 gap-3 rounded-2xl bg-white p-4 shadow-sm sm:grid-cols-4">
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Cari nama / nomor..."
-          className={inputCls}
-        />
-        <select name="verifikasi" defaultValue={verifikasi ?? ""} className={inputCls}>
-          <option value="">Semua Verifikasi</option>
-          {STATUS_VERIFIKASI.map((s) => (
-            <option key={s} value={s}>{LABEL_VERIFIKASI[s]}</option>
-          ))}
-        </select>
-        <select name="penerimaan" defaultValue={penerimaan ?? ""} className={inputCls}>
-          <option value="">Semua Penerimaan</option>
-          {STATUS_PENERIMAAN.map((s) => (
-            <option key={s} value={s}>{LABEL_PENERIMAAN[s]}</option>
-          ))}
-        </select>
-        <button className="rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800">
-          Terapkan
-        </button>
+      {/* Toolbar Filter */}
+      <form
+        method="get"
+        className="grid grid-cols-1 gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-200 sm:grid-cols-4"
+      >
+        <div className="sm:col-span-1">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="🔍 Cari nama / nomor..."
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <select name="verifikasi" defaultValue={verifikasi ?? ""} className={inputCls}>
+            <option value="">Semua Status Verifikasi</option>
+            {STATUS_VERIFIKASI.map((s) => (
+              <option key={s} value={s}>
+                {LABEL_VERIFIKASI[s]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <select name="penerimaan" defaultValue={penerimaan ?? ""} className={inputCls}>
+            <option value="">Semua Status Penerimaan</option>
+            {STATUS_PENERIMAAN.map((s) => (
+              <option key={s} value={s}>
+                {LABEL_PENERIMAAN[s]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="flex-1 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors">
+            Terapkan Filter
+          </button>
+          {(q || verifikasi || penerimaan) && (
+            <Link
+              href="/admin/pendaftar"
+              className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+              title="Reset Filter"
+            >
+              🔄
+            </Link>
+          )}
+        </div>
       </form>
 
-      {/* Daftar: kartu di HP, tabel di layar besar */}
-      <div className="mt-4 space-y-3 md:hidden">
+      {/* Kartu Khusus Layar Mobile (<768px) */}
+      <div className="space-y-3 md:hidden">
         {(daftar ?? []).map((p) => (
           <Link
             key={p.id}
             href={`/admin/pendaftar/${p.id}`}
-            className="block rounded-2xl bg-white p-4 shadow-sm"
+            className="block rounded-2xl bg-white p-4 shadow-sm border border-slate-200 hover:border-emerald-400 transition-all"
           >
             <div className="flex items-center justify-between">
-              <p className="font-semibold">{p.nama_lengkap}</p>
-              <span className="text-xs text-gray-500">{p.nomor_pendaftaran}</span>
+              <span className="font-mono text-xs font-bold text-emerald-700">
+                {p.nomor_pendaftaran}
+              </span>
+              <span className="text-[11px] text-slate-400">
+                {new Date(p.created_at).toLocaleDateString("id-ID")}
+              </span>
             </div>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <p className="mt-1 font-bold text-slate-900">{p.nama_lengkap}</p>
+            <p className="text-xs text-slate-500">WA: {p.no_whatsapp}</p>
+            <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-slate-100">
               <Badge warna={WARNA_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}>
                 {LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}
               </Badge>
@@ -102,37 +149,44 @@ export default async function PendaftarPage({
         ))}
       </div>
 
-      <div className="mt-4 hidden overflow-hidden rounded-2xl bg-white shadow-sm md:block">
+      {/* Tabel Data Layar Desktop (≥768px) */}
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
         <table className="w-full text-sm">
-          <thead className="bg-emerald-50 text-left text-emerald-900">
+          <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-slate-200">
             <tr>
-              <th className="p-3">Nomor</th>
-              <th className="p-3">Nama</th>
-              <th className="p-3">WhatsApp</th>
-              <th className="p-3">Verifikasi</th>
-              <th className="p-3">Penerimaan</th>
-              <th className="p-3"></th>
+              <th className="p-4">No. Pendaftaran</th>
+              <th className="p-4">Nama Lengkap</th>
+              <th className="p-4">No. WhatsApp</th>
+              <th className="p-4">Verifikasi Berkas</th>
+              <th className="p-4">Penerimaan</th>
+              <th className="p-4 text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {(daftar ?? []).map((p) => (
-              <tr key={p.id} className="border-t border-gray-100">
-                <td className="p-3 font-mono text-xs">{p.nomor_pendaftaran}</td>
-                <td className="p-3 font-medium">{p.nama_lengkap}</td>
-                <td className="p-3">{p.no_whatsapp}</td>
-                <td className="p-3">
+              <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                <td className="p-4 font-mono text-xs font-bold text-emerald-700">
+                  {p.nomor_pendaftaran}
+                </td>
+                <td className="p-4 font-semibold text-slate-900">{p.nama_lengkap}</td>
+                <td className="p-4 text-slate-600">{p.no_whatsapp}</td>
+                <td className="p-4">
                   <Badge warna={WARNA_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}>
                     {LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}
                   </Badge>
                 </td>
-                <td className="p-3">
+                <td className="p-4">
                   <Badge warna={WARNA_PENERIMAAN[p.status_penerimaan as StatusPenerimaan]}>
                     {LABEL_PENERIMAAN[p.status_penerimaan as StatusPenerimaan]}
                   </Badge>
                 </td>
-                <td className="p-3">
-                  <Link href={`/admin/pendaftar/${p.id}`} className="text-emerald-700 underline">
-                    Detail
+                <td className="p-4 text-right">
+                  <Link
+                    href={`/admin/pendaftar/${p.id}`}
+                    className="inline-flex items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-emerald-600 hover:text-white transition-colors"
+                  >
+                    <span>Detail</span>
+                    <span>→</span>
                   </Link>
                 </td>
               </tr>
@@ -142,7 +196,11 @@ export default async function PendaftarPage({
       </div>
 
       {(daftar ?? []).length === 0 && (
-        <p className="mt-6 text-center text-gray-500">Tidak ada pendaftar yang cocok.</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+          <p className="text-3xl">🔍</p>
+          <p className="mt-2 text-base font-bold text-slate-900">Tidak ada pendaftar yang cocok</p>
+          <p className="mt-1 text-xs text-slate-500">Coba atur ulang kata kunci pencarian atau filter status Anda.</p>
+        </div>
       )}
     </div>
   );

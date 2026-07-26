@@ -17,29 +17,38 @@ export default function KontakEditor({ awal }: { awal: Kontak }) {
     setMemuat(false);
     setPesan(
       hasil.ok
-        ? { ok: true, teks: "Tersimpan." }
+        ? { ok: true, teks: "✅ Kontak panitia berhasil diperbarui!" }
         : { ok: false, teks: hasil.error ?? "Gagal menyimpan." }
     );
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="mb-3 font-bold text-emerald-900">Kontak Panitia</h2>
-      <Field label="Nomor WhatsApp">
-        <input
-          className={inputCls}
-          value={kontak.whatsapp}
-          onChange={(e) => setKontak({ ...kontak, whatsapp: e.target.value })}
-        />
-      </Field>
-      <Field label="Telepon">
-        <input
-          className={inputCls}
-          value={kontak.telepon}
-          onChange={(e) => setKontak({ ...kontak, telepon: e.target.value })}
-        />
-      </Field>
-      <Field label="Alamat">
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+        <span className="text-xl">📞</span>
+        <h2 className="font-bold text-slate-900">Kontak Panitia SPMB</h2>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Nomor WhatsApp Panitia">
+          <input
+            className={inputCls}
+            value={kontak.whatsapp}
+            onChange={(e) => setKontak({ ...kontak, whatsapp: e.target.value })}
+            placeholder="081234567890"
+          />
+        </Field>
+        <Field label="Nomor Telepon Sekolah">
+          <input
+            className={inputCls}
+            value={kontak.telepon}
+            onChange={(e) => setKontak({ ...kontak, telepon: e.target.value })}
+            placeholder="(0264) 123456"
+          />
+        </Field>
+      </div>
+
+      <Field label="Alamat Lengkap Sekolah">
         <textarea
           className={inputCls}
           rows={2}
@@ -47,18 +56,22 @@ export default function KontakEditor({ awal }: { awal: Kontak }) {
           onChange={(e) => setKontak({ ...kontak, alamat: e.target.value })}
         />
       </Field>
-      <button
-        type="button"
-        onClick={simpan}
-        disabled={memuat}
-        className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60"
-      >
-        {memuat ? "Menyimpan..." : "Simpan"}
-      </button>
+
+      <div className="mt-4 flex justify-end">
+        <button
+          type="button"
+          onClick={simpan}
+          disabled={memuat}
+          className="rounded-xl bg-emerald-600 px-5 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-60 transition-colors shadow-sm"
+        >
+          {memuat ? "Menyimpan..." : "Simpan Kontak"}
+        </button>
+      </div>
+
       {pesan && (
-        <p className={`mt-2 text-sm ${pesan.ok ? "text-emerald-700" : "text-red-600"}`}>
+        <div className={`mt-3 rounded-xl p-3 text-xs font-semibold ${pesan.ok ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
           {pesan.teks}
-        </p>
+        </div>
       )}
     </section>
   );

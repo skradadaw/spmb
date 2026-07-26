@@ -1,26 +1,24 @@
-import Link from "next/link";
-import { logout } from "@/app/admin/login/actions";
+"use client";
+
+import { useState } from "react";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <div className="py-6">
-      <nav className="no-print mb-6 flex flex-wrap items-center gap-2 rounded-xl bg-white p-2 shadow-sm">
-        <Link href="/admin" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-emerald-50">
-          Dasbor
-        </Link>
-        <Link href="/admin/pendaftar" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-emerald-50">
-          Pendaftar
-        </Link>
-        <Link href="/admin/konten" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-emerald-50">
-          Konten
-        </Link>
-        <form action={logout} className="ml-auto">
-          <button className="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50">
-            Keluar
-          </button>
-        </form>
-      </nav>
-      {children}
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
+      {/* Sidebar Command Console */}
+      <AdminSidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col min-w-0">
+        <AdminHeader setMobileOpen={setMobileOpen} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
