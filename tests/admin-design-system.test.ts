@@ -204,3 +204,25 @@ describe("admin applicant list", () => {
     expect(source).toMatch(/<h2 className="[^"]*admin-display[^"]*font-bold[^"]*">Tidak ada pendaftar yang sesuai<\/h2>/);
   });
 });
+
+describe("admin applicant detail", () => {
+  it("uses the review workflow design system without emoji or dark-mode classes", () => {
+    const page = read("src/app/admin/(dasbor)/pendaftar/[id]/page.tsx");
+    const form = read("src/components/admin/StatusForm.tsx");
+    const source = `${page}\n${form}`;
+
+    for (const text of [
+      "Data Calon Siswa",
+      "Orang Tua dan Wali",
+      "Dokumen Pendaftaran",
+      "Keputusan Panitia",
+      "Simpan perubahan",
+      "sticky",
+      "AdminBadge",
+    ]) {
+      expect(source).toContain(text);
+    }
+
+    expect(source).not.toMatch(/dark:|[\u{1F300}-\u{1FAFF}]/u);
+  });
+});

@@ -4,21 +4,23 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { LABEL_DOKUMEN } from "@/lib/files";
 import type { Dokumen, Pendaftar } from "@/lib/types";
 import StatusForm from "@/components/admin/StatusForm";
-import { Badge } from "@/components/ui";
+import AdminIcon from "@/components/admin/AdminIcon";
+import { AdminBadge, AdminCard } from "@/components/admin/AdminUI";
+import { adminSecondaryButtonCls } from "@/components/admin/styles";
 import { LABEL_PENERIMAAN, LABEL_VERIFIKASI, type StatusPenerimaan, type StatusVerifikasi } from "@/lib/status";
 
 export const dynamic = "force-dynamic";
 
-const WARNA_VERIFIKASI = {
-  menunggu: "abu",
-  terverifikasi: "hijau",
-  perlu_perbaikan: "kuning",
+const TONE_VERIFIKASI = {
+  menunggu: "warning",
+  terverifikasi: "success",
+  perlu_perbaikan: "info",
 } as const;
 
-const WARNA_PENERIMAAN = {
-  menunggu: "abu",
-  diterima: "hijau",
-  tidak_diterima: "merah",
+const TONE_PENERIMAAN = {
+  menunggu: "warning",
+  diterima: "success",
+  tidak_diterima: "danger",
 } as const;
 
 export default async function DetailPendaftar({
@@ -71,119 +73,118 @@ export default async function DetailPendaftar({
 
   return (
     <div className="space-y-6">
-      {/* Top Header Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link
             href="/admin/pendaftar"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-700 transition-colors mb-2"
+            className={`${adminSecondaryButtonCls} mb-4 min-h-11 px-3`}
           >
-            <span>←</span>
-            <span>Kembali ke Daftar Pendaftar</span>
+            <AdminIcon name="arrow-right" className="h-4 w-4 rotate-180" />
+            Kembali ke Pendaftar
           </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-extrabold text-slate-900">{pendaftar.nama_lengkap}</h1>
-            <span className="font-mono text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
+          <p className="text-sm font-semibold text-[#667085]">Detail pendaftar</p>
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <h1 className="admin-display text-3xl font-bold text-[#101820]">{pendaftar.nama_lengkap}</h1>
+            <span className="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-sm font-semibold text-[#101820]">
               {pendaftar.nomor_pendaftaran}
             </span>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Badge warna={WARNA_VERIFIKASI[pendaftar.status_verifikasi as StatusVerifikasi]}>
+          <AdminBadge tone={TONE_VERIFIKASI[pendaftar.status_verifikasi as StatusVerifikasi]}>
             Verifikasi: {LABEL_VERIFIKASI[pendaftar.status_verifikasi as StatusVerifikasi]}
-          </Badge>
-          <Badge warna={WARNA_PENERIMAAN[pendaftar.status_penerimaan as StatusPenerimaan]}>
+          </AdminBadge>
+          <AdminBadge tone={TONE_PENERIMAAN[pendaftar.status_penerimaan as StatusPenerimaan]}>
             Penerimaan: {LABEL_PENERIMAAN[pendaftar.status_penerimaan as StatusPenerimaan]}
-          </Badge>
+          </AdminBadge>
         </div>
       </div>
 
-      {/* Grid Dua Kolom */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Kolom Kiri (2 Span): Data Calon Siswa & Ortu */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Card Data Siswa */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
-              <span className="text-xl">👧🏻</span>
-              <h2 className="font-bold text-slate-900">Data Calon Siswa</h2>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] lg:items-start">
+        <div className="space-y-6">
+          <AdminCard className="p-5 sm:p-6">
+            <div className="mb-4 flex items-center gap-3 border-b border-slate-200 pb-4">
+              <span className="flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-green-50 text-[#00880F]">
+                <AdminIcon name="student" />
+              </span>
+              <h2 className="admin-display text-xl font-bold text-[#101820]">Data Calon Siswa</h2>
             </div>
             <table className="w-full text-sm">
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-200">
                 {rincianSiswa.map(([label, nilai]) => (
                   <tr key={label}>
-                    <td className="w-44 py-2.5 pr-3 text-slate-500 font-medium">{label}</td>
-                    <td className="py-2.5 font-semibold text-slate-900">{nilai}</td>
+                    <th scope="row" className="w-40 py-3 pr-4 text-left align-top font-medium text-[#667085] sm:w-48">{label}</th>
+                    <td className="py-3 font-semibold text-[#101820]">{nilai}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </AdminCard>
 
-          {/* Card Data Ortu */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
-              <span className="text-xl">👨‍👩‍👧</span>
-              <h2 className="font-bold text-slate-900">Data Orang Tua / Wali & Kontak</h2>
+          <AdminCard className="p-5 sm:p-6">
+            <div className="mb-4 flex items-center gap-3 border-b border-slate-200 pb-4">
+              <span className="flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                <AdminIcon name="users" />
+              </span>
+              <h2 className="admin-display text-xl font-bold text-[#101820]">Orang Tua dan Wali</h2>
             </div>
             <table className="w-full text-sm">
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-200">
                 {rincianOrtu.map(([label, nilai]) => (
                   <tr key={label}>
-                    <td className="w-44 py-2.5 pr-3 text-slate-500 font-medium">{label}</td>
-                    <td className="py-2.5 font-semibold text-slate-900">{nilai}</td>
+                    <th scope="row" className="w-40 py-3 pr-4 text-left align-top font-medium text-[#667085] sm:w-48">{label}</th>
+                    <td className="py-3 font-semibold text-[#101820]">{nilai}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
+          </AdminCard>
 
-        {/* Kolom Kanan (1 Span): Dokumen Upload & StatusForm */}
-        <div className="space-y-6">
-          {/* Card Dokumen Upload */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
-              <span className="text-xl">📁</span>
-              <h2 className="font-bold text-slate-900">Dokumen Pendaftaran</h2>
+          <AdminCard className="p-5 sm:p-6">
+            <div className="mb-4 flex items-center gap-3 border-b border-slate-200 pb-4">
+              <span className="flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                <AdminIcon name="file" />
+              </span>
+              <h2 className="admin-display text-xl font-bold text-[#101820]">Dokumen Pendaftaran</h2>
             </div>
             <ul className="space-y-3">
               {dokumenDenganUrl.map((d) => (
                 <li
                   key={d.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-sm"
+                  className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <span className="font-medium text-slate-800">{LABEL_DOKUMEN[d.jenis]}</span>
+                  <span className="text-sm font-semibold text-[#101820]">{LABEL_DOKUMEN[d.jenis]}</span>
                   {d.url ? (
                     <a
                       href={d.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors shadow-sm"
+                      className={`${adminSecondaryButtonCls} min-h-11 self-start text-xs sm:self-auto`}
                     >
-                      <span>Lihat File</span>
-                      <span>↗</span>
+                      Lihat file
+                      <AdminIcon name="arrow-right" className="h-4 w-4" />
                     </a>
                   ) : (
-                    <span className="text-xs font-semibold text-rose-600">Gagal Memuat</span>
+                    <span className="text-sm font-semibold text-red-700">Gagal memuat</span>
                   )}
                 </li>
               ))}
               {dokumenDenganUrl.length === 0 && (
-                <li className="p-4 text-center text-xs text-slate-500">Belum ada dokumen yang diunggah.</li>
+                <li className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-sm text-[#667085]">Belum ada dokumen yang diunggah.</li>
               )}
             </ul>
-          </div>
+          </AdminCard>
+        </div>
 
-          {/* Form Ubah Status */}
+        <aside className="lg:sticky lg:top-28">
           <StatusForm
             id={pendaftar.id}
             status_verifikasi={pendaftar.status_verifikasi}
             status_penerimaan={pendaftar.status_penerimaan}
             catatan_admin={pendaftar.catatan_admin ?? ""}
           />
-        </div>
+        </aside>
       </div>
     </div>
   );
