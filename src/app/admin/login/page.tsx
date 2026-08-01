@@ -1,74 +1,72 @@
-"use client";
+import AdminIcon from "@/components/admin/AdminIcon";
+import LoginForm from "@/components/admin/LoginForm";
 
-import { useActionState } from "react";
-import { login } from "./actions";
-import { Field, inputCls } from "@/components/ui";
+const routeSteps = ["Daftar", "Verifikasi", "Seleksi", "Diterima"];
 
-export default function AdminLoginPage() {
-  const [state, formAction, isPending] = useActionState(login, null);
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
+  const notice = reason === "auth-required"
+    ? "Sesi Anda tidak aktif. Silakan masuk untuk melanjutkan."
+    : undefined;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-[#1c1a2e] px-4 py-12 text-white font-sans">
-      {/* Background Ambient Glow Maglo Lime */}
-      <div className="absolute top-1/3 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#c8ee44]/10 blur-[130px]" />
-
-      <div className="relative z-10 w-full max-w-md space-y-6">
-        {/* Header Logo */}
-        <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#c8ee44] font-black text-[#1c1a2e] text-2xl shadow-xl shadow-[#c8ee44]/20">
-            SD3
+    <main className="admin-scope min-h-screen bg-[#F6F7F5] px-4 py-6 sm:px-6 lg:flex lg:items-center lg:justify-center lg:p-8">
+      <section className="mx-auto w-full max-w-6xl overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(16,24,32,0.10)] lg:grid lg:grid-cols-2">
+        <aside className="bg-[#00AA13] px-6 py-6 text-white sm:px-10 lg:flex lg:min-h-[680px] lg:flex-col lg:justify-between lg:p-12">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15">
+              <AdminIcon name="student" className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">SD Plus 3 Al-Muhajirin</p>
+              <p className="text-xs text-white/75">Tahun Ajaran 2027/2028</p>
+            </div>
           </div>
-          <h1 className="mt-5 text-2xl font-black text-white sm:text-3xl tracking-tight">
-            SPMB Admin Console
-          </h1>
-          <p className="mt-1 text-xs font-medium text-slate-400">
-            SD Plus 3 Al-Muhajirin — TA 2027/2028
-          </p>
+
+          <div className="hidden lg:block">
+            <p className="text-sm font-semibold text-white/75">Jalur Pendaftaran Siswa</p>
+            <h1 className="admin-display mt-3 max-w-md text-4xl font-bold leading-tight">
+              Selamat datang di ruang kerja panitia SPMB.
+            </h1>
+            <p className="mt-5 max-w-md text-base leading-7 text-white/80">
+              Kelola perjalanan calon siswa dalam satu dasbor yang rapi dan terarah.
+            </p>
+          </div>
+
+          <ol className="mt-5 grid grid-cols-4 gap-2 lg:mt-12 lg:block lg:space-y-5">
+            {routeSteps.map((step, index) => (
+              <li key={step} className="flex items-center gap-3 text-xs font-semibold lg:text-sm">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/50 bg-white/10 text-xs">
+                  {index + 1}
+                </span>
+                <span className="hidden lg:inline">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </aside>
+
+        <div className="flex items-center px-6 py-10 sm:px-10 lg:px-14 lg:py-12">
+          <div className="w-full max-w-md">
+            <p className="text-sm font-semibold text-[#00AA13]">Portal Panitia SPMB</p>
+            <h2 className="admin-display mt-2 text-3xl font-bold tracking-tight text-[#101820]">
+              Masuk ke Dasbor
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[#667085]">
+              Gunakan akun panitia resmi untuk melanjutkan pengelolaan pendaftaran.
+            </p>
+            <div className="mt-8">
+              <LoginForm notice={notice} />
+            </div>
+            <p className="mt-8 text-xs leading-5 text-[#667085]">
+              Akses terbatas hanya untuk panitia resmi SPMB SD Plus 3 Al-Muhajirin.
+            </p>
+          </div>
         </div>
-
-        {/* Login Card Maglo Style */}
-        <div className="rounded-3xl border border-[#282541] bg-[#201e34]/90 p-8 shadow-2xl backdrop-blur-xl">
-          <form action={formAction} className="space-y-4">
-            <Field label="Alamat Email Admin">
-              <input
-                type="email"
-                name="email"
-                required
-                className={`${inputCls} admin-login-input border-[#282541] bg-[#1c1a2e] placeholder-slate-500 focus:border-[#c8ee44] focus:ring-[#c8ee44]/20`}
-                placeholder="admin@sdplus3almuhajirin.sch.id"
-              />
-            </Field>
-
-            <Field label="Kata Sandi">
-              <input
-                type="password"
-                name="password"
-                required
-                className={`${inputCls} admin-login-input border-[#282541] bg-[#1c1a2e] placeholder-slate-500 focus:border-[#c8ee44] focus:ring-[#c8ee44]/20`}
-                placeholder="••••••••"
-              />
-            </Field>
-
-            {state?.error && (
-              <div className="rounded-2xl border border-rose-500/30 bg-rose-950/40 p-3 text-xs font-bold text-rose-300">
-                ⚠️ {state.error}
-              </div>
-            )}
-
-            <button
-              disabled={isPending}
-              className="mt-3 w-full rounded-2xl bg-[#c8ee44] py-3.5 text-sm font-black text-[#1c1a2e] shadow-lg shadow-[#c8ee44]/20 hover:bg-[#b5da35] disabled:opacity-60 transition-all"
-            >
-              {isPending ? "Memverifikasi Sesi..." : "Masuk Konsol Admin →"}
-            </button>
-          </form>
-        </div>
-
-        {/* Footer info */}
-        <p className="text-center text-xs font-medium text-slate-500">
-          Akses terbatas hanya untuk panitia resmi SPMB SD Plus 3 Al-Muhajirin.
-        </p>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

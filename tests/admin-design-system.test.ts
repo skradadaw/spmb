@@ -28,3 +28,20 @@ describe("admin design system", () => {
     expect(icons).toContain("export default function AdminIcon");
   });
 });
+
+describe("admin login", () => {
+  it("uses a two-panel school identity and one Indonesian primary action", () => {
+    const page = read("src/app/admin/login/page.tsx");
+    const form = read("src/components/admin/LoginForm.tsx");
+    expect(page).toContain("SD Plus 3 Al-Muhajirin");
+    expect(page).toContain("Jalur Pendaftaran Siswa");
+    expect(form).toContain("Masuk ke Dasbor");
+    expect(form).toContain("adminPrimaryButtonCls");
+    expect(`${page}\n${form}`).not.toMatch(/Maglo|dark:|text-white placeholder/);
+  });
+
+  it("shows a clear notice when authentication is required", () => {
+    expect(read("src/middleware.ts")).toContain('reason", "auth-required"');
+    expect(read("src/app/admin/login/page.tsx")).toContain("Sesi Anda tidak aktif");
+  });
+});

@@ -60,22 +60,17 @@ html.dark body {
   }
 }
 
-.admin-login-input {
-  color: var(--maglo-lime);
-  caret-color: var(--maglo-lime);
+.admin-login-form input:-webkit-autofill,
+.admin-login-form input:-webkit-autofill:hover {
+  -webkit-text-fill-color: #101820;
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset;
+  caret-color: #101820;
 }
 
-.admin-login-input:-webkit-autofill,
-.admin-login-input:-webkit-autofill:hover {
-  -webkit-text-fill-color: var(--maglo-lime);
-  -webkit-box-shadow: 0 0 0 1000px var(--maglo-canvas-dark) inset;
-  caret-color: var(--maglo-lime);
-}
-
-.admin-login-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: var(--maglo-lime);
-  -webkit-box-shadow: 0 0 0 1000px var(--maglo-canvas-dark) inset, 0 0 0 1px rgb(200 238 68 / 0.2);
-  caret-color: var(--maglo-lime);
+.admin-login-form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #101820;
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset, 0 0 0 4px rgb(0 170 19 / 0.15);
+  caret-color: #101820;
 }
 
 @media print {

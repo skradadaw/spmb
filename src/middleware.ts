@@ -29,7 +29,9 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin") && pathname !== "/admin/login" && !user) {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+    const loginUrl = new URL("/admin/login", request.url);
+    loginUrl.searchParams.set("reason", "auth-required");
+    return NextResponse.redirect(loginUrl);
   }
   if (pathname === "/admin/login" && user) {
     return NextResponse.redirect(new URL("/admin", request.url));
