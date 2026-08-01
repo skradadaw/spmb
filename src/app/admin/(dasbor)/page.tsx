@@ -50,7 +50,7 @@ export default async function AdminHome() {
         </span>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         <AdminStatCard
           label="Total Pendaftar"
           value={total}
@@ -108,13 +108,13 @@ export default async function AdminHome() {
                 <tbody className="divide-y divide-slate-100">
                   {(waitingApplicants ?? []).map((applicant) => (
                     <tr key={applicant.id} className="h-16 transition-colors hover:bg-[#F6F7F5]">
-                      <td className="px-5 py-4 font-semibold text-[#101820] sm:px-6">{applicant.nama_lengkap}</td>
-                      <td className="px-5 py-4 font-mono text-xs text-[#667085]">{applicant.nomor_pendaftaran}</td>
-                      <td className="px-5 py-4 text-[#667085]">{applicant.asal_tk || "-"}</td>
-                      <td className="whitespace-nowrap px-5 py-4 text-[#667085]">
+                      <td className="px-5 py-2.5 font-semibold text-[#101820] sm:px-6">{applicant.nama_lengkap}</td>
+                      <td className="px-5 py-2.5 font-mono text-[#667085]">{applicant.nomor_pendaftaran}</td>
+                      <td className="px-5 py-2.5 text-[#667085]">{applicant.asal_tk || "-"}</td>
+                      <td className="whitespace-nowrap px-5 py-2.5 text-[#667085]">
                         {new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(applicant.created_at))}
                       </td>
-                      <td className="px-5 py-4 text-right sm:px-6">
+                      <td className="px-5 py-2.5 text-right sm:px-6">
                         <Link
                           href={`/admin/pendaftar/${applicant.id}`}
                           className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15"

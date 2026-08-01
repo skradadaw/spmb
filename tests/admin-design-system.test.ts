@@ -123,7 +123,7 @@ describe("admin dashboard", () => {
     }
 
     expect(page).toContain("sm:flex-row sm:items-end sm:justify-between");
-    expect(page).toContain("md:grid-cols-3");
+    expect(page).toContain("lg:grid-cols-3");
     expect(statCard).toContain("admin-display");
     expect(statCard).toContain("text-4xl");
     expect(statCard).toContain("sm:p-6");
