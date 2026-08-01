@@ -35,15 +35,43 @@ export default async function AdminHome() {
   const waitingApplicants = waitingApplicantsResult.data;
 
   return (
-    <div className="space-y-8">
-      <header>
-        <p className="text-sm text-[#667085]">Ringkasan penerimaan murid baru tahun ajaran 2027/2028.</p>
+    <div className="space-y-7 sm:space-y-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="admin-display text-[28px] font-extrabold leading-[1.15] tracking-[-0.025em] text-[#101820] sm:text-[32px]">
+            Ringkasan Pendaftaran
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-[#667085]">
+            Pantau data pendaftar dan berkas yang perlu diperiksa.
+          </p>
+        </div>
+        <span className="inline-flex w-fit items-center rounded-full bg-[#E9F8EB] px-3 py-2 text-xs font-semibold text-[#00880F]">
+          Tahun ajaran 2027/2028
+        </span>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <AdminStatCard label="Total Pendaftar" value={total} helper="Seluruh calon siswa terdaftar" icon="users" tone="neutral" />
-        <AdminStatCard label="Menunggu Verifikasi" value={waiting} helper="Perlu Ditindaklanjuti" icon="clock" tone="warning" />
-        <AdminStatCard label="Diterima" value={accepted} helper="Calon siswa yang telah diterima" icon="check" tone="success" />
+        <AdminStatCard
+          label="Total Pendaftar"
+          value={total}
+          helper="Semua pendaftar yang masuk"
+          icon="users"
+          tone="neutral"
+        />
+        <AdminStatCard
+          label="Menunggu Verifikasi"
+          value={waiting}
+          helper="Berkas belum diperiksa"
+          icon="clock"
+          tone="warning"
+        />
+        <AdminStatCard
+          label="Diterima"
+          value={accepted}
+          helper="Siswa yang dinyatakan diterima"
+          icon="check"
+          tone="success"
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">

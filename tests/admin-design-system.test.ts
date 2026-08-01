@@ -102,14 +102,31 @@ describe("authenticated admin shell", () => {
 });
 
 describe("admin dashboard", () => {
-  it("shows only real SPMB metrics and actions", () => {
-    const files = [
-      "src/app/admin/(dasbor)/page.tsx",
-      "src/components/admin/AdminStatCard.tsx",
-      "src/components/admin/AdminQuickActions.tsx",
-    ];
-    const source = files.map(read).join("\n");
-    for (const text of ["Total Pendaftar", "Menunggu Verifikasi", "Diterima", "Perlu Ditindaklanjuti", "Export Excel", "Kelola Konten"]) expect(source).toContain(text);
+  it("shows an operational summary hierarchy with real SPMB metrics", () => {
+    const page = read("src/app/admin/(dasbor)/page.tsx");
+    const statCard = read("src/components/admin/AdminStatCard.tsx");
+    const quickActions = read("src/components/admin/AdminQuickActions.tsx");
+    const source = `${page}\n${statCard}\n${quickActions}`;
+
+    for (const text of [
+      "Ringkasan Pendaftaran",
+      "Pantau data pendaftar dan berkas yang perlu diperiksa.",
+      "Tahun ajaran 2027/2028",
+      "Total Pendaftar",
+      "Semua pendaftar yang masuk",
+      "Menunggu Verifikasi",
+      "Berkas belum diperiksa",
+      "Diterima",
+      "Siswa yang dinyatakan diterima",
+    ]) {
+      expect(source).toContain(text);
+    }
+
+    expect(page).toContain("sm:flex-row sm:items-end sm:justify-between");
+    expect(page).toContain("md:grid-cols-3");
+    expect(statCard).toContain("admin-display");
+    expect(statCard).toContain("text-4xl");
+    expect(statCard).toContain("sm:p-6");
     expect(source).not.toContain("EnrollmentJourney");
     expect(existsSync(resolve("src/components/admin/EnrollmentJourney.tsx"))).toBe(false);
     expect(source).not.toMatch(/Maglo|Wallet|Transaction|balance|spending|saved|Working Capital|Income|Expenses|VISA|\$\d/);

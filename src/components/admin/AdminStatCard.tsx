@@ -35,17 +35,19 @@ export function AdminStatCard({
   const styles = toneClasses[tone];
 
   return (
-    <section className={`${adminCardCls} p-5`}>
+    <section className={`${adminCardCls} flex min-h-[176px] flex-col justify-between p-5 sm:p-6`}>
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-[#667085]">{label}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-[#101820]">{value}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold leading-5 text-[#667085]">{label}</p>
+          <p className="admin-display mt-3 text-4xl font-extrabold leading-none tracking-[-0.03em] text-[#101820] sm:text-[40px]">
+            {value}
+          </p>
         </div>
         <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${styles.icon}`}>
           <AdminIcon name={icon} className="h-5 w-5" />
         </span>
       </div>
-      <p className={`mt-4 text-sm font-medium ${styles.helper}`}>{helper}</p>
+      <p className={`mt-5 text-[13px] font-medium leading-5 ${styles.helper}`}>{helper}</p>
     </section>
   );
 }
