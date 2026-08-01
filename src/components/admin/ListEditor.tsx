@@ -46,14 +46,19 @@ export default function ListEditor({ judul, kontenKey, fields, awal, icon }: Pro
   async function simpan() {
     setMemuat(true);
     setPesan(null);
-    const hasil = await simpanKonten(kontenKey, baris);
-    setMemuat(false);
-    if (hasil.ok) setDirty(false);
-    setPesan(
-      hasil.ok
-        ? { ok: true, teks: `${judul} berhasil disimpan.` }
-        : { ok: false, teks: hasil.error ?? "Gagal menyimpan." }
-    );
+    try {
+      const hasil = await simpanKonten(kontenKey, baris);
+      if (hasil.ok) {
+        setDirty(false);
+        setPesan({ ok: true, teks: `${judul} berhasil disimpan.` });
+      } else {
+        setPesan({ ok: false, teks: hasil.error ?? "Gagal menyimpan." });
+      }
+    } catch {
+      setPesan({ ok: false, teks: "Gagal menyimpan." });
+    } finally {
+      setMemuat(false);
+    }
   }
 
   return (
@@ -76,7 +81,7 @@ export default function ListEditor({ judul, kontenKey, fields, awal, icon }: Pro
           <div key={i} className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <span className="text-xs font-bold text-[#667085]">Item {i + 1}</span>
-              <button type="button" onClick={() => hapus(i)} className={`${adminDangerButtonCls} px-3 text-xs`}>
+              <button type="button" onClick={() => hapus(i)} disabled={memuat} className={`${adminDangerButtonCls} px-3 text-xs`}>
                 <AdminIcon name="trash" className="h-4 w-4" />
                 Hapus Item
               </button>
@@ -95,6 +100,7 @@ export default function ListEditor({ judul, kontenKey, fields, awal, icon }: Pro
                         placeholder={f.label}
                         value={row[f.name] ?? ""}
                         onChange={(e) => ubah(i, f.name, e.target.value)}
+                        disabled={memuat}
                       />
                     ) : (
                       <input
@@ -103,6 +109,7 @@ export default function ListEditor({ judul, kontenKey, fields, awal, icon }: Pro
                         placeholder={f.label}
                         value={row[f.name] ?? ""}
                         onChange={(e) => ubah(i, f.name, e.target.value)}
+                        disabled={memuat}
                       />
                     )}
                   </AdminField>
@@ -114,7 +121,7 @@ export default function ListEditor({ judul, kontenKey, fields, awal, icon }: Pro
       </div>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button type="button" onClick={tambah} className={`${adminSecondaryButtonCls} w-full sm:w-auto`}>
+        <button type="button" onClick={tambah} disabled={memuat} className={`${adminSecondaryButtonCls} w-full sm:w-auto`}>
           <AdminIcon name="plus" className="h-4 w-4" />
           Tambah Item Baru
         </button>

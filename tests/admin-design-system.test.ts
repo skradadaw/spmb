@@ -237,4 +237,21 @@ describe("admin content editors", () => {
     for (const text of ["Kelola Konten", "Perubahan belum disimpan", "berhasil disimpan", "adminInputCls", "AdminIcon", "AdminFeedback"]) expect(source).toContain(text);
     expect(source).not.toMatch(/dark:|📅|📋|💰|❓|📞|📝|✅/);
   });
+
+  it("guards each editor control and save lifecycle while content is saving", () => {
+    const listEditor = read("src/components/admin/ListEditor.tsx");
+    const kontakEditor = read("src/components/admin/KontakEditor.tsx");
+
+    for (const source of [listEditor, kontakEditor]) {
+      expect(source).toMatch(/try\s*\{[\s\S]*await simpanKonten[\s\S]*\}\s*catch\s*\{[\s\S]*\}\s*finally\s*\{[\s\S]*setMemuat\(false\)/);
+    }
+
+    expect(listEditor).toMatch(/<input(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
+    expect(listEditor).toMatch(/<textarea(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
+    expect(listEditor).toMatch(/<button(?:(?!<\/button>)[\s\S])*onClick=\{\(\) => hapus\(i\)\}(?:(?!<\/button>)[\s\S])*disabled=\{memuat\}/);
+    expect(listEditor).toMatch(/<button(?:(?!<\/button>)[\s\S])*onClick=\{tambah\}(?:(?!<\/button>)[\s\S])*disabled=\{memuat\}/);
+
+    expect(kontakEditor).toMatch(/<input(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
+    expect(kontakEditor).toMatch(/<textarea(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
+  });
 });

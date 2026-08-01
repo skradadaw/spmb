@@ -21,14 +21,19 @@ export default function KontakEditor({ awal }: { awal: Kontak }) {
   async function simpan() {
     setMemuat(true);
     setPesan(null);
-    const hasil = await simpanKonten("kontak", kontak);
-    setMemuat(false);
-    if (hasil.ok) setDirty(false);
-    setPesan(
-      hasil.ok
-        ? { ok: true, teks: "Kontak panitia berhasil disimpan." }
-        : { ok: false, teks: hasil.error ?? "Gagal menyimpan." }
-    );
+    try {
+      const hasil = await simpanKonten("kontak", kontak);
+      if (hasil.ok) {
+        setDirty(false);
+        setPesan({ ok: true, teks: "Kontak panitia berhasil disimpan." });
+      } else {
+        setPesan({ ok: false, teks: hasil.error ?? "Gagal menyimpan." });
+      }
+    } catch {
+      setPesan({ ok: false, teks: "Gagal menyimpan." });
+    } finally {
+      setMemuat(false);
+    }
   }
 
   return (
@@ -52,6 +57,7 @@ export default function KontakEditor({ awal }: { awal: Kontak }) {
             value={kontak.whatsapp}
             onChange={(e) => ubah("whatsapp", e.target.value)}
             placeholder="081234567890"
+            disabled={memuat}
           />
         </AdminField>
         <AdminField id="kontak-telepon" label="Nomor Telepon Sekolah">
@@ -61,6 +67,7 @@ export default function KontakEditor({ awal }: { awal: Kontak }) {
             value={kontak.telepon}
             onChange={(e) => ubah("telepon", e.target.value)}
             placeholder="(0264) 123456"
+            disabled={memuat}
           />
         </AdminField>
       </div>
@@ -73,6 +80,7 @@ export default function KontakEditor({ awal }: { awal: Kontak }) {
             rows={3}
             value={kontak.alamat}
             onChange={(e) => ubah("alamat", e.target.value)}
+            disabled={memuat}
           />
         </AdminField>
       </div>
