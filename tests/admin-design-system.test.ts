@@ -179,4 +179,28 @@ describe("admin applicant list", () => {
     expect(source).toContain("AdminBadge");
     expect(source).not.toMatch(/Maglo|dark:|📊|🔍|🔄|text-\[#c8ee44\]/);
   });
+
+  it("keeps applicant status, export, and empty-state reset contracts explicit", () => {
+    const source = read("src/app/admin/(dasbor)/pendaftar/page.tsx");
+
+    for (const mapping of [
+      'menunggu: "warning"',
+      'terverifikasi: "success"',
+      'perlu_perbaikan: "info"',
+      'tidak_diterima: "danger"',
+    ]) expect(source).toContain(mapping);
+    for (const setter of [
+      'paramExport.set("q", q);',
+      'paramExport.set("verifikasi", verifikasi);',
+      'paramExport.set("penerimaan", penerimaan);',
+    ]) expect(source).toContain(setter);
+
+    const emptyState = source.slice(source.indexOf("Tidak ada pendaftar yang sesuai"));
+    expect(emptyState).toContain('href="/admin/pendaftar"');
+  });
+
+  it("uses the admin display type for the empty-state heading", () => {
+    const source = read("src/app/admin/(dasbor)/pendaftar/page.tsx");
+    expect(source).toMatch(/<h2 className="[^"]*admin-display[^"]*font-bold[^"]*">Tidak ada pendaftar yang sesuai<\/h2>/);
+  });
 });

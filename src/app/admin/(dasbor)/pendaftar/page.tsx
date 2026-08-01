@@ -225,7 +225,7 @@ export default async function PendaftarPage({
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F8EB] text-[#00880F]">
             <AdminIcon name="search" className="h-6 w-6" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-[#101820]">Tidak ada pendaftar yang sesuai</h2>
+          <h2 className="admin-display mt-4 text-lg font-bold text-[#101820]">Tidak ada pendaftar yang sesuai</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#667085]">
             Ubah kata kunci atau status filter, lalu coba kembali untuk melihat pendaftar yang sesuai.
           </p>
