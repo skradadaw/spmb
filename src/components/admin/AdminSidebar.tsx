@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, type RefObject } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/admin/login/actions";
@@ -9,6 +10,7 @@ import { adminDangerButtonCls } from "./styles";
 type Props = {
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
+  menuTriggerRef: RefObject<HTMLButtonElement | null>;
 };
 
 const navItems: { label: string; href: string; icon: AdminIconName }[] = [
@@ -17,8 +19,57 @@ const navItems: { label: string; href: string; icon: AdminIconName }[] = [
   { label: "Kelola Konten", href: "/admin/konten", icon: "content" },
 ];
 
-export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
+export default function AdminSidebar({ mobileOpen, setMobileOpen, menuTriggerRef }: Props) {
   const pathname = usePathname();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
+  const wasMobileOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (!mobileOpen) {
+      if (wasMobileOpenRef.current) menuTriggerRef.current?.focus();
+      wasMobileOpenRef.current = false;
+      return;
+    }
+
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
+    closeButtonRef.current?.focus();
+    wasMobileOpenRef.current = true;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusableElements = Array.from(
+        drawer.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+      );
+      const firstFocusableElement = focusableElements[0];
+      const lastFocusableElement = focusableElements.at(-1);
+
+      if (!firstFocusableElement || !lastFocusableElement) return;
+
+      if (!drawer.contains(document.activeElement)) {
+        event.preventDefault();
+        firstFocusableElement.focus();
+      } else if (event.shiftKey && document.activeElement === firstFocusableElement) {
+        event.preventDefault();
+        lastFocusableElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastFocusableElement) {
+        event.preventDefault();
+        firstFocusableElement.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [menuTriggerRef, mobileOpen, setMobileOpen]);
 
   function isActive(href: string) {
     return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
@@ -33,17 +84,18 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
               S3
             </div>
             <div>
-              <p className="text-sm font-bold tracking-tight">SPMB SD Plus 3</p>
+              <p className="admin-display text-sm font-bold tracking-tight">SPMB SD Plus 3</p>
               <p className="mt-0.5 text-xs text-[#667085]">Tahun Ajaran 2027/2028</p>
             </div>
           </Link>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="-mr-2 -mt-2 rounded-lg p-2 text-[#667085] hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15 md:hidden"
+            className="-mr-2 -mt-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[#667085] hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15 md:hidden"
             aria-label="Tutup menu navigasi"
+            ref={closeButtonRef}
           >
-            <span aria-hidden="true">×</span>
+            <AdminIcon name="close" className="h-5 w-5" />
           </button>
         </div>
 
@@ -97,6 +149,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
             aria-label="Menu navigasi"
             aria-modal="true"
             className="relative h-full w-[260px] max-w-[85vw] shadow-xl"
+            ref={drawerRef}
             role="dialog"
           >
             {navigation}

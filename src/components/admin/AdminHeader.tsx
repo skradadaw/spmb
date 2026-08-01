@@ -1,13 +1,15 @@
 "use client";
 
+import type { RefObject } from "react";
 import { usePathname } from "next/navigation";
 import AdminIcon from "./AdminIcon";
 
 type Props = {
   setMobileOpen: (open: boolean) => void;
+  menuTriggerRef: RefObject<HTMLButtonElement | null>;
 };
 
-export default function AdminHeader({ setMobileOpen }: Props) {
+export default function AdminHeader({ setMobileOpen, menuTriggerRef }: Props) {
   const pathname = usePathname();
 
   function getTitle() {
@@ -25,12 +27,13 @@ export default function AdminHeader({ setMobileOpen }: Props) {
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
+          ref={menuTriggerRef}
           className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-[#101820] hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15 md:hidden"
           aria-label="Buka menu navigasi"
         >
           <AdminIcon name="menu" className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{getTitle()}</h1>
+        <h1 className="admin-display text-xl font-bold tracking-tight sm:text-2xl">{getTitle()}</h1>
       </div>
 
       <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1.5 pl-1.5 pr-3 text-sm font-semibold shadow-[0_1px_2px_rgba(16,24,32,0.04)]">

@@ -62,4 +62,25 @@ describe("authenticated admin shell", () => {
     expect(source).toContain("admin-scope");
     expect(source).not.toMatch(/Maglo|Transactions|Settings|ThemeToggle|dark:|Mahfuzul Nabil/);
   });
+
+  it("keeps the mobile drawer accessible and uses the admin display type", () => {
+    const layout = read("src/app/admin/(dasbor)/layout.tsx");
+    const sidebar = read("src/components/admin/AdminSidebar.tsx");
+    const header = read("src/components/admin/AdminHeader.tsx");
+    const icons = read("src/components/admin/AdminIcon.tsx");
+
+    expect(layout).toContain("useRef");
+    expect(layout).toContain("menuTriggerRef={menuTriggerRef}");
+    expect(header).toContain("ref={menuTriggerRef}");
+    expect(sidebar).toContain("closeButtonRef.current?.focus()");
+    expect(sidebar).toContain('event.key === "Escape"');
+    expect(sidebar).toContain('event.key !== "Tab"');
+    expect(sidebar).toContain("focusableElements");
+    expect(sidebar).toContain("menuTriggerRef.current?.focus()");
+    expect(header).toContain('className="admin-display');
+    expect(sidebar).toContain('className="admin-display');
+    expect(sidebar).toContain('AdminIcon name="close"');
+    expect(sidebar).toContain("min-h-11 min-w-11");
+    expect(icons).toContain('"close"');
+  });
 });

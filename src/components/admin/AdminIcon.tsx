@@ -1,5 +1,5 @@
 export type AdminIconName =
-  | "dashboard" | "users" | "content" | "logout" | "menu"
+  | "dashboard" | "users" | "content" | "logout" | "menu" | "close"
   | "download" | "arrow-right" | "search" | "file"
   | "student" | "check" | "clock" | "warning" | "plus" | "trash";
 
@@ -9,6 +9,7 @@ const paths: Record<AdminIconName, string> = {
   content: "M4 4h16v16H4z M8 8h8 M8 12h8 M8 16h5",
   logout: "M10 17l5-5-5-5 M15 12H3 M21 19V5a2 2 0 0 0-2-2h-6",
   menu: "M4 7h16 M4 12h16 M4 17h16",
+  close: "M18 6 6 18 M6 6l12 12",
   download: "M12 3v12 M7 10l5 5 5-5 M4 21h16",
   "arrow-right": "M5 12h14 M14 7l5 5-5 5",
   search: "M21 21l-4.35-4.35 M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
