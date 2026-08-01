@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -253,5 +253,30 @@ describe("admin content editors", () => {
 
     expect(kontakEditor).toMatch(/<input(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
     expect(kontakEditor).toMatch(/<textarea(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
+  });
+});
+
+function walk(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = `${dir}/${name}`;
+    return statSync(path).isDirectory() ? walk(path) : [path];
+  });
+}
+
+describe("admin area audit", () => {
+  it("has loading and recoverable error states", () => {
+    expect(existsSync(resolve("src/app/admin/(dasbor)/loading.tsx"))).toBe(true);
+    const error = read("src/app/admin/(dasbor)/error.tsx");
+    expect(error).toContain("Tidak dapat memuat halaman");
+    expect(error).toContain("Coba lagi");
+    expect(error).toContain("reset()");
+  });
+
+  it("contains no finance-template, dark-mode, fake-money, or decorative emoji residue", () => {
+    const files = [...walk("src/app/admin"), ...walk("src/components/admin")]
+      .filter((path) => /\.(ts|tsx|css)$/.test(path));
+    const source = files.map(read).join("\n");
+    expect(source).not.toMatch(/Maglo|Working Capital|Transactions?|Wallet|VISA|Total balance|Total spending|Total saved|Scheduled Transfers|dark:|maglo-theme|\$\d/);
+    expect(source).not.toMatch(/[📊🔍🔄👧📁⚙️📅📋💰❓📞📝✅🎉💼⏳]/u);
   });
 });
