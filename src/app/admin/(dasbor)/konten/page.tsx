@@ -1,4 +1,5 @@
 import { getKonten } from "@/lib/konten";
+import { AdminCard } from "@/components/admin/AdminUI";
 import ListEditor from "@/components/admin/ListEditor";
 import KontakEditor from "@/components/admin/KontakEditor";
 
@@ -9,17 +10,16 @@ export default async function KontenPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Banner Header */}
-      <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
-        <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Editor Konten Landing Page</h1>
-        <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-          Kelola teks, jadwal pendaftaran, syarat berkas, rincian biaya, FAQ, dan kontak panitia yang tampil secara live di situs publik.
+      <AdminCard className="p-5 sm:p-6">
+        <h1 className="admin-display text-2xl font-bold text-[#101820] sm:text-3xl">Kelola Konten</h1>
+        <p className="mt-2 max-w-3xl text-sm text-[#667085]">
+          Perbarui informasi yang tampil di halaman utama untuk calon siswa dan wali.
         </p>
-      </div>
+      </AdminCard>
 
       <div className="space-y-6">
         <ListEditor
-          icon="📅"
+          icon="clock"
           judul="Jadwal & Alur Pendaftaran"
           kontenKey="jadwal"
           fields={[
@@ -29,14 +29,14 @@ export default async function KontenPage() {
           awal={konten.jadwal as unknown as Record<string, string>[]}
         />
         <ListEditor
-          icon="📋"
+          icon="file"
           judul="Syarat Pendaftaran"
           kontenKey="syarat"
           fields={[{ name: "teks", label: "Syarat Berkas" }]}
           awal={konten.syarat as unknown as Record<string, string>[]}
         />
         <ListEditor
-          icon="💰"
+          icon="content"
           judul="Rincian Biaya SPMB"
           kontenKey="biaya"
           fields={[
@@ -46,7 +46,7 @@ export default async function KontenPage() {
           awal={konten.biaya as unknown as Record<string, string>[]}
         />
         <ListEditor
-          icon="❓"
+          icon="warning"
           judul="FAQ (Pertanyaan Umum)"
           kontenKey="faq"
           fields={[

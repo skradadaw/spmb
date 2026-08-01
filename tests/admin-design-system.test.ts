@@ -226,3 +226,15 @@ describe("admin applicant detail", () => {
     expect(source).not.toMatch(/dark:|[\u{1F300}-\u{1FAFF}]/u);
   });
 });
+
+describe("admin content editors", () => {
+  it("uses shared controls, SVG icons, section-specific feedback, and dirty state", () => {
+    const source = [
+      "src/app/admin/(dasbor)/konten/page.tsx",
+      "src/components/admin/ListEditor.tsx",
+      "src/components/admin/KontakEditor.tsx",
+    ].map(read).join("\n");
+    for (const text of ["Kelola Konten", "Perubahan belum disimpan", "berhasil disimpan", "adminInputCls", "AdminIcon", "AdminFeedback"]) expect(source).toContain(text);
+    expect(source).not.toMatch(/dark:|📅|📋|💰|❓|📞|📝|✅/);
+  });
+});
