@@ -35,6 +35,8 @@ describe("admin login", () => {
     const form = read("src/components/admin/LoginForm.tsx");
     expect(page).toContain("SD Plus 3 Al-Muhajirin");
     expect(page).toContain("Jalur Pendaftaran Siswa");
+    expect(page).toContain("rounded-[20px]");
+    expect(page).not.toContain("rounded-[24px]");
     expect(form).toContain("Masuk ke Dasbor");
     expect(form).toContain("adminPrimaryButtonCls");
     expect(`${page}\n${form}`).not.toMatch(/Maglo|dark:|text-white placeholder/);

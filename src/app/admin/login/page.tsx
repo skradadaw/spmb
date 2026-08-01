@@ -15,7 +15,7 @@ export default async function AdminLoginPage({
 
   return (
     <main className="admin-scope min-h-screen bg-[#F6F7F5] px-4 py-6 sm:px-6 lg:flex lg:items-center lg:justify-center lg:p-8">
-      <section className="mx-auto w-full max-w-6xl overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(16,24,32,0.10)] lg:grid lg:grid-cols-2">
+      <section className="mx-auto w-full max-w-6xl overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(16,24,32,0.10)] lg:grid lg:grid-cols-2">
         <aside className="bg-[#00AA13] px-6 py-6 text-white sm:px-10 lg:flex lg:min-h-[680px] lg:flex-col lg:justify-between lg:p-12">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15">
