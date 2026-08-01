@@ -24,4 +24,10 @@ describe("admin login input styling", () => {
     expect(globalCss).toMatch(/-webkit-text-fill-color:\s*var\(--maglo-lime\);/);
     expect(globalCss).toMatch(/var\(--maglo-canvas-dark\)\s+inset/);
   });
+
+  it("mempertahankan indikator fokus lime pada autofill yang terfokus", () => {
+    expect(globalCss).toMatch(
+      /\.admin-login-input:-webkit-autofill:focus\s*\{[\s\S]*?-webkit-box-shadow:\s*0 0 0 1000px var\(--maglo-canvas-dark\) inset,\s*0 0 0 1px rgb\(200 238 68 \/ 0\.2\);[\s\S]*?\}/,
+    );
+  });
 });

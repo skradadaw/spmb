@@ -38,10 +38,15 @@ html.dark body {
 }
 
 .admin-login-input:-webkit-autofill,
-.admin-login-input:-webkit-autofill:hover,
-.admin-login-input:-webkit-autofill:focus {
+.admin-login-input:-webkit-autofill:hover {
   -webkit-text-fill-color: var(--maglo-lime);
   -webkit-box-shadow: 0 0 0 1000px var(--maglo-canvas-dark) inset;
+  caret-color: var(--maglo-lime);
+}
+
+.admin-login-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--maglo-lime);
+  -webkit-box-shadow: 0 0 0 1000px var(--maglo-canvas-dark) inset, 0 0 0 1px rgb(200 238 68 / 0.2);
   caret-color: var(--maglo-lime);
 }
 
