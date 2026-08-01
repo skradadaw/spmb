@@ -28,12 +28,13 @@ export default async function AdminLoginPage({
           </div>
 
           <div className="hidden lg:block">
-            <p className="text-sm font-semibold text-white/75">Jalur Pendaftaran Siswa</p>
+            <p className="text-sm font-semibold text-white/75">Pusat Kendali SPMB</p>
             <h1 className="admin-display mt-3 max-w-md text-4xl font-bold leading-tight">
-              Selamat datang di ruang kerja panitia SPMB.
+              Kelola seluruh proses penerimaan siswa dari satu dasbor.
             </h1>
             <p className="mt-5 max-w-md text-base leading-7 text-white/80">
-              Kelola perjalanan calon siswa dalam satu dasbor yang rapi dan terarah.
+              Pantau data pendaftar, verifikasi berkas, catat hasil seleksi, dan tetapkan
+              status penerimaan secara terarah.
             </p>
           </div>
 
