@@ -170,3 +170,13 @@ describe("admin dashboard", () => {
     expect(page).toMatch(/href=\{`\/admin\/pendaftar\/\$\{applicant\.id\}`\}\s+className="inline-flex min-h-11/);
   });
 });
+
+describe("admin applicant list", () => {
+  it("uses the shared admin controls and meaningful responsive copy", () => {
+    const source = read("src/app/admin/(dasbor)/pendaftar/page.tsx");
+    for (const text of ["Pendaftar", "Cari nama atau nomor pendaftaran", "Terapkan Filter", "Hapus Filter", "Export Excel", "Lihat detail", "Tidak ada pendaftar yang sesuai"]) expect(source).toContain(text);
+    expect(source).toContain("adminInputCls");
+    expect(source).toContain("AdminBadge");
+    expect(source).not.toMatch(/Maglo|dark:|📊|🔍|🔄|text-\[#c8ee44\]/);
+  });
+});

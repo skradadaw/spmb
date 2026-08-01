@@ -1,4 +1,11 @@
 import Link from "next/link";
+import AdminIcon from "@/components/admin/AdminIcon";
+import { AdminBadge, AdminCard } from "@/components/admin/AdminUI";
+import {
+  adminInputCls,
+  adminPrimaryButtonCls,
+  adminSecondaryButtonCls,
+} from "@/components/admin/styles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   LABEL_PENERIMAAN,
@@ -8,23 +15,28 @@ import {
   type StatusPenerimaan,
   type StatusVerifikasi,
 } from "@/lib/status";
-import { Badge, inputCls } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
 type Params = { q?: string; verifikasi?: string; penerimaan?: string };
 
-const WARNA_VERIFIKASI = {
-  menunggu: "abu",
-  terverifikasi: "hijau",
-  perlu_perbaikan: "kuning",
+const VERIFICATION_TONE = {
+  menunggu: "warning",
+  terverifikasi: "success",
+  perlu_perbaikan: "info",
 } as const;
 
-const WARNA_PENERIMAAN = {
-  menunggu: "abu",
-  diterima: "hijau",
-  tidak_diterima: "merah",
+const ACCEPTANCE_TONE = {
+  menunggu: "warning",
+  diterima: "success",
+  tidak_diterima: "danger",
 } as const;
+
+const formatDate = (date: string) => new Intl.DateTimeFormat("id-ID", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+}).format(new Date(date));
 
 export default async function PendaftarPage({
   searchParams,
@@ -51,156 +63,176 @@ export default async function PendaftarPage({
   if (verifikasi) paramExport.set("verifikasi", verifikasi);
   if (penerimaan) paramExport.set("penerimaan", penerimaan);
 
+  const applicants = daftar ?? [];
+  const hasFilters = Boolean(q || verifikasi || penerimaan);
+
   return (
-    <div className="space-y-6">
-      {/* Header & Export Action */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-200/80">
+    <div className="space-y-7">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-xl font-black text-[#1c1a2e] sm:text-2xl">Daftar Pendaftar SPMB</h1>
-          <p className="text-xs font-medium text-slate-400 sm:text-sm mt-0.5">
-            Total {daftar?.length ?? 0} data calon siswa yang sesuai kriteria pencarian.
+          <h1 className="admin-display text-[28px] font-extrabold leading-[1.15] tracking-[-0.025em] text-[#101820] sm:text-[32px]">
+            Pendaftar
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-[#667085]">
+            Total {applicants.length} data calon siswa yang sesuai kriteria pencarian.
           </p>
         </div>
         <a
           href={`/admin/pendaftar/export?${paramExport.toString()}`}
-          className="inline-flex items-center gap-2 rounded-2xl bg-[#c8ee44] px-5 py-2.5 text-xs font-black text-[#1c1a2e] shadow-md shadow-[#c8ee44]/20 hover:bg-[#b5da35] transition-all"
+          className={`${adminSecondaryButtonCls} w-full sm:w-auto`}
         >
-          <span>📊</span>
-          <span>Export Excel (.xlsx)</span>
+          <AdminIcon name="download" className="h-4 w-4" />
+          Export Excel
         </a>
-      </div>
+      </header>
 
-      {/* Toolbar Filter Maglo Style */}
-      <form
-        method="get"
-        className="grid grid-cols-1 gap-3 rounded-3xl bg-white p-4 shadow-sm border border-slate-200/80 sm:grid-cols-4"
-      >
-        <div className="sm:col-span-1">
-          <input
-            name="q"
-            defaultValue={q}
-            placeholder="🔍 Cari nama / nomor..."
-            className={inputCls}
-          />
-        </div>
-        <div>
-          <select name="verifikasi" defaultValue={verifikasi ?? ""} className={inputCls}>
-            <option value="">Semua Status Verifikasi</option>
-            {STATUS_VERIFIKASI.map((s) => (
-              <option key={s} value={s}>
-                {LABEL_VERIFIKASI[s]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <select name="penerimaan" defaultValue={penerimaan ?? ""} className={inputCls}>
-            <option value="">Semua Status Penerimaan</option>
-            {STATUS_PENERIMAAN.map((s) => (
-              <option key={s} value={s}>
-                {LABEL_PENERIMAAN[s]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="flex-1 rounded-2xl bg-[#1c1a2e] py-2.5 text-xs font-bold text-white hover:bg-[#282541] transition-all shadow-sm">
-            Terapkan Filter
-          </button>
-          {(q || verifikasi || penerimaan) && (
-            <Link
-              href="/admin/pendaftar"
-              className="rounded-2xl border border-slate-300 px-3.5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors"
-              title="Reset Filter"
-            >
-              🔄
-            </Link>
-          )}
-        </div>
-      </form>
+      <AdminCard className="p-4 sm:p-5">
+        <form method="get" className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(190px,1fr)_minmax(190px,1fr)_auto] lg:items-end">
+          <div className="space-y-1.5">
+            <label htmlFor="pendaftar-search" className="block text-sm font-semibold text-[#101820]">
+              Cari nama atau nomor pendaftaran
+            </label>
+            <input
+              id="pendaftar-search"
+              name="q"
+              defaultValue={q}
+              placeholder="Masukkan nama atau nomor"
+              className={adminInputCls}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="status-verifikasi" className="block text-sm font-semibold text-[#101820]">
+              Status verifikasi
+            </label>
+            <select id="status-verifikasi" name="verifikasi" defaultValue={verifikasi ?? ""} className={adminInputCls}>
+              <option value="">Semua status</option>
+              {STATUS_VERIFIKASI.map((status) => (
+                <option key={status} value={status}>
+                  {LABEL_VERIFIKASI[status]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="status-penerimaan" className="block text-sm font-semibold text-[#101820]">
+              Status penerimaan
+            </label>
+            <select id="status-penerimaan" name="penerimaan" defaultValue={penerimaan ?? ""} className={adminInputCls}>
+              <option value="">Semua status</option>
+              {STATUS_PENERIMAAN.map((status) => (
+                <option key={status} value={status}>
+                  {LABEL_PENERIMAAN[status]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" className={`${adminPrimaryButtonCls} flex-1 lg:flex-none`}>
+              Terapkan Filter
+            </button>
+            {hasFilters && (
+              <Link href="/admin/pendaftar" className={`${adminSecondaryButtonCls} flex-1 lg:flex-none`}>
+                Hapus Filter
+              </Link>
+            )}
+          </div>
+        </form>
+      </AdminCard>
 
-      {/* Kartu Khusus Layar Mobile (<768px) */}
-      <div className="space-y-3 md:hidden">
-        {(daftar ?? []).map((p) => (
-          <Link
-            key={p.id}
-            href={`/admin/pendaftar/${p.id}`}
-            className="block rounded-3xl bg-white p-5 shadow-sm border border-slate-200/80 hover:border-[#c8ee44] transition-all"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-black text-[#1c1a2e]">
-                {p.nomor_pendaftaran}
-              </span>
-              <span className="text-[11px] font-semibold text-slate-400">
-                {new Date(p.created_at).toLocaleDateString("id-ID")}
-              </span>
+      {applicants.length > 0 ? (
+        <>
+          <div className="space-y-3 md:hidden">
+            {applicants.map((applicant) => (
+              <AdminCard key={applicant.id} className="overflow-hidden">
+                <Link
+                  href={`/admin/pendaftar/${applicant.id}`}
+                  className="block min-h-11 p-5 transition-colors hover:bg-[#F6F7F5] focus:outline-none focus:ring-4 focus:ring-inset focus:ring-[#00AA13]/15"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-mono text-xs font-semibold text-[#667085]">{applicant.nomor_pendaftaran}</p>
+                      <p className="mt-1 text-base font-semibold text-[#101820]">{applicant.nama_lengkap}</p>
+                    </div>
+                    <span className="shrink-0 text-xs text-[#667085]">{formatDate(applicant.created_at)}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-[#667085]">WA: {applicant.no_whatsapp}</p>
+                  <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                    <AdminBadge tone={VERIFICATION_TONE[applicant.status_verifikasi as StatusVerifikasi]}>
+                      {LABEL_VERIFIKASI[applicant.status_verifikasi as StatusVerifikasi]}
+                    </AdminBadge>
+                    <AdminBadge tone={ACCEPTANCE_TONE[applicant.status_penerimaan as StatusPenerimaan]}>
+                      {LABEL_PENERIMAAN[applicant.status_penerimaan as StatusPenerimaan]}
+                    </AdminBadge>
+                  </div>
+                  <span className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-[#00880F]">
+                    Lihat detail
+                    <AdminIcon name="arrow-right" className="h-4 w-4" />
+                  </span>
+                </Link>
+              </AdminCard>
+            ))}
+          </div>
+
+          <AdminCard className="hidden overflow-hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[850px] text-left text-sm">
+                <thead className="bg-[#F6F7F5] text-xs font-semibold text-[#667085]">
+                  <tr>
+                    <th className="px-5 py-3 sm:px-6">No. Pendaftaran</th>
+                    <th className="px-5 py-3">Nama Lengkap</th>
+                    <th className="px-5 py-3">No. WhatsApp</th>
+                    <th className="px-5 py-3">Verifikasi Berkas</th>
+                    <th className="px-5 py-3">Penerimaan</th>
+                    <th className="px-5 py-3 text-right sm:px-6">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {applicants.map((applicant) => (
+                    <tr key={applicant.id} className="h-14 transition-colors hover:bg-[#F6F7F5]">
+                      <td className="whitespace-nowrap px-5 py-2.5 font-mono text-[#667085] sm:px-6">
+                        {applicant.nomor_pendaftaran}
+                      </td>
+                      <td className="px-5 py-2.5 font-semibold text-[#101820]">{applicant.nama_lengkap}</td>
+                      <td className="whitespace-nowrap px-5 py-2.5 text-[#667085]">{applicant.no_whatsapp}</td>
+                      <td className="px-5 py-2.5">
+                        <AdminBadge tone={VERIFICATION_TONE[applicant.status_verifikasi as StatusVerifikasi]}>
+                          {LABEL_VERIFIKASI[applicant.status_verifikasi as StatusVerifikasi]}
+                        </AdminBadge>
+                      </td>
+                      <td className="px-5 py-2.5">
+                        <AdminBadge tone={ACCEPTANCE_TONE[applicant.status_penerimaan as StatusPenerimaan]}>
+                          {LABEL_PENERIMAAN[applicant.status_penerimaan as StatusPenerimaan]}
+                        </AdminBadge>
+                      </td>
+                      <td className="px-5 py-2.5 text-right sm:px-6">
+                        <Link
+                          href={`/admin/pendaftar/${applicant.id}`}
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-[#00880F] transition-colors hover:bg-[#E9F8EB] focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15"
+                        >
+                          Lihat detail
+                          <AdminIcon name="arrow-right" className="h-4 w-4" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <p className="mt-1.5 font-extrabold text-[#1c1a2e] text-base">{p.nama_lengkap}</p>
-            <p className="text-xs text-slate-500 font-medium">WA: {p.no_whatsapp}</p>
-            <div className="mt-3 flex flex-wrap gap-2 pt-3 border-t border-slate-100">
-              <Badge warna={WARNA_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}>
-                {LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}
-              </Badge>
-              <Badge warna={WARNA_PENERIMAAN[p.status_penerimaan as StatusPenerimaan]}>
-                {LABEL_PENERIMAAN[p.status_penerimaan as StatusPenerimaan]}
-              </Badge>
-            </div>
+          </AdminCard>
+        </>
+      ) : (
+        <AdminCard className="px-6 py-12 text-center sm:py-16">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F8EB] text-[#00880F]">
+            <AdminIcon name="search" className="h-6 w-6" />
+          </div>
+          <h2 className="mt-4 text-lg font-semibold text-[#101820]">Tidak ada pendaftar yang sesuai</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#667085]">
+            Ubah kata kunci atau status filter, lalu coba kembali untuk melihat pendaftar yang sesuai.
+          </p>
+          <Link href="/admin/pendaftar" className={`${adminSecondaryButtonCls} mt-5`}>
+            Hapus Filter
           </Link>
-        ))}
-      </div>
-
-      {/* Tabel Data Layar Desktop (≥768px) Maglo Style */}
-      <div className="hidden overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm md:block">
-        <table className="w-full text-xs font-medium">
-          <thead className="bg-[#1c1a2e] text-left text-[11px] font-bold uppercase tracking-wider text-slate-300">
-            <tr>
-              <th className="p-4.5">No. Pendaftaran</th>
-              <th className="p-4.5">Nama Lengkap</th>
-              <th className="p-4.5">No. WhatsApp</th>
-              <th className="p-4.5">Verifikasi Berkas</th>
-              <th className="p-4.5">Penerimaan</th>
-              <th className="p-4.5 text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {(daftar ?? []).map((p) => (
-              <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
-                <td className="p-4.5 font-mono text-xs font-black text-[#1c1a2e]">
-                  {p.nomor_pendaftaran}
-                </td>
-                <td className="p-4.5 font-bold text-[#1c1a2e]">{p.nama_lengkap}</td>
-                <td className="p-4.5 text-slate-600">{p.no_whatsapp}</td>
-                <td className="p-4.5">
-                  <Badge warna={WARNA_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}>
-                    {LABEL_VERIFIKASI[p.status_verifikasi as StatusVerifikasi]}
-                  </Badge>
-                </td>
-                <td className="p-4.5">
-                  <Badge warna={WARNA_PENERIMAAN[p.status_penerimaan as StatusPenerimaan]}>
-                    {LABEL_PENERIMAAN[p.status_penerimaan as StatusPenerimaan]}
-                  </Badge>
-                </td>
-                <td className="p-4.5 text-right">
-                  <Link
-                    href={`/admin/pendaftar/${p.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#c8ee44] px-3.5 py-1.5 text-xs font-extrabold text-[#1c1a2e] hover:bg-[#b5da35] transition-all shadow-sm"
-                  >
-                    <span>Detail</span>
-                    <span>→</span>
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {(daftar ?? []).length === 0 && (
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-12 text-center shadow-sm">
-          <p className="text-3xl">🔍</p>
-          <p className="mt-2 text-base font-black text-[#1c1a2e]">Tidak ada pendaftar yang cocok</p>
-          <p className="mt-1 text-xs font-medium text-slate-400">Coba atur ulang kata kunci pencarian atau filter status Anda.</p>
-        </div>
+        </AdminCard>
       )}
     </div>
   );
