@@ -132,6 +132,33 @@ describe("admin dashboard", () => {
     expect(source).not.toMatch(/Maglo|Wallet|Transaction|balance|spending|saved|Working Capital|Income|Expenses|VISA|\$\d/);
   });
 
+  it("uses concise operational copy and responsive dashboard work areas", () => {
+    const page = read("src/app/admin/(dasbor)/page.tsx");
+    const quickActions = read("src/components/admin/AdminQuickActions.tsx");
+    const source = `${page}\n${quickActions}`;
+
+    for (const text of [
+      "Perlu diperiksa",
+      "Pendaftar terbaru yang masih menunggu verifikasi berkas.",
+      "Belum ada berkas yang perlu diperiksa.",
+      "Semua pendaftar sudah ditindaklanjuti.",
+      "Data Pendaftar",
+      "Lihat dan kelola data calon siswa.",
+      "Unduh Data Excel",
+      "Simpan rekap pendaftaran dalam Excel.",
+      "Atur Informasi Publik",
+      "Perbarui informasi pada halaman utama.",
+    ]) {
+      expect(source).toContain(text);
+    }
+
+    expect(page).toContain("lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]");
+    expect(page).toContain('className="overflow-x-auto"');
+    expect(page).toContain("admin-display text-xl");
+    expect(quickActions).toContain("min-h-[68px]");
+    expect(quickActions).toContain("admin-display text-xl");
+  });
+
   it("fails explicitly when dashboard queries fail and keeps table actions touch-friendly", () => {
     const page = read("src/app/admin/(dasbor)/page.tsx");
 
@@ -139,7 +166,7 @@ describe("admin dashboard", () => {
     expect(page).toContain("if (countError)");
     expect(page).toContain("if (waitingApplicantsResult.error)");
     expect(page).toContain('throw new Error("Gagal memuat data dasbor. Silakan coba lagi.");');
-    expect(page).toContain('href="/admin/pendaftar?verifikasi=menunggu" className="inline-flex min-h-11');
-    expect(page).toContain('href={`/admin/pendaftar/${applicant.id}`} className="inline-flex min-h-11');
+    expect(page).toMatch(/href="\/admin\/pendaftar\?verifikasi=menunggu"\s+className="inline-flex min-h-11/);
+    expect(page).toMatch(/href=\{`\/admin\/pendaftar\/\$\{applicant\.id\}`\}\s+className="inline-flex min-h-11/);
   });
 });

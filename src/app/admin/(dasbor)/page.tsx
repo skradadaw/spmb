@@ -76,12 +76,19 @@ export default async function AdminHome() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <section className="overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,32,0.04)]" aria-labelledby="pendaftar-menunggu-title">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 px-5 py-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 px-5 py-5 sm:px-6">
             <div>
-              <h2 id="pendaftar-menunggu-title" className="admin-display text-lg text-[#101820]">Pendaftar menunggu verifikasi</h2>
-              <p className="mt-1 text-sm text-[#667085]">Lima pendaftar terbaru yang membutuhkan pemeriksaan berkas.</p>
+              <h2 id="pendaftar-menunggu-title" className="admin-display text-xl font-bold tracking-[-0.015em] text-[#101820]">
+                Perlu diperiksa
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-[#667085]">
+                Pendaftar terbaru yang masih menunggu verifikasi berkas.
+              </p>
             </div>
-            <Link href="/admin/pendaftar?verifikasi=menunggu" className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] hover:underline focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15">
+            <Link
+              href="/admin/pendaftar?verifikasi=menunggu"
+              className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] hover:underline focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15"
+            >
               Lihat semua
             </Link>
           </div>
@@ -100,7 +107,7 @@ export default async function AdminHome() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {(waitingApplicants ?? []).map((applicant) => (
-                    <tr key={applicant.id} className="transition-colors hover:bg-[#F6F7F5]">
+                    <tr key={applicant.id} className="h-16 transition-colors hover:bg-[#F6F7F5]">
                       <td className="px-5 py-4 font-semibold text-[#101820] sm:px-6">{applicant.nama_lengkap}</td>
                       <td className="px-5 py-4 font-mono text-xs text-[#667085]">{applicant.nomor_pendaftaran}</td>
                       <td className="px-5 py-4 text-[#667085]">{applicant.asal_tk || "-"}</td>
@@ -108,7 +115,10 @@ export default async function AdminHome() {
                         {new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(applicant.created_at))}
                       </td>
                       <td className="px-5 py-4 text-right sm:px-6">
-                        <Link href={`/admin/pendaftar/${applicant.id}`} className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15">
+                        <Link
+                          href={`/admin/pendaftar/${applicant.id}`}
+                          className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15"
+                        >
                           Detail
                         </Link>
                       </td>
@@ -118,9 +128,9 @@ export default async function AdminHome() {
               </table>
             </div>
           ) : (
-            <div className="px-6 py-10 text-center">
-              <p className="font-semibold text-[#101820]">Tidak ada pendaftar yang menunggu verifikasi.</p>
-              <p className="mt-1 text-sm text-[#667085]">Semua berkas yang masuk sudah ditindaklanjuti.</p>
+            <div className="px-6 py-12 text-center">
+              <p className="font-semibold text-[#101820]">Belum ada berkas yang perlu diperiksa.</p>
+              <p className="mt-1 text-sm text-[#667085]">Semua pendaftar sudah ditindaklanjuti.</p>
             </div>
           )}
         </section>
