@@ -34,7 +34,9 @@ describe("admin login", () => {
     const page = read("src/app/admin/login/page.tsx");
     const form = read("src/components/admin/LoginForm.tsx");
     expect(page).toContain("SD Plus 3 Al-Muhajirin");
-    expect(page).toContain("Jalur Pendaftaran Siswa");
+    expect(page).toContain("Portal Penerimaan Siswa Baru");
+    expect(page).toContain('src="/logo.webp"');
+    expect(page).not.toContain("Jalur Pendaftaran Siswa");
     expect(page).toContain("rounded-[20px]");
     expect(page).not.toContain("rounded-[24px]");
     expect(form).toContain("Masuk ke Dasbor");
