@@ -100,3 +100,17 @@ describe("authenticated admin shell", () => {
     expect(sidebar).toContain("setMobileOpen(false)");
   });
 });
+
+describe("admin dashboard", () => {
+  it("shows only real SPMB metrics and actions", () => {
+    const files = [
+      "src/app/admin/(dasbor)/page.tsx",
+      "src/components/admin/EnrollmentJourney.tsx",
+      "src/components/admin/AdminStatCard.tsx",
+      "src/components/admin/AdminQuickActions.tsx",
+    ];
+    const source = files.map(read).join("\n");
+    for (const text of ["Total Pendaftar", "Menunggu Verifikasi", "Diterima", "Jalur Siswa", "Perlu Ditindaklanjuti", "Export Excel", "Kelola Konten"]) expect(source).toContain(text);
+    expect(source).not.toMatch(/Maglo|Wallet|Transaction|balance|spending|saved|Working Capital|Income|Expenses|VISA|\$\d/);
+  });
+});
