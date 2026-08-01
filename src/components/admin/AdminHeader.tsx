@@ -15,7 +15,7 @@ export default function AdminHeader({ mobileOpen, setMobileOpen, menuTriggerRef 
 
   function getTitle() {
     if (pathname === "/admin") return "Dasbor";
-    if (pathname.startsWith("/admin/pendaftar/export")) return "Export Data";
+    if (pathname.startsWith("/admin/pendaftar/export")) return "Ekspor Data Excel";
     if (pathname.startsWith("/admin/pendaftar/")) return "Detail Pendaftar";
     if (pathname.startsWith("/admin/pendaftar")) return "Daftar Pendaftar";
     if (pathname.startsWith("/admin/konten")) return "Kelola Konten";

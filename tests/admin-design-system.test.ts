@@ -99,6 +99,13 @@ describe("authenticated admin shell", () => {
     expect(sidebar).toContain("desktopMediaQuery.removeEventListener");
     expect(sidebar).toContain("setMobileOpen(false)");
   });
+
+  it("uses the approved Indonesian title for the Excel export route", () => {
+    const header = read("src/components/admin/AdminHeader.tsx");
+
+    expect(header).toContain('return "Ekspor Data Excel"');
+    expect(header).not.toContain('return "Export Data"');
+  });
 });
 
 describe("admin dashboard", () => {
@@ -169,14 +176,30 @@ describe("admin dashboard", () => {
     expect(page).toMatch(/href="\/admin\/pendaftar\?verifikasi=menunggu"\s+className="inline-flex min-h-11/);
     expect(page).toMatch(/href=\{`\/admin\/pendaftar\/\$\{applicant\.id\}`\}\s+className="inline-flex min-h-11/);
   });
+
+  it("uses a loading fallback that mirrors the dashboard metrics and two-column work area", () => {
+    const loading = read("src/app/admin/(dasbor)/loading.tsx");
+
+    expect(loading).toContain("admin-scope");
+    expect(loading).toContain('aria-label="Memuat dasbor admin"');
+    expect(loading).toContain("animate-pulse");
+    expect(loading).toContain("lg:grid-cols-3");
+    expect(loading.match(/metric-[123]/g)).toHaveLength(3);
+    expect(loading).toContain("lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]");
+    expect(loading).toContain("overflow-x-auto");
+    expect(loading).toContain("quick-action-1");
+    expect(loading).not.toContain("lg:grid-cols-2");
+    expect(loading).not.toMatch(/EnrollmentJourney|Jalur Siswa/);
+  });
 });
 
 describe("admin applicant list", () => {
   it("uses the shared admin controls and meaningful responsive copy", () => {
     const source = read("src/app/admin/(dasbor)/pendaftar/page.tsx");
-    for (const text of ["Pendaftar", "Cari nama atau nomor pendaftaran", "Terapkan Filter", "Hapus Filter", "Export Excel", "Lihat detail", "Tidak ada pendaftar yang sesuai"]) expect(source).toContain(text);
+    for (const text of ["Pendaftar", "Cari nama atau nomor pendaftaran", "Terapkan Filter", "Hapus Filter", "Unduh Data Excel", "Lihat detail", "Tidak ada pendaftar yang sesuai"]) expect(source).toContain(text);
     expect(source).toContain("adminInputCls");
     expect(source).toContain("AdminBadge");
+    expect(source).not.toContain("Export Excel");
     expect(source).not.toMatch(/Maglo|dark:|📊|🔍|🔄|text-\[#c8ee44\]/);
   });
 
@@ -195,13 +218,32 @@ describe("admin applicant list", () => {
       'paramExport.set("penerimaan", penerimaan);',
     ]) expect(source).toContain(setter);
 
-    const emptyState = source.slice(source.indexOf("Tidak ada pendaftar yang sesuai"));
-    expect(emptyState).toContain('href="/admin/pendaftar"');
+    expect(source).toMatch(/hasFilters\s*\?\s*\([\s\S]*Tidak ada pendaftar yang sesuai[\s\S]*href="\/admin\/pendaftar"[\s\S]*\)\s*:\s*\([\s\S]*Belum ada data pendaftar/);
   });
 
   it("uses the admin display type for the empty-state heading", () => {
     const source = read("src/app/admin/(dasbor)/pendaftar/page.tsx");
     expect(source).toMatch(/<h2 className="[^"]*admin-display[^"]*font-bold[^"]*">Tidak ada pendaftar yang sesuai<\/h2>/);
+  });
+
+  it("throws a recovery error instead of treating a failed list query as empty", () => {
+    const source = read("src/app/admin/(dasbor)/pendaftar/page.tsx");
+
+    expect(source).toMatch(/const\s*\{\s*data:\s*daftar,\s*error:\s*daftarError\s*\}\s*=\s*await query/);
+    expect(source).toMatch(/if\s*\(daftarError\)\s*\{?\s*throw new Error\("Gagal memuat daftar pendaftar\. Silakan coba lagi\."\)/);
+  });
+
+  it("has its own accessible list-shaped loading fallback", () => {
+    const path = "src/app/admin/(dasbor)/pendaftar/loading.tsx";
+    expect(existsSync(resolve(path))).toBe(true);
+    const loading = read(path);
+
+    expect(loading).toContain("admin-scope");
+    expect(loading).toContain("animate-pulse");
+    expect(loading).toContain('aria-label="Memuat daftar pendaftar"');
+    expect(loading).toContain("md:hidden");
+    expect(loading).toMatch(/className="[^"]*\bhidden\b[^"]*\boverflow-hidden\b[^"]*\bmd:block\b/);
+    expect(loading).not.toContain("lg:grid-cols-3");
   });
 });
 
@@ -224,6 +266,48 @@ describe("admin applicant detail", () => {
     }
 
     expect(source).not.toMatch(/dark:|[\u{1F300}-\u{1FAFF}]/u);
+  });
+
+  it("distinguishes failed applicant and document queries from genuine missing data", () => {
+    const page = read("src/app/admin/(dasbor)/pendaftar/[id]/page.tsx");
+
+    expect(page).toMatch(/const\s*\{\s*data:\s*pendaftar,\s*error:\s*pendaftarError\s*\}/);
+    expect(page).toContain('throw new Error("Gagal memuat detail pendaftar. Silakan coba lagi.");');
+    expect(page.indexOf("if (pendaftarError)")).toBeLessThan(page.indexOf("if (!pendaftar) notFound()"));
+    expect(page).toMatch(/const\s*\{\s*data:\s*dokumen,\s*error:\s*dokumenError\s*\}/);
+    expect(page).toContain('throw new Error("Gagal memuat dokumen pendaftar. Silakan coba lagi.");');
+  });
+
+  it("has its own accessible detail-shaped loading fallback", () => {
+    const path = "src/app/admin/(dasbor)/pendaftar/[id]/loading.tsx";
+    expect(existsSync(resolve(path))).toBe(true);
+    const loading = read(path);
+
+    expect(loading).toContain("admin-scope");
+    expect(loading).toContain("animate-pulse");
+    expect(loading).toContain('aria-label="Memuat detail pendaftar"');
+    expect(loading).toContain("lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]");
+    expect(loading).not.toContain("lg:grid-cols-3");
+  });
+
+  it("submits an immutable status snapshot and always settles rejected actions", () => {
+    const form = read("src/components/admin/StatusForm.tsx");
+
+    expect(form).toMatch(/const\s+submitted\s*=\s*\{\s*status_verifikasi:\s*verifikasi,\s*status_penerimaan:\s*penerimaan,\s*catatan_admin:\s*catatan,?\s*\}/);
+    expect(form).toContain("needsStatusConfirmation(savedPenerimaan, submitted.status_penerimaan)");
+    expect(form).toMatch(/try\s*\{[\s\S]*await updateStatusPendaftar\(awal\.id, submitted\)[\s\S]*setSavedPenerimaan\(submitted\.status_penerimaan\)[\s\S]*\}\s*catch\s*\{[\s\S]*Gagal menyimpan\.[\s\S]*\}\s*finally\s*\{[\s\S]*setMemuat\(false\)/);
+    expect(form).toContain("Perubahan pendaftar berhasil disimpan.");
+  });
+
+  it("locks every status control while a save is in flight", () => {
+    const form = read("src/components/admin/StatusForm.tsx");
+    const selects = [...form.matchAll(/<select\b[\s\S]*?<\/select>/g)].map((match) => match[0]);
+    const textareas = [...form.matchAll(/<textarea\b[\s\S]*?\/>/g)].map((match) => match[0]);
+
+    expect(selects).toHaveLength(2);
+    for (const select of selects) expect(select).toContain("disabled={memuat}");
+    expect(textareas).toHaveLength(1);
+    expect(textareas[0]).toContain("disabled={memuat}");
   });
 });
 
@@ -253,6 +337,34 @@ describe("admin content editors", () => {
 
     expect(kontakEditor).toMatch(/<input(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
     expect(kontakEditor).toMatch(/<textarea(?:(?!\/>)[\s\S])*disabled=\{memuat\}/);
+  });
+
+  it("clears saved feedback whenever list or contact content becomes dirty", () => {
+    const listEditor = read("src/components/admin/ListEditor.tsx");
+    const kontakEditor = read("src/components/admin/KontakEditor.tsx");
+    const listMutations = [
+      listEditor.slice(listEditor.indexOf("function ubah("), listEditor.indexOf("function tambah(")),
+      listEditor.slice(listEditor.indexOf("function tambah("), listEditor.indexOf("function hapus(")),
+      listEditor.slice(listEditor.indexOf("function hapus("), listEditor.indexOf("async function simpan(")),
+    ];
+    const contactMutation = kontakEditor.slice(kontakEditor.indexOf("function ubah("), kontakEditor.indexOf("async function simpan("));
+
+    for (const mutation of [...listMutations, contactMutation]) {
+      expect(mutation).toContain("setPesan(null)");
+      expect(mutation.indexOf("setPesan(null)")).toBeLessThan(mutation.indexOf("setDirty(true)"));
+    }
+  });
+
+  it("has its own accessible form-shaped loading fallback", () => {
+    const path = "src/app/admin/(dasbor)/konten/loading.tsx";
+    expect(existsSync(resolve(path))).toBe(true);
+    const loading = read(path);
+
+    expect(loading).toContain("admin-scope");
+    expect(loading).toContain("animate-pulse");
+    expect(loading).toContain('aria-label="Memuat pengelolaan konten"');
+    expect(loading).toContain("sm:grid-cols-2");
+    expect(loading).not.toContain("lg:grid-cols-3");
   });
 });
 

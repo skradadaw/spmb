@@ -30,25 +30,31 @@ export default function StatusForm(awal: Props) {
 
   async function simpan(e: React.FormEvent) {
     e.preventDefault();
+    const submitted = {
+      status_verifikasi: verifikasi,
+      status_penerimaan: penerimaan,
+      catatan_admin: catatan,
+    };
     if (
-      needsStatusConfirmation(savedPenerimaan, penerimaan) &&
+      needsStatusConfirmation(savedPenerimaan, submitted.status_penerimaan) &&
       !window.confirm("Tetapkan calon siswa sebagai tidak diterima?")
     ) return;
 
     setMemuat(true);
     setPesan(null);
-    const hasil = await updateStatusPendaftar(awal.id, {
-      status_verifikasi: verifikasi,
-      status_penerimaan: penerimaan,
-      catatan_admin: catatan,
-    });
-    setMemuat(false);
-    if (hasil.ok) setSavedPenerimaan(penerimaan);
-    setPesan(
-      hasil.ok
-        ? { ok: true, teks: "Perubahan pendaftar berhasil disimpan." }
-        : { ok: false, teks: hasil.error ?? "Gagal menyimpan." }
-    );
+    try {
+      const hasil = await updateStatusPendaftar(awal.id, submitted);
+      if (hasil.ok) {
+        setSavedPenerimaan(submitted.status_penerimaan);
+        setPesan({ ok: true, teks: "Perubahan pendaftar berhasil disimpan." });
+      } else {
+        setPesan({ ok: false, teks: hasil.error ?? "Gagal menyimpan." });
+      }
+    } catch {
+      setPesan({ ok: false, teks: "Gagal menyimpan." });
+    } finally {
+      setMemuat(false);
+    }
   }
 
   return (
@@ -65,7 +71,7 @@ export default function StatusForm(awal: Props) {
 
       <div className="space-y-4">
       <AdminField id="status-verifikasi" label="Status Verifikasi Berkas">
-        <select id="status-verifikasi" className={adminInputCls} value={verifikasi} onChange={(e) => setVerifikasi(e.target.value)}>
+        <select id="status-verifikasi" className={adminInputCls} value={verifikasi} onChange={(e) => setVerifikasi(e.target.value)} disabled={memuat}>
           {STATUS_VERIFIKASI.map((s) => (
             <option key={s} value={s}>{LABEL_VERIFIKASI[s]}</option>
           ))}
@@ -73,7 +79,7 @@ export default function StatusForm(awal: Props) {
       </AdminField>
 
       <AdminField id="status-penerimaan" label="Status Penerimaan">
-        <select id="status-penerimaan" className={adminInputCls} value={penerimaan} onChange={(e) => setPenerimaan(e.target.value)}>
+        <select id="status-penerimaan" className={adminInputCls} value={penerimaan} onChange={(e) => setPenerimaan(e.target.value)} disabled={memuat}>
           {STATUS_PENERIMAAN.map((s) => (
             <option key={s} value={s}>{LABEL_PENERIMAAN[s]}</option>
           ))}
@@ -88,6 +94,7 @@ export default function StatusForm(awal: Props) {
           value={catatan}
           onChange={(e) => setCatatan(e.target.value)}
           placeholder="Contoh: Foto KK kurang jelas, silakan hubungi panitia..."
+          disabled={memuat}
         />
       </AdminField>
       </div>

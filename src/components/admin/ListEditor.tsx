@@ -30,16 +30,19 @@ export default function ListEditor({ judul, kontenKey, fields, awal, icon }: Pro
 
   function ubah(i: number, name: string, value: string) {
     setBaris((b) => b.map((row, j) => (j === i ? { ...row, [name]: value } : row)));
+    setPesan(null);
     setDirty(true);
   }
 
   function tambah() {
     setBaris((b) => [...b, Object.fromEntries(fields.map((f) => [f.name, ""]))]);
+    setPesan(null);
     setDirty(true);
   }
 
   function hapus(i: number) {
     setBaris((b) => b.filter((_, j) => j !== i));
+    setPesan(null);
     setDirty(true);
   }
 

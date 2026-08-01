@@ -15,6 +15,7 @@ export default function KontakEditor({ awal }: { awal: Kontak }) {
 
   function ubah(name: keyof Kontak, value: string) {
     setKontak((current) => ({ ...current, [name]: value }));
+    setPesan(null);
     setDirty(true);
   }
 

@@ -31,19 +31,25 @@ export default async function DetailPendaftar({
   const { id } = await params;
   const supabase = createAdminClient();
 
-  const { data: pendaftar } = await supabase
+  const { data: pendaftar, error: pendaftarError } = await supabase
     .from("pendaftar")
     .select("*")
     .eq("id", id)
     .maybeSingle<Pendaftar>();
 
+  if (pendaftarError) {
+    throw new Error("Gagal memuat detail pendaftar. Silakan coba lagi.");
+  }
   if (!pendaftar) notFound();
 
-  const { data: dokumen } = await supabase
+  const { data: dokumen, error: dokumenError } = await supabase
     .from("dokumen")
     .select("*")
     .eq("pendaftar_id", id)
     .returns<Dokumen[]>();
+  if (dokumenError) {
+    throw new Error("Gagal memuat dokumen pendaftar. Silakan coba lagi.");
+  }
 
   // Signed URL berumur pendek untuk preview dokumen
   const dokumenDenganUrl = await Promise.all(

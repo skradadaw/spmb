@@ -56,7 +56,10 @@ export default async function PendaftarPage({
   if (q) query = query.or(`nama_lengkap.ilike.%${q}%,nomor_pendaftaran.ilike.%${q}%`);
   if (verifikasi) query = query.eq("status_verifikasi", verifikasi);
   if (penerimaan) query = query.eq("status_penerimaan", penerimaan);
-  const { data: daftar } = await query;
+  const { data: daftar, error: daftarError } = await query;
+  if (daftarError) {
+    throw new Error("Gagal memuat daftar pendaftar. Silakan coba lagi.");
+  }
 
   const paramExport = new URLSearchParams();
   if (q) paramExport.set("q", q);
@@ -82,7 +85,7 @@ export default async function PendaftarPage({
           className={`${adminSecondaryButtonCls} w-full sm:w-auto`}
         >
           <AdminIcon name="download" className="h-4 w-4" />
-          Export Excel
+          Unduh Data Excel
         </a>
       </header>
 
@@ -220,7 +223,7 @@ export default async function PendaftarPage({
             </div>
           </AdminCard>
         </>
-      ) : (
+      ) : hasFilters ? (
         <AdminCard className="px-6 py-12 text-center sm:py-16">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F8EB] text-[#00880F]">
             <AdminIcon name="search" className="h-6 w-6" />
@@ -232,6 +235,16 @@ export default async function PendaftarPage({
           <Link href="/admin/pendaftar" className={`${adminSecondaryButtonCls} mt-5`}>
             Hapus Filter
           </Link>
+        </AdminCard>
+      ) : (
+        <AdminCard className="px-6 py-12 text-center sm:py-16">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F8EB] text-[#00880F]">
+            <AdminIcon name="users" className="h-6 w-6" />
+          </div>
+          <h2 className="admin-display mt-4 text-lg font-bold text-[#101820]">Belum ada data pendaftar</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#667085]">
+            Data calon siswa yang mendaftar akan tampil di halaman ini.
+          </p>
         </AdminCard>
       )}
     </div>
