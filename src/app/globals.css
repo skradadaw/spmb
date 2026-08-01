@@ -32,6 +32,19 @@ html.dark body {
   color: var(--maglo-text-dark);
 }
 
+.admin-login-input {
+  color: var(--maglo-lime);
+  caret-color: var(--maglo-lime);
+}
+
+.admin-login-input:-webkit-autofill,
+.admin-login-input:-webkit-autofill:hover,
+.admin-login-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--maglo-lime);
+  -webkit-box-shadow: 0 0 0 1000px var(--maglo-canvas-dark) inset;
+  caret-color: var(--maglo-lime);
+}
+
 @media print {
   header, footer, nav, button, .no-print {
     display: none !important;

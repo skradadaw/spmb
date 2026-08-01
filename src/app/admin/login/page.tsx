@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
                 type="email"
                 name="email"
                 required
-                className={`${inputCls} border-[#282541] bg-[#1c1a2e] text-white placeholder-slate-500 focus:border-[#c8ee44] focus:ring-[#c8ee44]/20`}
+                className={`${inputCls} admin-login-input border-[#282541] bg-[#1c1a2e] placeholder-slate-500 focus:border-[#c8ee44] focus:ring-[#c8ee44]/20`}
                 placeholder="admin@sdplus3almuhajirin.sch.id"
               />
             </Field>
@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
                 type="password"
                 name="password"
                 required
-                className={`${inputCls} border-[#282541] bg-[#1c1a2e] text-white placeholder-slate-500 focus:border-[#c8ee44] focus:ring-[#c8ee44]/20`}
+                className={`${inputCls} admin-login-input border-[#282541] bg-[#1c1a2e] placeholder-slate-500 focus:border-[#c8ee44] focus:ring-[#c8ee44]/20`}
                 placeholder="••••••••"
               />
             </Field>
