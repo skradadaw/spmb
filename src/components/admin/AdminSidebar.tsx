@@ -39,9 +39,6 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen, menuTriggerRef
       return;
     }
 
-    const drawer = drawerRef.current;
-    if (!drawer) return;
-
     closeButtonRef.current?.focus();
     wasMobileOpenRef.current = true;
 
@@ -53,6 +50,9 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen, menuTriggerRef
       }
 
       if (event.key !== "Tab") return;
+
+      const drawer = drawerRef.current;
+      if (!drawer) return;
 
       const focusableElements = Array.from(
         drawer.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'),
