@@ -113,4 +113,15 @@ describe("admin dashboard", () => {
     for (const text of ["Total Pendaftar", "Menunggu Verifikasi", "Diterima", "Jalur Siswa", "Perlu Ditindaklanjuti", "Export Excel", "Kelola Konten"]) expect(source).toContain(text);
     expect(source).not.toMatch(/Maglo|Wallet|Transaction|balance|spending|saved|Working Capital|Income|Expenses|VISA|\$\d/);
   });
+
+  it("fails explicitly when dashboard queries fail and keeps table actions touch-friendly", () => {
+    const page = read("src/app/admin/(dasbor)/page.tsx");
+
+    expect(page).toContain("const countError = queryResults.find((result) => result.error)?.error;");
+    expect(page).toContain("if (countError)");
+    expect(page).toContain("if (waitingApplicantsResult.error)");
+    expect(page).toContain('throw new Error("Gagal memuat data dasbor. Silakan coba lagi.");');
+    expect(page).toContain('href="/admin/pendaftar?verifikasi=menunggu" className="inline-flex min-h-11');
+    expect(page).toContain('href={`/admin/pendaftar/${applicant.id}`} className="inline-flex min-h-11');
+  });
 });

@@ -8,13 +8,19 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminHome() {
   const supabase = createAdminClient();
-  const [totalResult, verifiedResult, decidedResult, acceptedResult, waitingResult] = await Promise.all([
+  const queryResults = await Promise.all([
     supabase.from("pendaftar").select("id", { count: "exact", head: true }),
     supabase.from("pendaftar").select("id", { count: "exact", head: true }).eq("status_verifikasi", "terverifikasi"),
     supabase.from("pendaftar").select("id", { count: "exact", head: true }).neq("status_penerimaan", "menunggu"),
     supabase.from("pendaftar").select("id", { count: "exact", head: true }).eq("status_penerimaan", "diterima"),
     supabase.from("pendaftar").select("id", { count: "exact", head: true }).eq("status_verifikasi", "menunggu"),
   ]);
+  const countError = queryResults.find((result) => result.error)?.error;
+  if (countError) {
+    throw new Error("Gagal memuat data dasbor. Silakan coba lagi.");
+  }
+
+  const [totalResult, verifiedResult, decidedResult, acceptedResult, waitingResult] = queryResults;
 
   const total = totalResult.count ?? 0;
   const verified = verifiedResult.count ?? 0;
@@ -22,12 +28,16 @@ export default async function AdminHome() {
   const accepted = acceptedResult.count ?? 0;
   const waiting = waitingResult.count ?? 0;
 
-  const { data: waitingApplicants } = await supabase
+  const waitingApplicantsResult = await supabase
     .from("pendaftar")
     .select("id, nomor_pendaftaran, nama_lengkap, asal_tk, created_at")
     .eq("status_verifikasi", "menunggu")
     .order("created_at", { ascending: false })
     .limit(5);
+  if (waitingApplicantsResult.error) {
+    throw new Error("Gagal memuat data dasbor. Silakan coba lagi.");
+  }
+  const waitingApplicants = waitingApplicantsResult.data;
 
   return (
     <div className="space-y-8">
@@ -50,7 +60,7 @@ export default async function AdminHome() {
               <h2 id="pendaftar-menunggu-title" className="admin-display text-lg text-[#101820]">Pendaftar menunggu verifikasi</h2>
               <p className="mt-1 text-sm text-[#667085]">Lima pendaftar terbaru yang membutuhkan pemeriksaan berkas.</p>
             </div>
-            <Link href="/admin/pendaftar?verifikasi=menunggu" className="text-sm font-semibold text-[#00880F] hover:underline focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15">
+            <Link href="/admin/pendaftar?verifikasi=menunggu" className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] hover:underline focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15">
               Lihat semua
             </Link>
           </div>
@@ -77,7 +87,7 @@ export default async function AdminHome() {
                         {new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(applicant.created_at))}
                       </td>
                       <td className="px-5 py-4 text-right sm:px-6">
-                        <Link href={`/admin/pendaftar/${applicant.id}`} className="inline-flex min-h-9 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15">
+                        <Link href={`/admin/pendaftar/${applicant.id}`} className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-[#00880F] hover:bg-[#E9F8EB] focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15">
                           Detail
                         </Link>
                       </td>
