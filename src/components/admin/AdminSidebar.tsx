@@ -26,9 +26,16 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen, menuTriggerRef
   const wasMobileOpenRef = useRef(false);
 
   useEffect(() => {
+    const desktopMediaQuery = window.matchMedia("(min-width: 768px)");
+
     if (!mobileOpen) {
-      if (wasMobileOpenRef.current) menuTriggerRef.current?.focus();
+      if (wasMobileOpenRef.current && !desktopMediaQuery.matches) menuTriggerRef.current?.focus();
       wasMobileOpenRef.current = false;
+      return;
+    }
+
+    if (desktopMediaQuery.matches) {
+      setMobileOpen(false);
       return;
     }
 
@@ -67,8 +74,16 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen, menuTriggerRef
       }
     }
 
+    function handleDesktopBreakpoint(event: MediaQueryListEvent) {
+      if (event.matches) setMobileOpen(false);
+    }
+
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    desktopMediaQuery.addEventListener("change", handleDesktopBreakpoint);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      desktopMediaQuery.removeEventListener("change", handleDesktopBreakpoint);
+    };
   }, [menuTriggerRef, mobileOpen, setMobileOpen]);
 
   function isActive(href: string) {
@@ -149,6 +164,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen, menuTriggerRef
             aria-label="Menu navigasi"
             aria-modal="true"
             className="relative h-full w-[260px] max-w-[85vw] shadow-xl"
+            id="admin-mobile-navigation"
             ref={drawerRef}
             role="dialog"
           >

@@ -5,11 +5,12 @@ import { usePathname } from "next/navigation";
 import AdminIcon from "./AdminIcon";
 
 type Props = {
+  mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
   menuTriggerRef: RefObject<HTMLButtonElement | null>;
 };
 
-export default function AdminHeader({ setMobileOpen, menuTriggerRef }: Props) {
+export default function AdminHeader({ mobileOpen, setMobileOpen, menuTriggerRef }: Props) {
   const pathname = usePathname();
 
   function getTitle() {
@@ -28,6 +29,8 @@ export default function AdminHeader({ setMobileOpen, menuTriggerRef }: Props) {
           type="button"
           onClick={() => setMobileOpen(true)}
           ref={menuTriggerRef}
+          aria-controls="admin-mobile-navigation"
+          aria-expanded={mobileOpen}
           className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-[#101820] hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15 md:hidden"
           aria-label="Buka menu navigasi"
         >

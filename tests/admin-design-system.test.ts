@@ -83,4 +83,20 @@ describe("authenticated admin shell", () => {
     expect(sidebar).toContain("min-h-11 min-w-11");
     expect(icons).toContain('"close"');
   });
+
+  it("resets the mobile drawer at the desktop breakpoint and connects its trigger", () => {
+    const layout = read("src/app/admin/(dasbor)/layout.tsx");
+    const sidebar = read("src/components/admin/AdminSidebar.tsx");
+    const header = read("src/components/admin/AdminHeader.tsx");
+
+    expect(layout).toContain("mobileOpen={mobileOpen}");
+    expect(header).toContain("mobileOpen: boolean");
+    expect(header).toContain("aria-expanded={mobileOpen}");
+    expect(header).toContain('aria-controls="admin-mobile-navigation"');
+    expect(sidebar).toContain('id="admin-mobile-navigation"');
+    expect(sidebar).toContain('window.matchMedia("(min-width: 768px)")');
+    expect(sidebar).toContain("desktopMediaQuery.addEventListener");
+    expect(sidebar).toContain("desktopMediaQuery.removeEventListener");
+    expect(sidebar).toContain("setMobileOpen(false)");
+  });
 });

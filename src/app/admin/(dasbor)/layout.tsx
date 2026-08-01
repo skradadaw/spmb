@@ -17,7 +17,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       />
 
       <div className="min-w-0 flex-1">
-        <AdminHeader setMobileOpen={setMobileOpen} menuTriggerRef={menuTriggerRef} />
+        <AdminHeader
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+          menuTriggerRef={menuTriggerRef}
+        />
         <main className="mx-auto w-full max-w-[1280px] p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
