@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -105,12 +105,13 @@ describe("admin dashboard", () => {
   it("shows only real SPMB metrics and actions", () => {
     const files = [
       "src/app/admin/(dasbor)/page.tsx",
-      "src/components/admin/EnrollmentJourney.tsx",
       "src/components/admin/AdminStatCard.tsx",
       "src/components/admin/AdminQuickActions.tsx",
     ];
     const source = files.map(read).join("\n");
-    for (const text of ["Total Pendaftar", "Menunggu Verifikasi", "Diterima", "Jalur Siswa", "Perlu Ditindaklanjuti", "Export Excel", "Kelola Konten"]) expect(source).toContain(text);
+    for (const text of ["Total Pendaftar", "Menunggu Verifikasi", "Diterima", "Perlu Ditindaklanjuti", "Export Excel", "Kelola Konten"]) expect(source).toContain(text);
+    expect(source).not.toContain("EnrollmentJourney");
+    expect(existsSync(resolve("src/components/admin/EnrollmentJourney.tsx"))).toBe(false);
     expect(source).not.toMatch(/Maglo|Wallet|Transaction|balance|spending|saved|Working Capital|Income|Expenses|VISA|\$\d/);
   });
 

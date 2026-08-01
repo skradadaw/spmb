@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { AdminQuickActions } from "@/components/admin/AdminQuickActions";
 import { AdminStatCard } from "@/components/admin/AdminStatCard";
-import { EnrollmentJourney } from "@/components/admin/EnrollmentJourney";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -10,8 +9,6 @@ export default async function AdminHome() {
   const supabase = createAdminClient();
   const queryResults = await Promise.all([
     supabase.from("pendaftar").select("id", { count: "exact", head: true }),
-    supabase.from("pendaftar").select("id", { count: "exact", head: true }).eq("status_verifikasi", "terverifikasi"),
-    supabase.from("pendaftar").select("id", { count: "exact", head: true }).neq("status_penerimaan", "menunggu"),
     supabase.from("pendaftar").select("id", { count: "exact", head: true }).eq("status_penerimaan", "diterima"),
     supabase.from("pendaftar").select("id", { count: "exact", head: true }).eq("status_verifikasi", "menunggu"),
   ]);
@@ -20,11 +17,9 @@ export default async function AdminHome() {
     throw new Error("Gagal memuat data dasbor. Silakan coba lagi.");
   }
 
-  const [totalResult, verifiedResult, decidedResult, acceptedResult, waitingResult] = queryResults;
+  const [totalResult, acceptedResult, waitingResult] = queryResults;
 
   const total = totalResult.count ?? 0;
-  const verified = verifiedResult.count ?? 0;
-  const decided = decidedResult.count ?? 0;
   const accepted = acceptedResult.count ?? 0;
   const waiting = waitingResult.count ?? 0;
 
@@ -50,8 +45,6 @@ export default async function AdminHome() {
         <AdminStatCard label="Menunggu Verifikasi" value={waiting} helper="Perlu Ditindaklanjuti" icon="clock" tone="warning" />
         <AdminStatCard label="Diterima" value={accepted} helper="Calon siswa yang telah diterima" icon="check" tone="success" />
       </div>
-
-      <EnrollmentJourney total={total} terverifikasi={verified} diputuskan={decided} diterima={accepted} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <section className="overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,32,0.04)]" aria-labelledby="pendaftar-menunggu-title">
