@@ -1,75 +1,68 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/admin/login/actions";
+import AdminIcon, { type AdminIconName } from "./AdminIcon";
+import { adminDangerButtonCls } from "./styles";
 
 type Props = {
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
 };
 
+const navItems: { label: string; href: string; icon: AdminIconName }[] = [
+  { label: "Dasbor", href: "/admin", icon: "dashboard" },
+  { label: "Pendaftar", href: "/admin/pendaftar", icon: "users" },
+  { label: "Kelola Konten", href: "/admin/konten", icon: "content" },
+];
+
 export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
   const pathname = usePathname();
 
-  const navItems = [
-    { label: "Dashboard", href: "/admin", iconSvg: "/icons/dashboard.svg" },
-    { label: "Transactions", href: "/admin/pendaftar", iconSvg: "/icons/transactions.svg" },
-    { label: "Settings", href: "/admin/konten", iconSvg: "/icons/settings.svg" },
-  ];
-
   function isActive(href: string) {
-    if (href === "/admin") return pathname === "/admin";
-    return pathname.startsWith(href);
+    return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
   }
 
-  const content = (
-    <div className="flex h-full flex-col justify-between bg-[#fafafa] dark:bg-[#1c1a2e] p-6 text-[#1b212d] dark:text-white transition-colors">
+  const navigation = (
+    <div className="flex h-full flex-col bg-white p-5 text-[#101820] sm:p-6">
       <div>
-        {/* Brand Logo Maglo. Style */}
-        <div className="mb-10 flex items-center justify-between border-b border-slate-200/60 dark:border-[#282541] pb-6">
-          <Link href="/admin" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1b212d] dark:bg-[#c8ee44] font-black text-[#c8ee44] dark:text-[#1b212d] text-base shadow-sm">
-              M.
+        <div className="mb-8 flex items-start justify-between border-b border-slate-200 pb-5">
+          <Link href="/admin" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00AA13] text-sm font-extrabold text-white shadow-sm">
+              S3
             </div>
             <div>
-              <p className="text-xl font-extrabold tracking-tight text-[#1b212d] dark:text-white leading-tight">
-                Maglo<span className="text-[#29a073]">.</span>
-              </p>
-              <p className="text-[11px] font-semibold text-[#929eae] dark:text-[#78778b]">SPMB SD Plus 3</p>
+              <p className="text-sm font-bold tracking-tight">SPMB SD Plus 3</p>
+              <p className="mt-0.5 text-xs text-[#667085]">Tahun Ajaran 2027/2028</p>
             </div>
           </Link>
           <button
+            type="button"
             onClick={() => setMobileOpen(false)}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-200 dark:hover:bg-[#282541] md:hidden"
+            className="-mr-2 -mt-2 rounded-lg p-2 text-[#667085] hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15 md:hidden"
+            aria-label="Tutup menu navigasi"
           >
-            ✕
+            <span aria-hidden="true">×</span>
           </button>
         </div>
 
-        {/* Navigation Option List Maglo Style */}
-        <nav className="space-y-2">
+        <nav aria-label="Navigasi utama" className="space-y-1.5">
           {navItems.map((item) => {
             const active = isActive(item.href);
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3.5 rounded-2xl px-4 py-3.5 text-xs font-semibold transition-all ${
+                className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15 ${
                   active
-                    ? "bg-[#c8ee44] text-[#1b212d] font-bold shadow-sm"
-                    : "text-[#929eae] dark:text-[#78778b] hover:bg-slate-200/60 dark:hover:bg-[#282541] hover:text-[#1b212d] dark:hover:text-white"
+                    ? "bg-[#00AA13] text-white shadow-sm"
+                    : "text-[#667085] hover:bg-green-50 hover:text-[#00880F]"
                 }`}
               >
-                <Image
-                  src={item.iconSvg}
-                  alt={item.label}
-                  width={20}
-                  height={20}
-                  className="h-5 w-5 opacity-80"
-                />
+                <AdminIcon name={item.icon} className="h-5 w-5 shrink-0" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -77,47 +70,37 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
         </nav>
       </div>
 
-      {/* Profile & Logout Footer */}
-      <div className="border-t border-slate-200/60 dark:border-[#282541] pt-6">
-        <div className="mb-4 flex items-center gap-3 px-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/80 dark:bg-[#201e34] font-bold text-[#1b212d] dark:text-[#c8ee44] border border-slate-300/60 dark:border-[#282541]">
-            P
-          </div>
-          <div className="overflow-hidden text-xs">
-            <p className="truncate font-bold text-[#1b212d] dark:text-white">Panitia SPMB</p>
-            <p className="truncate text-[11px] font-medium text-[#929eae] dark:text-[#78778b]">admin@sdplus3almuhajirin.sch.id</p>
-          </div>
-        </div>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-[#282541] bg-white dark:bg-[#201e34] px-4 py-3 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shadow-sm"
-          >
-            <Image src="/icons/logout.svg" alt="Logout" width={18} height={18} />
-            <span>Logout</span>
-          </button>
-        </form>
-      </div>
+      <form action={logout} className="mt-auto border-t border-slate-200 pt-5">
+        <button type="submit" className={`${adminDangerButtonCls} w-full`}>
+          <AdminIcon name="logout" className="h-5 w-5" />
+          Keluar
+        </button>
+      </form>
     </div>
   );
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-slate-200/60 dark:border-[#282541] md:block">
-        {content}
+      <aside className="hidden w-[260px] shrink-0 border-r border-slate-200 bg-white md:block">
+        {navigation}
       </aside>
 
-      {/* Mobile Drawer Backdrop & Sidebar */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          <div
-            className="fixed inset-0 bg-[#1b212d]/60 backdrop-blur-sm"
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            aria-label="Tutup menu navigasi"
+            className="absolute inset-0 bg-[#101820]/40"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="relative z-10 w-72 max-w-[80vw] h-full shadow-2xl">
-            {content}
-          </div>
+          <aside
+            aria-label="Menu navigasi"
+            aria-modal="true"
+            className="relative h-full w-[260px] max-w-[85vw] shadow-xl"
+            role="dialog"
+          >
+            {navigation}
+          </aside>
         </div>
       )}
     </>

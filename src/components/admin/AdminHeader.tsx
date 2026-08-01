@@ -1,73 +1,43 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ThemeToggle from "./ThemeToggle";
+import AdminIcon from "./AdminIcon";
 
 type Props = {
   setMobileOpen: (open: boolean) => void;
-  pendingCount?: number;
 };
 
-export default function AdminHeader({ setMobileOpen, pendingCount = 0 }: Props) {
+export default function AdminHeader({ setMobileOpen }: Props) {
   const pathname = usePathname();
 
   function getTitle() {
-    if (pathname === "/admin") return "Dashboard";
-    if (pathname.startsWith("/admin/pendaftar/export")) return "Export Excel";
-    if (pathname.startsWith("/admin/pendaftar/")) return "Transactions Detail";
-    if (pathname.startsWith("/admin/pendaftar")) return "Transactions";
-    if (pathname.startsWith("/admin/konten")) return "Settings";
-    return "Dashboard";
+    if (pathname === "/admin") return "Dasbor";
+    if (pathname.startsWith("/admin/pendaftar/export")) return "Export Data";
+    if (pathname.startsWith("/admin/pendaftar/")) return "Detail Pendaftar";
+    if (pathname.startsWith("/admin/pendaftar")) return "Daftar Pendaftar";
+    if (pathname.startsWith("/admin/konten")) return "Kelola Konten";
+    return "Dasbor";
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200/60 dark:border-[#282541] bg-[#fafafa]/90 dark:bg-[#1c1a2e]/90 px-6 backdrop-blur-md transition-colors">
-      <div className="flex items-center gap-4">
-        {/* Mobile Hamburger Button */}
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-[#F6F7F5]/95 px-4 backdrop-blur sm:h-20 sm:px-6 lg:px-8">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 dark:border-[#282541] bg-white dark:bg-[#201e34] text-[#1b212d] dark:text-white hover:bg-slate-100 dark:hover:bg-[#282541] md:hidden font-bold"
-          aria-label="Buka Menu Navigasi"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-[#101820] hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-[#00AA13]/15 md:hidden"
+          aria-label="Buka menu navigasi"
         >
-          ☰
+          <AdminIcon name="menu" className="h-5 w-5" />
         </button>
-
-        <div>
-          <h1 className="text-[25px] font-bold tracking-tight text-[#1b212d] dark:text-white leading-none">{getTitle()}</h1>
-        </div>
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{getTitle()}</h1>
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-4">
-        {/* Search Icon Pill */}
-        <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#201e34] text-[#929eae] dark:text-[#78778b] shadow-sm border border-slate-200/60 dark:border-[#282541]">
-          🔍
-        </div>
-
-        {/* Bell Notification Bing */}
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#201e34] text-[#929eae] dark:text-[#78778b] shadow-sm border border-slate-200/60 dark:border-[#282541]">
-          🔔
-          {pendingCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#29a073] text-[9px] font-bold text-white">
-              {pendingCount}
-            </span>
-          )}
-        </div>
-
-        {/* Theme Toggle Button */}
-        <ThemeToggle />
-
-        {/* Profile Pill (Name/Avater) */}
-        <div className="flex items-center gap-2.5 rounded-full bg-white dark:bg-[#201e34] p-1.5 pr-4 border border-slate-200/60 dark:border-[#282541] shadow-sm">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1b212d] dark:bg-[#c8ee44] text-[#c8ee44] dark:text-[#1b212d] font-bold text-xs">
-            M
-          </div>
-          <span className="hidden text-xs font-semibold text-[#1b212d] dark:text-white sm:inline">
-            Mahfuzul Nabil
-          </span>
-          <span className="text-[10px] text-[#929eae] dark:text-[#78778b]">▼</span>
-        </div>
+      <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1.5 pl-1.5 pr-3 text-sm font-semibold shadow-[0_1px_2px_rgba(16,24,32,0.04)]">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-green-50 text-xs font-bold text-[#00880F]">
+          PS
+        </span>
+        <span>Panitia SPMB</span>
       </div>
     </header>
   );

@@ -8,16 +8,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#1c1a2e] text-slate-900 dark:text-white font-sans antialiased transition-colors">
-      {/* Sidebar Command Console */}
+    <div className="admin-scope flex min-h-screen bg-[#F6F7F5] text-[#101820]">
       <AdminSidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="min-w-0 flex-1">
         <AdminHeader setMobileOpen={setMobileOpen} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {children}
-        </main>
+        <main className="mx-auto w-full max-w-[1280px] p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

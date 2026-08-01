@@ -49,3 +49,17 @@ describe("admin login", () => {
     expect(read("src/app/admin/login/page.tsx")).toContain("Sesi Anda tidak aktif");
   });
 });
+
+describe("authenticated admin shell", () => {
+  it("uses Indonesian school navigation without finance-template or dark-mode UI", () => {
+    const files = [
+      "src/app/admin/(dasbor)/layout.tsx",
+      "src/components/admin/AdminSidebar.tsx",
+      "src/components/admin/AdminHeader.tsx",
+    ];
+    const source = files.map(read).join("\n");
+    for (const text of ["Dasbor", "Pendaftar", "Kelola Konten", "Panitia SPMB"]) expect(source).toContain(text);
+    expect(source).toContain("admin-scope");
+    expect(source).not.toMatch(/Maglo|Transactions|Settings|ThemeToggle|dark:|Mahfuzul Nabil/);
+  });
+});
