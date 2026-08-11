@@ -18,6 +18,18 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'Menunggu Verifikasi';
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS catatan_admin TEXT;
 
+-- Lepaskan constraint NOT NULL dari kolom no_telp lama (jika ada dari skema lama)
+DO $$ 
+BEGIN 
+    IF EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_schema='public' AND table_name='pendaftar' AND column_name='no_telp'
+    ) THEN 
+        ALTER TABLE public.pendaftar ALTER COLUMN no_telp DROP NOT NULL;
+    END IF;
+END $$;
+
 -- Data Murid
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jenis_pendaftaran VARCHAR(50);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS pilihan_kelas VARCHAR(50);
@@ -33,6 +45,13 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS asal_sekolah VARCHAR(255);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS prestasi_anak TEXT;
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS tingkat_prestasi VARCHAR(50);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jarak_ke_sekolah VARCHAR(20);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS alamat_jalan TEXT;
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS rt VARCHAR(10);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS rw VARCHAR(10);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kelurahan VARCHAR(100);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kecamatan VARCHAR(100);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kota VARCHAR(100);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS provinsi VARCHAR(100);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS alamat_rumah TEXT;
 
 -- Data Ayah

@@ -29,6 +29,7 @@ export async function submitRegistrationAction(data: FormData) {
         pekerjaan_ayah: data.pekerjaanAyah,
         penghasilan_ayah: data.penghasilanAyah || null,
         telepon_ayah: data.teleponAyah,
+        no_telp: data.teleponAyah || data.teleponIbu,
         alamat_ayah: data.alamatAyah || null,
 
         // Data Ibu

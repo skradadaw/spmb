@@ -92,21 +92,31 @@ export default function RegistrationForm() {
     },
   });
 
+  const provinsiVal = watch('provinsi');
+  const kotaVal = watch('kota');
+  const kecamatanVal = watch('kecamatan');
+
   // Restore dependent dropdown data if user navigates back to step 1
   useEffect(() => {
-    const prov = provinces.find(p => p.name === getValues('provinsi'));
-    if (prov && regencies.length === 0) fetchRegencies(prov.id);
-  }, [provinces, getValues, fetchRegencies, regencies.length]);
+    if (provinsiVal && provinces.length > 0) {
+      const prov = provinces.find(p => p.name === provinsiVal);
+      if (prov) fetchRegencies(prov.id);
+    }
+  }, [provinsiVal, provinces, fetchRegencies]);
 
   useEffect(() => {
-    const kota = regencies.find(r => r.name === getValues('kota'));
-    if (kota && districts.length === 0) fetchDistricts(kota.id);
-  }, [regencies, getValues, fetchDistricts, districts.length]);
+    if (kotaVal && regencies.length > 0) {
+      const kota = regencies.find(r => r.name === kotaVal);
+      if (kota) fetchDistricts(kota.id);
+    }
+  }, [kotaVal, regencies, fetchDistricts]);
 
   useEffect(() => {
-    const kec = districts.find(d => d.name === getValues('kecamatan'));
-    if (kec && villages.length === 0) fetchVillages(kec.id);
-  }, [districts, getValues, fetchVillages, villages.length]);
+    if (kecamatanVal && districts.length > 0) {
+      const kec = districts.find(d => d.name === kecamatanVal);
+      if (kec) fetchVillages(kec.id);
+    }
+  }, [kecamatanVal, districts, fetchVillages]);
   
   const bekerjaDiDirektorat2 = watch('bekerjaDiDirektorat2');
   const tanggalLahir = watch('tanggalLahir');
@@ -261,6 +271,27 @@ export default function RegistrationForm() {
 
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
 
+  const onFormError = (formErrors: any) => {
+    console.error('Validation errors on submit:', formErrors);
+    const step1Keys = Object.keys(step1BaseSchema.shape);
+    const hasStep1Error = Object.keys(formErrors).some(key => step1Keys.includes(key));
+    if (hasStep1Error) {
+      setCurrentStep(0);
+      setSubmitError('Ada isian di Data Murid yang belum lengkap. Mohon periksa kembali kolom yang bergaris merah.');
+    } else {
+      setCurrentStep(1);
+      setSubmitError('Ada isian di Data Orang Tua yang belum lengkap. Mohon periksa kembali kolom yang bergaris merah.');
+    }
+    setTimeout(() => {
+      const firstError = document.querySelector('.border-red-500');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     setSubmitError(null);
@@ -327,7 +358,7 @@ export default function RegistrationForm() {
           </motion.div>
         )}
         
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, onFormError)}>
           <AnimatePresence mode="wait">
             {currentStep === 0 && (
               <motion.div
