@@ -65,7 +65,7 @@ export default function RegistrationForm() {
   return (
     <div className="w-full max-w-3xl mx-auto bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
       {/* Progress Bar (Stepper) */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6 text-white">
+      <div className="bg-[#00AA13] px-8 py-6 text-white">
         <h2 className="text-2xl font-bold mb-6">Formulir Pendaftaran</h2>
         <div className="flex justify-between relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-white/30 -translate-y-1/2 rounded" />
@@ -75,7 +75,7 @@ export default function RegistrationForm() {
           />
           {steps.map((step, idx) => (
             <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ${idx <= currentStep ? 'bg-white text-blue-600 shadow-lg' : 'bg-blue-800/50 text-white/50 border border-white/20'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ${idx <= currentStep ? 'bg-white text-[#00AA13] shadow-lg' : 'bg-white/20 text-white/70 border border-white/30'}`}>
                 {idx < currentStep ? <CheckCircle2 size={20} /> : idx + 1}
               </div>
               <span className={`text-xs font-medium hidden md:block ${idx <= currentStep ? 'text-white' : 'text-white/50'}`}>
@@ -106,7 +106,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Nama Lengkap</label>
                     <input 
                       {...register('namaLengkap')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Masukkan nama sesuai Akta"
                     />
                     {errors.namaLengkap && <p className="text-red-500 text-xs mt-1">{errors.namaLengkap.message}</p>}
@@ -116,7 +116,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">NIK (Nomor Induk Kependudukan)</label>
                     <input 
                       {...register('nik')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="16 digit NIK"
                       maxLength={16}
                     />
@@ -127,7 +127,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Tempat Lahir</label>
                     <input 
                       {...register('tempatLahir')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Kota/Kabupaten"
                     />
                     {errors.tempatLahir && <p className="text-red-500 text-xs mt-1">{errors.tempatLahir.message}</p>}
@@ -138,7 +138,7 @@ export default function RegistrationForm() {
                     <input 
                       type="date"
                       {...register('tanggalLahir')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.tanggalLahir && <p className="text-red-500 text-xs mt-1">{errors.tanggalLahir.message}</p>}
                   </div>
@@ -147,7 +147,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Asal Sekolah (TK/PAUD) - Jika Ada</label>
                     <input 
                       {...register('asalSekolah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Nama TK atau Kosongkan jika tidak ada"
                     />
                   </div>
@@ -171,7 +171,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Nama Ayah</label>
                     <input 
                       {...register('namaAyah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.namaAyah && <p className="text-red-500 text-xs mt-1">{errors.namaAyah.message}</p>}
                   </div>
@@ -179,7 +179,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
                     <input 
                       {...register('pekerjaanAyah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.pekerjaanAyah && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanAyah.message}</p>}
                   </div>
@@ -188,7 +188,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Nama Ibu</label>
                     <input 
                       {...register('namaIbu')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.namaIbu && <p className="text-red-500 text-xs mt-1">{errors.namaIbu.message}</p>}
                   </div>
@@ -196,7 +196,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
                     <input 
                       {...register('pekerjaanIbu')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.pekerjaanIbu && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanIbu.message}</p>}
                   </div>
@@ -205,7 +205,7 @@ export default function RegistrationForm() {
                     <label className="text-sm font-medium text-gray-700">Nomor WhatsApp Aktif</label>
                     <input 
                       {...register('noTelp')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="081234567890"
                     />
                     {errors.noTelp && <p className="text-red-500 text-xs mt-1">{errors.noTelp.message}</p>}
@@ -226,8 +226,8 @@ export default function RegistrationForm() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Unggah Dokumen (Opsional saat ini)</h3>
                 <p className="text-gray-500 text-sm mb-6">Anda dapat melewati langkah ini dan mengunggah dokumen nanti melalui dashboard orang tua setelah akun diverifikasi.</p>
                 
-                <div className="border-2 border-dashed border-blue-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center hover:bg-blue-50/50 transition-colors cursor-pointer group">
-                  <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer group">
+                  <div className="w-16 h-16 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <UploadCloud size={32} />
                   </div>
                   <h4 className="font-medium text-gray-800 mb-1">Klik atau seret file ke sini</h4>
@@ -282,7 +282,7 @@ export default function RegistrationForm() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50"
+                  className="flex items-center gap-2 px-8 py-3 bg-[#00AA13] text-white rounded-full font-medium hover:bg-[#00880F] transition-all shadow-lg shadow-[#00AA13]/30 hover:shadow-[#00AA13]/50"
                 >
                   Selanjutnya
                   <ChevronRight size={20} />
@@ -291,8 +291,8 @@ export default function RegistrationForm() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`flex items-center gap-2 px-8 py-3 bg-green-600 text-white rounded-full font-medium transition-all shadow-lg shadow-green-600/30 hover:shadow-green-600/50 ${
-                    isSubmitting ? 'opacity-70 cursor-wait' : 'hover:bg-green-700'
+                  className={`flex items-center gap-2 px-8 py-3 bg-[#00AA13] text-white rounded-full font-medium transition-all shadow-lg shadow-[#00AA13]/30 hover:shadow-[#00AA13]/50 ${
+                    isSubmitting ? 'opacity-70 cursor-wait' : 'hover:bg-[#00880F]'
                   }`}
                 >
                   {isSubmitting ? 'Memproses...' : 'Kirim Pendaftaran'}
