@@ -119,7 +119,7 @@ export default function RegistrationForm() {
                     <input 
                       id="namaLengkap"
                       {...register('namaLengkap')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Masukkan nama sesuai Akta"
                     />
                     {errors.namaLengkap && <p className="text-red-500 text-xs mt-1">{errors.namaLengkap.message}</p>}
@@ -130,7 +130,7 @@ export default function RegistrationForm() {
                     <input 
                       id="nik"
                       {...register('nik')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="16 digit NIK"
                       maxLength={16}
                     />
@@ -142,7 +142,7 @@ export default function RegistrationForm() {
                     <input 
                       id="tempatLahir"
                       {...register('tempatLahir')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Kota/Kabupaten"
                     />
                     {errors.tempatLahir && <p className="text-red-500 text-xs mt-1">{errors.tempatLahir.message}</p>}
@@ -154,7 +154,7 @@ export default function RegistrationForm() {
                       id="tanggalLahir"
                       type="date"
                       {...register('tanggalLahir')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.tanggalLahir && <p className="text-red-500 text-xs mt-1">{errors.tanggalLahir.message}</p>}
                   </div>
@@ -164,7 +164,7 @@ export default function RegistrationForm() {
                     <input 
                       id="asalSekolah"
                       {...register('asalSekolah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Nama TK atau Kosongkan jika tidak ada"
                     />
                   </div>
@@ -189,7 +189,7 @@ export default function RegistrationForm() {
                     <input 
                       id="namaAyah"
                       {...register('namaAyah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.namaAyah && <p className="text-red-500 text-xs mt-1">{errors.namaAyah.message}</p>}
                   </div>
@@ -198,7 +198,7 @@ export default function RegistrationForm() {
                     <input 
                       id="pekerjaanAyah"
                       {...register('pekerjaanAyah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.pekerjaanAyah && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanAyah.message}</p>}
                   </div>
@@ -208,7 +208,7 @@ export default function RegistrationForm() {
                     <input 
                       id="namaIbu"
                       {...register('namaIbu')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.namaIbu && <p className="text-red-500 text-xs mt-1">{errors.namaIbu.message}</p>}
                   </div>
