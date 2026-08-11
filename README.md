@@ -19,7 +19,7 @@ Memudahkan orang tua / wali murid dalam proses pendaftaran calon murid baru seca
   - Akta Kelahiran.
   - Kartu Keluarga (KK).
   - KTP Orang Tua/Wali.
-  - Pas Foto Calon Murid.
+  - Pas Foto Calon Murid.c
   - Surat Keterangan / Ijazah TK (jika ada).
 - **Pembayaran Formulir & Verifikasi**: Konfirmasi pembayaran pendaftaran & biaya masuk.
 - **Jadwal Observasi / Asesmen Kesiapan Belajar**: Informasi tanggal dan sesi observasi calon murid.
