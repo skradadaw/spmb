@@ -1,12 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, Loader2 } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, Loader2, CalendarIcon } from 'lucide-react';
 import { formSchema, type FormData } from '../schema';
 import { submitRegistrationAction } from '../actions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const steps = [
   { id: 'murid', title: 'Data Murid' },
@@ -21,15 +27,17 @@ export default function RegistrationForm() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, trigger } = useForm<FormData>({
+  const { register, control, handleSubmit, formState: { errors }, trigger, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: 'onTouched',
   });
+  
+  const bekerjaDiDirektorat2 = watch('bekerjaDiDirektorat2');
 
   const nextStep = async () => {
     let fieldsToValidate: any[] = [];
     if (currentStep === 0) {
-      fieldsToValidate = ['jenisPendaftaran', 'pilihanKelas', 'namaLengkap', 'jenisKelamin', 'tempatLahir', 'tanggalLahir', 'nik', 'asalSekolah', 'alamatRumah'];
+      fieldsToValidate = ['jenisPendaftaran', 'pilihanKelas', 'namaLengkap', 'jenisKelamin', 'tempatLahir', 'tanggalLahir', 'nik', 'nisn', 'asalSekolah', 'alamatRumah'];
     } else if (currentStep === 1) {
       fieldsToValidate = ['namaAyah', 'pekerjaanAyah', 'teleponAyah', 'namaIbu', 'pekerjaanIbu', 'teleponIbu'];
     }
@@ -63,7 +71,7 @@ export default function RegistrationForm() {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all";
+  const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all placeholder:text-gray-500";
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
@@ -118,89 +126,165 @@ export default function RegistrationForm() {
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Row 1 */}
                   <div className="space-y-2">
-                    <label htmlFor="jenisPendaftaran" className="text-sm font-medium text-gray-700">Jenis Pendaftaran *</label>
-                    <select id="jenisPendaftaran" {...register('jenisPendaftaran')} className={inputClass}>
-                      <option value="">Pilih Jenis Pendaftaran</option>
-                      <option value="Siswa Baru">Siswa Baru</option>
-                      <option value="Pindahan">Pindahan</option>
-                    </select>
+                    <label className="text-sm font-medium text-gray-700">Jenis Pendaftaran *</label>
+                    <Controller
+                      control={control}
+                      name="jenisPendaftaran"
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger className={errors.jenisPendaftaran ? "border-red-500" : ""}>
+                            <SelectValue placeholder="Pilih Jenis Pendaftaran" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Siswa Baru">Siswa Baru</SelectItem>
+                            <SelectItem value="Pindahan">Pindahan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                     {errors.jenisPendaftaran && <p className="text-red-500 text-xs mt-1">{errors.jenisPendaftaran.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="pilihanKelas" className="text-sm font-medium text-gray-700">Pilihan Kelas *</label>
-                    <select id="pilihanKelas" {...register('pilihanKelas')} className={inputClass}>
-                      <option value="">Pilih Kelas</option>
-                      <option value="Reguler">Reguler</option>
-                      <option value="Bilingual">Bilingual</option>
-                      <option value="Tahfizh">Tahfizh</option>
-                    </select>
+                    <label className="text-sm font-medium text-gray-700">Pilihan Kelas *</label>
+                    <Controller
+                      control={control}
+                      name="pilihanKelas"
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger className={errors.pilihanKelas ? "border-red-500" : ""}>
+                            <SelectValue placeholder="Pilih Kelas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Reguler">Reguler</SelectItem>
+                            <SelectItem value="Bilingual">Bilingual</SelectItem>
+                            <SelectItem value="Tahfizh">Tahfizh</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                     {errors.pilihanKelas && <p className="text-red-500 text-xs mt-1">{errors.pilihanKelas.message}</p>}
                   </div>
 
                   {/* Row 2 */}
                   <div className="space-y-2">
                     <label htmlFor="namaLengkap" className="text-sm font-medium text-gray-700">Nama Lengkap *</label>
-                    <input id="namaLengkap" {...register('namaLengkap')} className={inputClass} placeholder="Nama sesuai Akta Kelahiran" />
+                    <input id="namaLengkap" {...register('namaLengkap')} className={cn(inputClass, errors.namaLengkap && "border-red-500")} placeholder="Nama sesuai Akta Kelahiran" />
                     {errors.namaLengkap && <p className="text-red-500 text-xs mt-1">{errors.namaLengkap.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="jenisKelamin" className="text-sm font-medium text-gray-700">Jenis Kelamin *</label>
-                    <select id="jenisKelamin" {...register('jenisKelamin')} className={inputClass}>
-                      <option value="">Pilih Jenis Kelamin</option>
-                      <option value="Laki-laki">Laki-laki</option>
-                      <option value="Perempuan">Perempuan</option>
-                    </select>
+                    <label className="text-sm font-medium text-gray-700">Jenis Kelamin *</label>
+                    <Controller
+                      control={control}
+                      name="jenisKelamin"
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger className={errors.jenisKelamin ? "border-red-500" : ""}>
+                            <SelectValue placeholder="Pilih Jenis Kelamin" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                            <SelectItem value="Perempuan">Perempuan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                     {errors.jenisKelamin && <p className="text-red-500 text-xs mt-1">{errors.jenisKelamin.message}</p>}
                   </div>
 
                   {/* Row 3 */}
                   <div className="space-y-2">
                     <label htmlFor="tempatLahir" className="text-sm font-medium text-gray-700">Tempat Lahir *</label>
-                    <input id="tempatLahir" {...register('tempatLahir')} className={inputClass} placeholder="Kota/Kabupaten" />
+                    <input id="tempatLahir" {...register('tempatLahir')} className={cn(inputClass, errors.tempatLahir && "border-red-500")} placeholder="Kota/Kabupaten" />
                     {errors.tempatLahir && <p className="text-red-500 text-xs mt-1">{errors.tempatLahir.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="tanggalLahir" className="text-sm font-medium text-gray-700">Tanggal Lahir *</label>
-                    <input id="tanggalLahir" type="date" {...register('tanggalLahir')} className={inputClass} />
+                    <label className="text-sm font-medium text-gray-700">Tanggal Lahir *</label>
+                    <Controller
+                      control={control}
+                      name="tanggalLahir"
+                      render={({ field }) => (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                inputClass,
+                                "justify-start text-left font-normal flex items-center",
+                                !field.value && "text-gray-500",
+                                errors.tanggalLahir && "border-red-500"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(new Date(field.value), "PPP", { locale: idLocale }) : <span>Pilih tanggal</span>}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value ? new Date(field.value) : undefined}
+                              onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                              defaultMonth={field.value ? new Date(field.value) : new Date(2018, 0)}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    />
                     {errors.tanggalLahir && <p className="text-red-500 text-xs mt-1">{errors.tanggalLahir.message}</p>}
                   </div>
 
                   {/* Row 4 */}
                   <div className="space-y-2">
                     <label htmlFor="nik" className="text-sm font-medium text-gray-700">NIK (16 Digit) *</label>
-                    <input id="nik" {...register('nik')} className={inputClass} placeholder="16 Digit NIK" maxLength={16} />
+                    <input id="nik" {...register('nik')} className={cn(inputClass, errors.nik && "border-red-500")} placeholder="16 Digit NIK" maxLength={16} />
                     {errors.nik && <p className="text-red-500 text-xs mt-1">{errors.nik.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="nisn" className="text-sm font-medium text-gray-700">NISN (Jika Ada)</label>
-                    <input id="nisn" {...register('nisn')} className={inputClass} placeholder="Nomor Induk Siswa Nasional" />
+                    <label htmlFor="nisn" className="text-sm font-medium text-gray-700">NISN (Nomor Induk Siswa Nasional) *</label>
+                    <input id="nisn" {...register('nisn')} className={cn(inputClass, errors.nisn && "border-red-500")} placeholder="Nomor Induk Siswa Nasional" />
+                    {errors.nisn && <p className="text-red-500 text-xs mt-1">{errors.nisn.message}</p>}
                   </div>
 
                   {/* Row 5 */}
-                  <div className="space-y-2">
-                    <label htmlFor="anakKe" className="text-sm font-medium text-gray-700">Anak Ke-</label>
-                    <input id="anakKe" type="number" {...register('anakKe')} className={inputClass} placeholder="Contoh: 1" />
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-sm font-medium text-gray-700">Apakah orangtua bekerja di direktorat 2 Al-Muhajirin?</label>
+                    <Controller
+                      control={control}
+                      name="bekerjaDiDirektorat2"
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih Jawaban" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Ya">Ya</SelectItem>
+                            <SelectItem value="Tidak">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <label htmlFor="saudaraDiMuhajirin" className="text-sm font-medium text-gray-700">Saudara di Al-Muhajirin</label>
-                    <input id="saudaraDiMuhajirin" {...register('saudaraDiMuhajirin')} className={inputClass} placeholder="Nama saudara (jika ada)" />
-                  </div>
+                  {bekerjaDiDirektorat2 === 'Ya' && (
+                    <div className="space-y-2 md:col-span-2">
+                      <label htmlFor="profesiDiDirektorat2" className="text-sm font-medium text-gray-700">Bekerja sebagai profesi apa?</label>
+                      <input id="profesiDiDirektorat2" {...register('profesiDiDirektorat2')} className={inputClass} placeholder="Contoh: Guru" />
+                    </div>
+                  )}
 
                   {/* Row 6 */}
                   <div className="space-y-2">
                     <label htmlFor="asalSekolah" className="text-sm font-medium text-gray-700">Asal Sekolah (TK/PAUD) *</label>
-                    <input id="asalSekolah" {...register('asalSekolah')} className={inputClass} placeholder="Nama TK/PAUD" />
+                    <input id="asalSekolah" {...register('asalSekolah')} className={cn(inputClass, errors.asalSekolah && "border-red-500")} placeholder="Nama TK/PAUD" />
                     {errors.asalSekolah && <p className="text-red-500 text-xs mt-1">{errors.asalSekolah.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="jarakKeSekolah" className="text-sm font-medium text-gray-700">Jarak ke Sekolah (KM)</label>
-                    <input id="jarakKeSekolah" type="number" {...register('jarakKeSekolah')} className={inputClass} placeholder="Contoh: 5" />
+                    <input id="jarakKeSekolah" type="number" step="0.1" {...register('jarakKeSekolah')} className={inputClass} placeholder="Contoh: 5.5" />
                   </div>
 
                   {/* Row 7 */}
                   <div className="space-y-2 md:col-span-2">
                     <label htmlFor="alamatRumah" className="text-sm font-medium text-gray-700">Alamat Lengkap Rumah *</label>
-                    <textarea id="alamatRumah" rows={3} {...register('alamatRumah')} className={inputClass} placeholder="Alamat lengkap sesuai domisili" />
+                    <textarea id="alamatRumah" rows={3} {...register('alamatRumah')} className={cn(inputClass, errors.alamatRumah && "border-red-500")} placeholder="Alamat lengkap sesuai domisili" />
                     {errors.alamatRumah && <p className="text-red-500 text-xs mt-1">{errors.alamatRumah.message}</p>}
                   </div>
 
@@ -209,15 +293,25 @@ export default function RegistrationForm() {
                     <input id="prestasiAnak" {...register('prestasiAnak')} className={inputClass} placeholder="Misal: Juara 1 Lomba Mewarnai" />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="tingkatPrestasi" className="text-sm font-medium text-gray-700">Tingkat Prestasi</label>
-                    <select id="tingkatPrestasi" {...register('tingkatPrestasi')} className={inputClass}>
-                      <option value="">Pilih Tingkat</option>
-                      <option value="Sekolah">Sekolah</option>
-                      <option value="Kecamatan">Kecamatan</option>
-                      <option value="Kabupaten/Kota">Kabupaten/Kota</option>
-                      <option value="Provinsi">Provinsi</option>
-                      <option value="Nasional">Nasional</option>
-                    </select>
+                    <label className="text-sm font-medium text-gray-700">Tingkat Prestasi</label>
+                    <Controller
+                      control={control}
+                      name="tingkatPrestasi"
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih Tingkat" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Sekolah">Sekolah</SelectItem>
+                            <SelectItem value="Kecamatan">Kecamatan</SelectItem>
+                            <SelectItem value="Kabupaten/Kota">Kabupaten/Kota</SelectItem>
+                            <SelectItem value="Provinsi">Provinsi</SelectItem>
+                            <SelectItem value="Nasional">Nasional</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -241,51 +335,68 @@ export default function RegistrationForm() {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label htmlFor="namaAyah" className="text-sm font-medium text-gray-700">Nama Ayah *</label>
-                        <input id="namaAyah" {...register('namaAyah')} className={inputClass} />
+                        <input id="namaAyah" {...register('namaAyah')} className={cn(inputClass, errors.namaAyah && "border-red-500")} />
                         {errors.namaAyah && <p className="text-red-500 text-xs mt-1">{errors.namaAyah.message}</p>}
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="nikAyah" className="text-sm font-medium text-gray-700">NIK Ayah</label>
                         <input id="nikAyah" {...register('nikAyah')} className={inputClass} maxLength={16} />
                       </div>
+
                       <div className="space-y-2">
-                        <label htmlFor="tahunLahirAyah" className="text-sm font-medium text-gray-700">Tahun Lahir Ayah</label>
-                        <input id="tahunLahirAyah" type="number" {...register('tahunLahirAyah')} className={inputClass} placeholder="YYYY" />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="pendidikanAyah" className="text-sm font-medium text-gray-700">Pendidikan Ayah</label>
-                        <select id="pendidikanAyah" {...register('pendidikanAyah')} className={inputClass}>
-                          <option value="">Pilih Pendidikan</option>
-                          <option value="SD">SD Sederajat</option>
-                          <option value="SMP">SMP Sederajat</option>
-                          <option value="SMA">SMA Sederajat</option>
-                          <option value="D1-D3">D1 - D3</option>
-                          <option value="S1">S1</option>
-                          <option value="S2">S2</option>
-                          <option value="S3">S3</option>
-                        </select>
+                        <label className="text-sm font-medium text-gray-700">Pendidikan Ayah</label>
+                        <Controller
+                          control={control}
+                          name="pendidikanAyah"
+                          render={({ field }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Pilih Pendidikan" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="SD">SD Sederajat</SelectItem>
+                                <SelectItem value="SMP">SMP Sederajat</SelectItem>
+                                <SelectItem value="SMA">SMA Sederajat</SelectItem>
+                                <SelectItem value="D1-D3">D1 - D3</SelectItem>
+                                <SelectItem value="S1">S1</SelectItem>
+                                <SelectItem value="S2">S2</SelectItem>
+                                <SelectItem value="S3">S3</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="pekerjaanAyah" className="text-sm font-medium text-gray-700">Pekerjaan Ayah *</label>
-                        <input id="pekerjaanAyah" {...register('pekerjaanAyah')} className={inputClass} />
+                        <input id="pekerjaanAyah" {...register('pekerjaanAyah')} className={cn(inputClass, errors.pekerjaanAyah && "border-red-500")} />
                         {errors.pekerjaanAyah && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanAyah.message}</p>}
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="penghasilanAyah" className="text-sm font-medium text-gray-700">Penghasilan Per Bulan</label>
-                        <select id="penghasilanAyah" {...register('penghasilanAyah')} className={inputClass}>
-                          <option value="">Pilih Rentang Penghasilan</option>
-                          <option value="< 2 Juta">&lt; Rp 2.000.000</option>
-                          <option value="2-5 Juta">Rp 2.000.000 - Rp 5.000.000</option>
-                          <option value="5-10 Juta">Rp 5.000.000 - Rp 10.000.000</option>
-                          <option value="> 10 Juta">&gt; Rp 10.000.000</option>
-                        </select>
+                        <label className="text-sm font-medium text-gray-700">Penghasilan Per Bulan</label>
+                        <Controller
+                          control={control}
+                          name="penghasilanAyah"
+                          render={({ field }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Pilih Rentang" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="< 2 Juta">&lt; Rp 2.000.000</SelectItem>
+                                <SelectItem value="2-5 Juta">Rp 2.000.000 - Rp 5.000.000</SelectItem>
+                                <SelectItem value="5-10 Juta">Rp 5.000.000 - Rp 10.000.000</SelectItem>
+                                <SelectItem value="> 10 Juta">&gt; Rp 10.000.000</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="teleponAyah" className="text-sm font-medium text-gray-700">Nomor WhatsApp Ayah *</label>
-                        <input id="teleponAyah" {...register('teleponAyah')} className={inputClass} placeholder="Contoh: 0812..." />
+                        <input id="teleponAyah" {...register('teleponAyah')} className={cn(inputClass, errors.teleponAyah && "border-red-500")} placeholder="Contoh: 0812..." />
                         {errors.teleponAyah && <p className="text-red-500 text-xs mt-1">{errors.teleponAyah.message}</p>}
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 md:col-span-2">
                         <label htmlFor="alamatAyah" className="text-sm font-medium text-gray-700">Alamat Ayah</label>
                         <input id="alamatAyah" {...register('alamatAyah')} className={inputClass} />
                       </div>
@@ -298,52 +409,69 @@ export default function RegistrationForm() {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label htmlFor="namaIbu" className="text-sm font-medium text-gray-700">Nama Ibu *</label>
-                        <input id="namaIbu" {...register('namaIbu')} className={inputClass} />
+                        <input id="namaIbu" {...register('namaIbu')} className={cn(inputClass, errors.namaIbu && "border-red-500")} />
                         {errors.namaIbu && <p className="text-red-500 text-xs mt-1">{errors.namaIbu.message}</p>}
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="nikIbu" className="text-sm font-medium text-gray-700">NIK Ibu</label>
                         <input id="nikIbu" {...register('nikIbu')} className={inputClass} maxLength={16} />
                       </div>
+
                       <div className="space-y-2">
-                        <label htmlFor="tahunLahirIbu" className="text-sm font-medium text-gray-700">Tahun Lahir Ibu</label>
-                        <input id="tahunLahirIbu" type="number" {...register('tahunLahirIbu')} className={inputClass} placeholder="YYYY" />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="pendidikanIbu" className="text-sm font-medium text-gray-700">Pendidikan Ibu</label>
-                        <select id="pendidikanIbu" {...register('pendidikanIbu')} className={inputClass}>
-                          <option value="">Pilih Pendidikan</option>
-                          <option value="SD">SD Sederajat</option>
-                          <option value="SMP">SMP Sederajat</option>
-                          <option value="SMA">SMA Sederajat</option>
-                          <option value="D1-D3">D1 - D3</option>
-                          <option value="S1">S1</option>
-                          <option value="S2">S2</option>
-                          <option value="S3">S3</option>
-                        </select>
+                        <label className="text-sm font-medium text-gray-700">Pendidikan Ibu</label>
+                        <Controller
+                          control={control}
+                          name="pendidikanIbu"
+                          render={({ field }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Pilih Pendidikan" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="SD">SD Sederajat</SelectItem>
+                                <SelectItem value="SMP">SMP Sederajat</SelectItem>
+                                <SelectItem value="SMA">SMA Sederajat</SelectItem>
+                                <SelectItem value="D1-D3">D1 - D3</SelectItem>
+                                <SelectItem value="S1">S1</SelectItem>
+                                <SelectItem value="S2">S2</SelectItem>
+                                <SelectItem value="S3">S3</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="pekerjaanIbu" className="text-sm font-medium text-gray-700">Pekerjaan Ibu *</label>
-                        <input id="pekerjaanIbu" {...register('pekerjaanIbu')} className={inputClass} />
+                        <input id="pekerjaanIbu" {...register('pekerjaanIbu')} className={cn(inputClass, errors.pekerjaanIbu && "border-red-500")} />
                         {errors.pekerjaanIbu && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanIbu.message}</p>}
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="penghasilanIbu" className="text-sm font-medium text-gray-700">Penghasilan Per Bulan</label>
-                        <select id="penghasilanIbu" {...register('penghasilanIbu')} className={inputClass}>
-                          <option value="">Pilih Rentang Penghasilan</option>
-                          <option value="Tidak Berpenghasilan">Tidak Berpenghasilan</option>
-                          <option value="< 2 Juta">&lt; Rp 2.000.000</option>
-                          <option value="2-5 Juta">Rp 2.000.000 - Rp 5.000.000</option>
-                          <option value="5-10 Juta">Rp 5.000.000 - Rp 10.000.000</option>
-                          <option value="> 10 Juta">&gt; Rp 10.000.000</option>
-                        </select>
+                        <label className="text-sm font-medium text-gray-700">Penghasilan Per Bulan</label>
+                        <Controller
+                          control={control}
+                          name="penghasilanIbu"
+                          render={({ field }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Pilih Rentang" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Tidak Berpenghasilan">Tidak Berpenghasilan</SelectItem>
+                                <SelectItem value="< 2 Juta">&lt; Rp 2.000.000</SelectItem>
+                                <SelectItem value="2-5 Juta">Rp 2.000.000 - Rp 5.000.000</SelectItem>
+                                <SelectItem value="5-10 Juta">Rp 5.000.000 - Rp 10.000.000</SelectItem>
+                                <SelectItem value="> 10 Juta">&gt; Rp 10.000.000</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="teleponIbu" className="text-sm font-medium text-gray-700">Nomor WhatsApp Ibu *</label>
-                        <input id="teleponIbu" {...register('teleponIbu')} className={inputClass} placeholder="Contoh: 0812..." />
+                        <input id="teleponIbu" {...register('teleponIbu')} className={cn(inputClass, errors.teleponIbu && "border-red-500")} placeholder="Contoh: 0812..." />
                         {errors.teleponIbu && <p className="text-red-500 text-xs mt-1">{errors.teleponIbu.message}</p>}
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 md:col-span-2">
                         <label htmlFor="alamatIbu" className="text-sm font-medium text-gray-700">Alamat Ibu</label>
                         <input id="alamatIbu" {...register('alamatIbu')} className={inputClass} />
                       </div>
