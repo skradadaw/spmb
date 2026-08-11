@@ -27,12 +27,11 @@ export default function RegistrationForm() {
   });
 
   const nextStep = async () => {
-    // Validasi per step sebelum lanjut
     let fieldsToValidate: any[] = [];
     if (currentStep === 0) {
-      fieldsToValidate = ['namaLengkap', 'nik', 'tempatLahir', 'tanggalLahir'];
+      fieldsToValidate = ['jenisPendaftaran', 'pilihanKelas', 'namaLengkap', 'jenisKelamin', 'tempatLahir', 'tanggalLahir', 'nik', 'asalSekolah', 'alamatRumah'];
     } else if (currentStep === 1) {
-      fieldsToValidate = ['namaAyah', 'pekerjaanAyah', 'namaIbu', 'pekerjaanIbu', 'noTelp'];
+      fieldsToValidate = ['namaAyah', 'pekerjaanAyah', 'teleponAyah', 'namaIbu', 'pekerjaanIbu', 'teleponIbu'];
     }
 
     const isStepValid = await trigger(fieldsToValidate as any);
@@ -64,8 +63,10 @@ export default function RegistrationForm() {
     }
   };
 
+  const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all";
+
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
+    <div className="w-full max-w-4xl mx-auto bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
       {/* Progress Bar (Stepper) */}
       <div className="bg-[#00AA13] px-8 py-6 text-white">
         <h2 className="text-2xl font-bold mb-6">Formulir Pendaftaran</h2>
@@ -100,6 +101,7 @@ export default function RegistrationForm() {
             <div>{submitError}</div>
           </motion.div>
         )}
+        
         <form onSubmit={handleSubmit(onSubmit)}>
           <AnimatePresence mode="wait">
             {currentStep === 0 && (
@@ -114,59 +116,108 @@ export default function RegistrationForm() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Informasi Calon Murid</h3>
                 
                 <div className="grid md:grid-cols-2 gap-6">
+                  {/* Row 1 */}
                   <div className="space-y-2">
-                    <label htmlFor="namaLengkap" className="text-sm font-medium text-gray-700">Nama Lengkap</label>
-                    <input 
-                      id="namaLengkap"
-                      {...register('namaLengkap')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                      placeholder="Masukkan nama sesuai Akta"
-                    />
+                    <label htmlFor="jenisPendaftaran" className="text-sm font-medium text-gray-700">Jenis Pendaftaran *</label>
+                    <select id="jenisPendaftaran" {...register('jenisPendaftaran')} className={inputClass}>
+                      <option value="">Pilih Jenis Pendaftaran</option>
+                      <option value="Siswa Baru">Siswa Baru</option>
+                      <option value="Pindahan">Pindahan</option>
+                    </select>
+                    {errors.jenisPendaftaran && <p className="text-red-500 text-xs mt-1">{errors.jenisPendaftaran.message}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="pilihanKelas" className="text-sm font-medium text-gray-700">Pilihan Kelas *</label>
+                    <select id="pilihanKelas" {...register('pilihanKelas')} className={inputClass}>
+                      <option value="">Pilih Kelas</option>
+                      <option value="Reguler">Reguler</option>
+                      <option value="Bilingual">Bilingual</option>
+                      <option value="Tahfizh">Tahfizh</option>
+                    </select>
+                    {errors.pilihanKelas && <p className="text-red-500 text-xs mt-1">{errors.pilihanKelas.message}</p>}
+                  </div>
+
+                  {/* Row 2 */}
+                  <div className="space-y-2">
+                    <label htmlFor="namaLengkap" className="text-sm font-medium text-gray-700">Nama Lengkap *</label>
+                    <input id="namaLengkap" {...register('namaLengkap')} className={inputClass} placeholder="Nama sesuai Akta Kelahiran" />
                     {errors.namaLengkap && <p className="text-red-500 text-xs mt-1">{errors.namaLengkap.message}</p>}
                   </div>
-                  
                   <div className="space-y-2">
-                    <label htmlFor="nik" className="text-sm font-medium text-gray-700">NIK (Nomor Induk Kependudukan)</label>
-                    <input 
-                      id="nik"
-                      {...register('nik')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                      placeholder="16 digit NIK"
-                      maxLength={16}
-                    />
-                    {errors.nik && <p className="text-red-500 text-xs mt-1">{errors.nik.message}</p>}
+                    <label htmlFor="jenisKelamin" className="text-sm font-medium text-gray-700">Jenis Kelamin *</label>
+                    <select id="jenisKelamin" {...register('jenisKelamin')} className={inputClass}>
+                      <option value="">Pilih Jenis Kelamin</option>
+                      <option value="Laki-laki">Laki-laki</option>
+                      <option value="Perempuan">Perempuan</option>
+                    </select>
+                    {errors.jenisKelamin && <p className="text-red-500 text-xs mt-1">{errors.jenisKelamin.message}</p>}
                   </div>
 
+                  {/* Row 3 */}
                   <div className="space-y-2">
-                    <label htmlFor="tempatLahir" className="text-sm font-medium text-gray-700">Tempat Lahir</label>
-                    <input 
-                      id="tempatLahir"
-                      {...register('tempatLahir')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                      placeholder="Kota/Kabupaten"
-                    />
+                    <label htmlFor="tempatLahir" className="text-sm font-medium text-gray-700">Tempat Lahir *</label>
+                    <input id="tempatLahir" {...register('tempatLahir')} className={inputClass} placeholder="Kota/Kabupaten" />
                     {errors.tempatLahir && <p className="text-red-500 text-xs mt-1">{errors.tempatLahir.message}</p>}
                   </div>
-
                   <div className="space-y-2">
-                    <label htmlFor="tanggalLahir" className="text-sm font-medium text-gray-700">Tanggal Lahir</label>
-                    <input 
-                      id="tanggalLahir"
-                      type="date"
-                      {...register('tanggalLahir')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                    />
+                    <label htmlFor="tanggalLahir" className="text-sm font-medium text-gray-700">Tanggal Lahir *</label>
+                    <input id="tanggalLahir" type="date" {...register('tanggalLahir')} className={inputClass} />
                     {errors.tanggalLahir && <p className="text-red-500 text-xs mt-1">{errors.tanggalLahir.message}</p>}
                   </div>
-                  
+
+                  {/* Row 4 */}
+                  <div className="space-y-2">
+                    <label htmlFor="nik" className="text-sm font-medium text-gray-700">NIK (16 Digit) *</label>
+                    <input id="nik" {...register('nik')} className={inputClass} placeholder="16 Digit NIK" maxLength={16} />
+                    {errors.nik && <p className="text-red-500 text-xs mt-1">{errors.nik.message}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="nisn" className="text-sm font-medium text-gray-700">NISN (Jika Ada)</label>
+                    <input id="nisn" {...register('nisn')} className={inputClass} placeholder="Nomor Induk Siswa Nasional" />
+                  </div>
+
+                  {/* Row 5 */}
+                  <div className="space-y-2">
+                    <label htmlFor="anakKe" className="text-sm font-medium text-gray-700">Anak Ke-</label>
+                    <input id="anakKe" type="number" {...register('anakKe')} className={inputClass} placeholder="Contoh: 1" />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="saudaraDiMuhajirin" className="text-sm font-medium text-gray-700">Saudara di Al-Muhajirin</label>
+                    <input id="saudaraDiMuhajirin" {...register('saudaraDiMuhajirin')} className={inputClass} placeholder="Nama saudara (jika ada)" />
+                  </div>
+
+                  {/* Row 6 */}
+                  <div className="space-y-2">
+                    <label htmlFor="asalSekolah" className="text-sm font-medium text-gray-700">Asal Sekolah (TK/PAUD) *</label>
+                    <input id="asalSekolah" {...register('asalSekolah')} className={inputClass} placeholder="Nama TK/PAUD" />
+                    {errors.asalSekolah && <p className="text-red-500 text-xs mt-1">{errors.asalSekolah.message}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="jarakKeSekolah" className="text-sm font-medium text-gray-700">Jarak ke Sekolah (KM)</label>
+                    <input id="jarakKeSekolah" type="number" {...register('jarakKeSekolah')} className={inputClass} placeholder="Contoh: 5" />
+                  </div>
+
+                  {/* Row 7 */}
                   <div className="space-y-2 md:col-span-2">
-                    <label htmlFor="asalSekolah" className="text-sm font-medium text-gray-700">Asal Sekolah (TK/PAUD) - Jika Ada</label>
-                    <input 
-                      id="asalSekolah"
-                      {...register('asalSekolah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                      placeholder="Nama TK atau Kosongkan jika tidak ada"
-                    />
+                    <label htmlFor="alamatRumah" className="text-sm font-medium text-gray-700">Alamat Lengkap Rumah *</label>
+                    <textarea id="alamatRumah" rows={3} {...register('alamatRumah')} className={inputClass} placeholder="Alamat lengkap sesuai domisili" />
+                    {errors.alamatRumah && <p className="text-red-500 text-xs mt-1">{errors.alamatRumah.message}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="prestasiAnak" className="text-sm font-medium text-gray-700">Prestasi Anak (Opsional)</label>
+                    <input id="prestasiAnak" {...register('prestasiAnak')} className={inputClass} placeholder="Misal: Juara 1 Lomba Mewarnai" />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="tingkatPrestasi" className="text-sm font-medium text-gray-700">Tingkat Prestasi</label>
+                    <select id="tingkatPrestasi" {...register('tingkatPrestasi')} className={inputClass}>
+                      <option value="">Pilih Tingkat</option>
+                      <option value="Sekolah">Sekolah</option>
+                      <option value="Kecamatan">Kecamatan</option>
+                      <option value="Kabupaten/Kota">Kabupaten/Kota</option>
+                      <option value="Provinsi">Provinsi</option>
+                      <option value="Nasional">Nasional</option>
+                    </select>
                   </div>
                 </div>
               </motion.div>
@@ -183,54 +234,120 @@ export default function RegistrationForm() {
               >
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Data Orang Tua / Wali</h3>
                 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label htmlFor="namaAyah" className="text-sm font-medium text-gray-700">Nama Ayah</label>
-                    <input 
-                      id="namaAyah"
-                      {...register('namaAyah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                    />
-                    {errors.namaAyah && <p className="text-red-500 text-xs mt-1">{errors.namaAyah.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="pekerjaanAyah" className="text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
-                    <input 
-                      id="pekerjaanAyah"
-                      {...register('pekerjaanAyah')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                    />
-                    {errors.pekerjaanAyah && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanAyah.message}</p>}
+                <div className="space-y-8">
+                  {/* Ayah Section */}
+                  <div className="p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
+                    <h4 className="font-semibold text-[#00AA13] mb-4 flex items-center gap-2">Data Ayah</h4>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label htmlFor="namaAyah" className="text-sm font-medium text-gray-700">Nama Ayah *</label>
+                        <input id="namaAyah" {...register('namaAyah')} className={inputClass} />
+                        {errors.namaAyah && <p className="text-red-500 text-xs mt-1">{errors.namaAyah.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="nikAyah" className="text-sm font-medium text-gray-700">NIK Ayah</label>
+                        <input id="nikAyah" {...register('nikAyah')} className={inputClass} maxLength={16} />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="tahunLahirAyah" className="text-sm font-medium text-gray-700">Tahun Lahir Ayah</label>
+                        <input id="tahunLahirAyah" type="number" {...register('tahunLahirAyah')} className={inputClass} placeholder="YYYY" />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="pendidikanAyah" className="text-sm font-medium text-gray-700">Pendidikan Ayah</label>
+                        <select id="pendidikanAyah" {...register('pendidikanAyah')} className={inputClass}>
+                          <option value="">Pilih Pendidikan</option>
+                          <option value="SD">SD Sederajat</option>
+                          <option value="SMP">SMP Sederajat</option>
+                          <option value="SMA">SMA Sederajat</option>
+                          <option value="D1-D3">D1 - D3</option>
+                          <option value="S1">S1</option>
+                          <option value="S2">S2</option>
+                          <option value="S3">S3</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="pekerjaanAyah" className="text-sm font-medium text-gray-700">Pekerjaan Ayah *</label>
+                        <input id="pekerjaanAyah" {...register('pekerjaanAyah')} className={inputClass} />
+                        {errors.pekerjaanAyah && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanAyah.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="penghasilanAyah" className="text-sm font-medium text-gray-700">Penghasilan Per Bulan</label>
+                        <select id="penghasilanAyah" {...register('penghasilanAyah')} className={inputClass}>
+                          <option value="">Pilih Rentang Penghasilan</option>
+                          <option value="< 2 Juta">&lt; Rp 2.000.000</option>
+                          <option value="2-5 Juta">Rp 2.000.000 - Rp 5.000.000</option>
+                          <option value="5-10 Juta">Rp 5.000.000 - Rp 10.000.000</option>
+                          <option value="> 10 Juta">&gt; Rp 10.000.000</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="teleponAyah" className="text-sm font-medium text-gray-700">Nomor WhatsApp Ayah *</label>
+                        <input id="teleponAyah" {...register('teleponAyah')} className={inputClass} placeholder="Contoh: 0812..." />
+                        {errors.teleponAyah && <p className="text-red-500 text-xs mt-1">{errors.teleponAyah.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="alamatAyah" className="text-sm font-medium text-gray-700">Alamat Ayah</label>
+                        <input id="alamatAyah" {...register('alamatAyah')} className={inputClass} />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label htmlFor="namaIbu" className="text-sm font-medium text-gray-700">Nama Ibu</label>
-                    <input 
-                      id="namaIbu"
-                      {...register('namaIbu')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                    />
-                    {errors.namaIbu && <p className="text-red-500 text-xs mt-1">{errors.namaIbu.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="pekerjaanIbu" className="text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
-                    <input 
-                      id="pekerjaanIbu"
-                      {...register('pekerjaanIbu')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                    />
-                    {errors.pekerjaanIbu && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanIbu.message}</p>}
-                  </div>
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <label htmlFor="noTelp" className="text-sm font-medium text-gray-700">Nomor WhatsApp Aktif</label>
-                    <input 
-                      id="noTelp"
-                      {...register('noTelp')} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                      placeholder="Contoh: 081234567890"
-                    />
-                    {errors.noTelp && <p className="text-red-500 text-xs mt-1">{errors.noTelp.message}</p>}
+                  {/* Ibu Section */}
+                  <div className="p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
+                    <h4 className="font-semibold text-[#00AA13] mb-4 flex items-center gap-2">Data Ibu</h4>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label htmlFor="namaIbu" className="text-sm font-medium text-gray-700">Nama Ibu *</label>
+                        <input id="namaIbu" {...register('namaIbu')} className={inputClass} />
+                        {errors.namaIbu && <p className="text-red-500 text-xs mt-1">{errors.namaIbu.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="nikIbu" className="text-sm font-medium text-gray-700">NIK Ibu</label>
+                        <input id="nikIbu" {...register('nikIbu')} className={inputClass} maxLength={16} />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="tahunLahirIbu" className="text-sm font-medium text-gray-700">Tahun Lahir Ibu</label>
+                        <input id="tahunLahirIbu" type="number" {...register('tahunLahirIbu')} className={inputClass} placeholder="YYYY" />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="pendidikanIbu" className="text-sm font-medium text-gray-700">Pendidikan Ibu</label>
+                        <select id="pendidikanIbu" {...register('pendidikanIbu')} className={inputClass}>
+                          <option value="">Pilih Pendidikan</option>
+                          <option value="SD">SD Sederajat</option>
+                          <option value="SMP">SMP Sederajat</option>
+                          <option value="SMA">SMA Sederajat</option>
+                          <option value="D1-D3">D1 - D3</option>
+                          <option value="S1">S1</option>
+                          <option value="S2">S2</option>
+                          <option value="S3">S3</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="pekerjaanIbu" className="text-sm font-medium text-gray-700">Pekerjaan Ibu *</label>
+                        <input id="pekerjaanIbu" {...register('pekerjaanIbu')} className={inputClass} />
+                        {errors.pekerjaanIbu && <p className="text-red-500 text-xs mt-1">{errors.pekerjaanIbu.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="penghasilanIbu" className="text-sm font-medium text-gray-700">Penghasilan Per Bulan</label>
+                        <select id="penghasilanIbu" {...register('penghasilanIbu')} className={inputClass}>
+                          <option value="">Pilih Rentang Penghasilan</option>
+                          <option value="Tidak Berpenghasilan">Tidak Berpenghasilan</option>
+                          <option value="< 2 Juta">&lt; Rp 2.000.000</option>
+                          <option value="2-5 Juta">Rp 2.000.000 - Rp 5.000.000</option>
+                          <option value="5-10 Juta">Rp 5.000.000 - Rp 10.000.000</option>
+                          <option value="> 10 Juta">&gt; Rp 10.000.000</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="teleponIbu" className="text-sm font-medium text-gray-700">Nomor WhatsApp Ibu *</label>
+                        <input id="teleponIbu" {...register('teleponIbu')} className={inputClass} placeholder="Contoh: 0812..." />
+                        {errors.teleponIbu && <p className="text-red-500 text-xs mt-1">{errors.teleponIbu.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="alamatIbu" className="text-sm font-medium text-gray-700">Alamat Ibu</label>
+                        <input id="alamatIbu" {...register('alamatIbu')} className={inputClass} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -248,12 +365,16 @@ export default function RegistrationForm() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Unggah Dokumen (Opsional saat ini)</h3>
                 <p className="text-gray-500 text-sm mb-6">Anda dapat melewati langkah ini dan mengunggah dokumen nanti melalui dashboard orang tua setelah akun diverifikasi.</p>
                 
-                <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer group">
-                  <div className="w-16 h-16 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <UploadCloud size={32} />
-                  </div>
-                  <h4 className="font-medium text-gray-800 mb-1">Klik atau seret file ke sini</h4>
-                  <p className="text-xs text-gray-500">Mendukung file JPG, PNG, PDF (Maks. 5MB)</p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {['Akta Kelahiran', 'Kartu Keluarga', 'Pas Foto Anak (Terbaru)', 'Bukti Pembayaran OKB'].map((docName, i) => (
+                    <div key={i} className="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer group">
+                      <div className="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <UploadCloud size={24} />
+                      </div>
+                      <h4 className="font-medium text-gray-800 mb-1 text-sm">{docName}</h4>
+                      <p className="text-xs text-gray-500">Maks. 5MB</p>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}
