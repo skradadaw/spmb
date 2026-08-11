@@ -4,7 +4,7 @@ import * as z from 'zod';
 export const formSchema = z.object({
   // Step 1: Data Murid
   namaLengkap: z.string().min(3, 'Nama lengkap wajib diisi'),
-  nik: z.string().length(16, 'NIK harus 16 digit'),
+  nik: z.string().regex(/^\d{16}$/, 'NIK harus 16 digit angka'),
   tempatLahir: z.string().min(3, 'Tempat lahir wajib diisi'),
   tanggalLahir: z.string().min(1, 'Tanggal lahir wajib diisi'),
   asalSekolah: z.string().optional(),
@@ -14,7 +14,7 @@ export const formSchema = z.object({
   pekerjaanAyah: z.string().min(2, 'Pekerjaan Ayah wajib diisi'),
   namaIbu: z.string().min(3, 'Nama Ibu wajib diisi'),
   pekerjaanIbu: z.string().min(2, 'Pekerjaan Ibu wajib diisi'),
-  noTelp: z.string().min(10, 'Nomor telepon minimal 10 angka'),
+  noTelp: z.string().regex(/^(^\+62|62|^08)\d{8,12}$/, 'Nomor telepon tidak valid'),
 });
 
 export type FormData = z.infer<typeof formSchema>;

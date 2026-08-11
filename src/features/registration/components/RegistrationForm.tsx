@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ChevronRight, ChevronLeft, UploadCloud } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, Loader2 } from 'lucide-react';
 import { formSchema, type FormData } from '../schema';
 import { submitRegistrationAction } from '../actions';
 
@@ -19,6 +19,7 @@ export default function RegistrationForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors }, trigger } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -44,13 +45,14 @@ export default function RegistrationForm() {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
+    setSubmitError(null);
     
     try {
       const { success, error } = await submitRegistrationAction(data);
 
       if (!success) {
         console.error('Error submitting:', error);
-        alert('Terjadi kesalahan. Cek koneksi atau konfigurasi Supabase.');
+        setSubmitError('Terjadi kesalahan saat menghubungi server. Pastikan koneksi internet stabil dan coba lagi.');
       } else {
         setSubmitSuccess(true);
         setCurrentStep(3); // Ke halaman sukses
@@ -88,6 +90,16 @@ export default function RegistrationForm() {
 
       {/* Form Content */}
       <div className="p-8 md:p-12">
+        {submitError && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-medium flex items-start gap-3"
+          >
+            <div className="mt-0.5 font-bold">!</div>
+            <div>{submitError}</div>
+          </motion.div>
+        )}
         <form onSubmit={handleSubmit(onSubmit)}>
           <AnimatePresence mode="wait">
             {currentStep === 0 && (
@@ -103,8 +115,9 @@ export default function RegistrationForm() {
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <label htmlFor="namaLengkap" className="text-sm font-medium text-gray-700">Nama Lengkap</label>
                     <input 
+                      id="namaLengkap"
                       {...register('namaLengkap')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Masukkan nama sesuai Akta"
@@ -113,8 +126,9 @@ export default function RegistrationForm() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">NIK (Nomor Induk Kependudukan)</label>
+                    <label htmlFor="nik" className="text-sm font-medium text-gray-700">NIK (Nomor Induk Kependudukan)</label>
                     <input 
+                      id="nik"
                       {...register('nik')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="16 digit NIK"
@@ -124,8 +138,9 @@ export default function RegistrationForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Tempat Lahir</label>
+                    <label htmlFor="tempatLahir" className="text-sm font-medium text-gray-700">Tempat Lahir</label>
                     <input 
+                      id="tempatLahir"
                       {...register('tempatLahir')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Kota/Kabupaten"
@@ -134,8 +149,9 @@ export default function RegistrationForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                    <label htmlFor="tanggalLahir" className="text-sm font-medium text-gray-700">Tanggal Lahir</label>
                     <input 
+                      id="tanggalLahir"
                       type="date"
                       {...register('tanggalLahir')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
@@ -144,8 +160,9 @@ export default function RegistrationForm() {
                   </div>
                   
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-gray-700">Asal Sekolah (TK/PAUD) - Jika Ada</label>
+                    <label htmlFor="asalSekolah" className="text-sm font-medium text-gray-700">Asal Sekolah (TK/PAUD) - Jika Ada</label>
                     <input 
+                      id="asalSekolah"
                       {...register('asalSekolah')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                       placeholder="Nama TK atau Kosongkan jika tidak ada"
@@ -168,16 +185,18 @@ export default function RegistrationForm() {
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Nama Ayah</label>
+                    <label htmlFor="namaAyah" className="text-sm font-medium text-gray-700">Nama Ayah</label>
                     <input 
+                      id="namaAyah"
                       {...register('namaAyah')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.namaAyah && <p className="text-red-500 text-xs mt-1">{errors.namaAyah.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
+                    <label htmlFor="pekerjaanAyah" className="text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
                     <input 
+                      id="pekerjaanAyah"
                       {...register('pekerjaanAyah')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
@@ -185,16 +204,18 @@ export default function RegistrationForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Nama Ibu</label>
+                    <label htmlFor="namaIbu" className="text-sm font-medium text-gray-700">Nama Ibu</label>
                     <input 
+                      id="namaIbu"
                       {...register('namaIbu')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
                     {errors.namaIbu && <p className="text-red-500 text-xs mt-1">{errors.namaIbu.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
+                    <label htmlFor="pekerjaanIbu" className="text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
                     <input 
+                      id="pekerjaanIbu"
                       {...register('pekerjaanIbu')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
                     />
@@ -202,11 +223,12 @@ export default function RegistrationForm() {
                   </div>
                   
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-gray-700">Nomor WhatsApp Aktif</label>
+                    <label htmlFor="noTelp" className="text-sm font-medium text-gray-700">Nomor WhatsApp Aktif</label>
                     <input 
+                      id="noTelp"
                       {...register('noTelp')} 
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00AA13] focus:ring-2 focus:ring-[#00AA13]/20 outline-none transition-all"
-                      placeholder="081234567890"
+                      placeholder="Contoh: 081234567890"
                     />
                     {errors.noTelp && <p className="text-red-500 text-xs mt-1">{errors.noTelp.message}</p>}
                   </div>
@@ -295,8 +317,17 @@ export default function RegistrationForm() {
                     isSubmitting ? 'opacity-70 cursor-wait' : 'hover:bg-[#00880F]'
                   }`}
                 >
-                  {isSubmitting ? 'Memproses...' : 'Kirim Pendaftaran'}
-                  {!isSubmitting && <CheckCircle2 size={20} />}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      Lewati & Kirim Pendaftaran
+                      <CheckCircle2 size={20} />
+                    </>
+                  )}
                 </button>
               )}
             </div>
