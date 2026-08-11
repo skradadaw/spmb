@@ -1,4 +1,4 @@
-import RegistrationForm from '@/components/RegistrationForm';
+import RegistrationForm from '@/features/registration/components/RegistrationForm';
 
 export default function PendaftaranPage() {
   return (
