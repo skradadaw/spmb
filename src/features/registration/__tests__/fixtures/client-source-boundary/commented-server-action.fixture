@@ -1,0 +1,6 @@
+/* The Server Action boundary remains valid after leading comments. */
+'use server';
+
+import './server-only-supabase.fixture';
+
+export async function submitFixture() {}

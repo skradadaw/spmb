@@ -1,0 +1,3 @@
+'use client';
+
+void import(/* load on demand */ '@supabase/supabase-js');

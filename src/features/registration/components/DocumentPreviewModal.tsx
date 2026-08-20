@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FileText, Download, ExternalLink } from 'lucide-react';
+import { X, FileText, Download } from 'lucide-react';
 
 export interface DocumentPreviewModalProps {
   isOpen: boolean;
@@ -103,9 +104,12 @@ export function DocumentPreviewModal({
               />
             ) : previewUrl ? (
               <div className="max-h-[65vh] overflow-auto flex items-center justify-center">
-                <img
+                <Image
                   src={previewUrl}
                   alt={title}
+                  width={1200}
+                  height={900}
+                  unoptimized
                   className="max-w-full max-h-[65vh] object-contain rounded-2xl shadow-md border border-gray-100"
                 />
               </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { UploadCloud, Check, X, Eye, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
@@ -125,7 +126,14 @@ export function DocumentUploadCard({
                     className="w-12 h-12 rounded-xl overflow-hidden border border-[#00AA13]/30 shrink-0 bg-white shadow-xs cursor-pointer hover:opacity-90 transition-opacity"
                     title="Klik untuk melihat pratinjau"
                   >
-                    <img src={previewUrl} alt={doc.title} className="w-full h-full object-cover" />
+                    <Image
+                      src={previewUrl}
+                      alt={doc.title}
+                      width={1200}
+                      height={900}
+                      unoptimized
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ) : isPdf ? (
                   <div

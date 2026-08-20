@@ -1,14 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useState, useEffect, useRef } from 'react';
+import { useForm, Controller, useWatch, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, Loader2, CalendarIcon, User, Users, MapPin, FileText, GraduationCap, Trophy, Info, X, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { CheckCircle2, ChevronRight, ChevronLeft, Loader2, CalendarIcon, User, Users, MapPin, FileText, GraduationCap, Info, Check } from 'lucide-react';
 import { formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
-import { submitRegistrationAction } from '../actions';
-import { uploadRegistrationDocuments, rollbackUploadedDocuments } from '../utils/upload';
-import { compressImage } from '../utils/compressImage';
+import {
+  cancelRegistrationAction,
+  finalizeRegistrationAction,
+  prepareRegistrationAction,
+} from '../actions';
+import { DOCUMENT_DEFINITIONS } from '../contracts';
+import {
+  acquireSubmissionLock,
+  buildRegistrationPreparation,
+  buildSubmissionCredentials,
+  createSubmissionCredentials,
+  releaseSubmissionLock,
+} from '../clientSubmission';
+import { uploadSignedDocuments } from '../signedUploadClient';
 import { DocumentUploadCard } from './DocumentUploadCard';
 import { ConfirmationModal } from './ConfirmationModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,12 +37,10 @@ const steps = [
   { id: 'selesai', title: 'Selesai', icon: CheckCircle2 },
 ];
 
-const DOCUMENTS = [
-  { id: 'aktaKelahiran', title: 'Akta Kelahiran', desc: 'PDF, JPG, atau PNG (Maks. 5MB)' },
-  { id: 'kartuKeluarga', title: 'Kartu Keluarga', desc: 'PDF, JPG, atau PNG (Maks. 5MB)' },
-  { id: 'pasFoto', title: 'Pas Foto Anak (Terbaru)', desc: 'Foto formal anak (Maks. 5MB)' },
-  { id: 'buktiPembayaran', title: 'Bukti Pembayaran OKB', desc: 'Struk transfer / pembayaran (Maks. 5MB)' },
-];
+const DOCUMENTS = DOCUMENT_DEFINITIONS;
+
+type NumericField = 'nik' | 'nisn' | 'rt' | 'rw' | 'nikAyah' | 'nikIbu';
+type PhoneField = 'teleponAyah' | 'teleponIbu';
 
 const parseDateString = (str?: string): Date | undefined => {
   if (!str) return undefined;
@@ -45,9 +54,10 @@ const parseDateString = (str?: string): Date | undefined => {
 };
 
 export default function RegistrationForm() {
+  const submissionLockRef = useRef(false);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File }>({});
@@ -69,7 +79,7 @@ export default function RegistrationForm() {
     fetchVillages,
   } = useWilayahIndonesia();
 
-  const { register, control, handleSubmit, formState: { errors }, trigger, watch, getValues, setValue, setError, clearErrors, reset } = useForm<FormData>({
+  const { register, control, handleSubmit, formState: { errors }, trigger, getValues, setValue, setError, clearErrors } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
@@ -113,34 +123,12 @@ export default function RegistrationForm() {
     },
   });
 
-  const provinsiVal = watch('provinsi');
-  const kotaVal = watch('kota');
-  const kecamatanVal = watch('kecamatan');
+  const provinsiVal = useWatch({ control, name: 'provinsi' });
+  const kotaVal = useWatch({ control, name: 'kota' });
+  const kecamatanVal = useWatch({ control, name: 'kecamatan' });
 
-  // Restore dependent dropdown data if user navigates back to step 1
-  useEffect(() => {
-    if (provinsiVal && provinces.length > 0) {
-      const prov = provinces.find(p => p.name === provinsiVal);
-      if (prov) fetchRegencies(prov.id);
-    }
-  }, [provinsiVal, provinces, fetchRegencies]);
-
-  useEffect(() => {
-    if (kotaVal && regencies.length > 0) {
-      const kota = regencies.find(r => r.name === kotaVal);
-      if (kota) fetchDistricts(kota.id);
-    }
-  }, [kotaVal, regencies, fetchDistricts]);
-
-  useEffect(() => {
-    if (kecamatanVal && districts.length > 0) {
-      const kec = districts.find(d => d.name === kecamatanVal);
-      if (kec) fetchVillages(kec.id);
-    }
-  }, [kecamatanVal, districts, fetchVillages]);
-  
-  const bekerjaDiDirektorat2 = watch('bekerjaDiDirektorat2');
-  const tanggalLahir = watch('tanggalLahir');
+  const bekerjaDiDirektorat2 = useWatch({ control, name: 'bekerjaDiDirektorat2' });
+  const tanggalLahir = useWatch({ control, name: 'tanggalLahir' });
   
   let ageYears = 0;
   let ageMonths = 0;
@@ -152,41 +140,6 @@ export default function RegistrationForm() {
       ageMonths = differenceInMonths(today, bd) % 12;
     }
   }
-
-  const formValues = watch();
-  const [isRestored, setIsRestored] = useState(false);
-  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('spmb-draft');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const hasMeaningfulData = Boolean(
-          (parsed.namaLengkap && parsed.namaLengkap.trim()) ||
-          (parsed.nik && parsed.nik.trim()) ||
-          (parsed.jenisPendaftaran && parsed.jenisPendaftaran.trim()) ||
-          (parsed.pilihanKelas && parsed.pilihanKelas.trim()) ||
-          (parsed.asalSekolah && parsed.asalSekolah.trim())
-        );
-        if (hasMeaningfulData) {
-          reset(parsed);
-          setHasRestoredDraft(true);
-          const savedStep = localStorage.getItem('spmb-step');
-          if (savedStep) {
-            const stepNum = parseInt(savedStep, 10);
-            if (!isNaN(stepNum) && stepNum >= 0 && stepNum < 3) {
-              setCurrentStep(stepNum);
-            }
-          }
-        } else {
-          localStorage.removeItem('spmb-draft');
-          localStorage.removeItem('spmb-step');
-        }
-      } catch (e) {}
-    }
-    setIsRestored(true);
-  }, [reset]);
 
   // Restore dependent dropdown data if user navigates back to step 1 or reloads
   useEffect(() => {
@@ -209,68 +162,6 @@ export default function RegistrationForm() {
       if (kec) fetchVillages(kec.id);
     }
   }, [kecamatanVal, districts, fetchVillages]);
-
-  const handleClearDraft = () => {
-    localStorage.removeItem('spmb-draft');
-    localStorage.removeItem('spmb-step');
-    reset({
-      jenisPendaftaran: '',
-      pilihanKelas: '',
-      namaLengkap: '',
-      jenisKelamin: '',
-      tempatLahir: '',
-      tanggalLahir: '',
-      nik: '',
-      nisn: '',
-      bekerjaDiDirektorat2: 'Tidak',
-      profesiDiDirektorat2: '',
-      asalSekolah: '',
-      prestasiAnak: '',
-      tingkatPrestasi: '',
-      jarakKeSekolah: '',
-      alamatJalan: '',
-      rt: '',
-      rw: '',
-      kelurahan: '',
-      kecamatan: '',
-      kota: '',
-      provinsi: '',
-      namaAyah: '',
-      nikAyah: '',
-      pendidikanAyah: '',
-      pekerjaanAyah: '',
-      penghasilanAyah: '',
-      teleponAyah: '',
-      alamatAyah: '',
-      namaIbu: '',
-      nikIbu: '',
-      pendidikanIbu: '',
-      pekerjaanIbu: '',
-      penghasilanIbu: '',
-      teleponIbu: '',
-      alamatIbu: '',
-    });
-    clearErrors();
-    setHasRestoredDraft(false);
-    setCurrentStep(0);
-  };
-
-  useEffect(() => {
-    if (isRestored && !submitSuccess && currentStep < 3) {
-      const hasMeaningfulData = Boolean(
-        formValues.namaLengkap?.trim() ||
-        formValues.nik?.trim() ||
-        formValues.jenisPendaftaran ||
-        formValues.pilihanKelas ||
-        formValues.asalSekolah?.trim() ||
-        formValues.namaAyah?.trim()
-      );
-      if (hasMeaningfulData) {
-        localStorage.setItem('spmb-draft', JSON.stringify(formValues));
-        localStorage.setItem('spmb-step', currentStep.toString());
-      }
-    }
-  }, [formValues, currentStep, isRestored, submitSuccess]);
 
   const formatWhatsApp = (fieldName: 'teleponAyah' | 'teleponIbu') => {
     let val = getValues(fieldName) || "";
@@ -310,68 +201,18 @@ export default function RegistrationForm() {
     }
   };
 
-  const handleNumericInput = (field: keyof FormData, maxLen?: number) => (e: React.FormEvent<HTMLInputElement>) => {
+  const handleNumericInput = (field: NumericField | PhoneField, maxLen?: number) => (e: React.FormEvent<HTMLInputElement>) => {
     let clean = (e.currentTarget.value || '').replace(/\D/g, '');
     if (maxLen && clean.length > maxLen) {
       clean = clean.slice(0, maxLen);
     }
-    setValue(field, clean as any, { shouldValidate: true, shouldDirty: true });
-  };
-
-  const handleFileSelect = async (docId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawFile = e.target.files?.[0];
-    if (!rawFile) return;
-
-    if (rawFile.size > 10 * 1024 * 1024) {
-      setUploadError(`Ukuran file "${rawFile.name}" terlalu besar (Maks. 10MB).`);
-      return;
-    }
-    setUploadError(null);
-
-    // Client-side automatic image compression
-    let finalFile = rawFile;
-    if (rawFile.type.startsWith('image/')) {
-      try {
-        finalFile = await compressImage(rawFile, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
-      } catch (compErr) {
-        console.warn('Image compression fallback to original:', compErr);
-        finalFile = rawFile;
-      }
-    }
-
-    setUploadedFiles((prev) => ({ ...prev, [docId]: finalFile }));
-    if (finalFile.type.startsWith('image/')) {
-      const url = URL.createObjectURL(finalFile);
-      setPreviewUrls((prev) => ({ ...prev, [docId]: url }));
-    } else {
-      setPreviewUrls((prev) => {
-        const next = { ...prev };
-        delete next[docId];
-        return next;
-      });
-    }
-  };
-
-  const handleFileRemove = (docId: string) => {
-    setUploadedFiles((prev) => {
-      const updated = { ...prev };
-      delete updated[docId];
-      return updated;
-    });
-    setPreviewUrls((prev) => {
-      const updated = { ...prev };
-      if (updated[docId]) {
-        URL.revokeObjectURL(updated[docId]);
-        delete updated[docId];
-      }
-      return updated;
-    });
+    setValue(field, clean, { shouldValidate: true, shouldDirty: true });
   };
 
   const nextStep = async () => {
-    let fieldsToValidate: string[] = [];
+    let fieldsToValidate: Array<keyof FormData> = [];
     if (currentStep === 0) {
-      fieldsToValidate = Object.keys(step1BaseSchema.shape);
+      fieldsToValidate = Object.keys(step1BaseSchema.shape) as Array<keyof FormData>;
       const bekerja = getValues('bekerjaDiDirektorat2');
       const profesi = getValues('profesiDiDirektorat2');
       if (bekerja === 'Ya' && (!profesi || profesi.trim() === '')) {
@@ -383,10 +224,10 @@ export default function RegistrationForm() {
         clearErrors('profesiDiDirektorat2');
       }
     } else if (currentStep === 1) {
-      fieldsToValidate = Object.keys(step2Schema.shape);
+      fieldsToValidate = Object.keys(step2Schema.shape) as Array<keyof FormData>;
     }
 
-    const isStepValid = await trigger(fieldsToValidate as any);
+    const isStepValid = await trigger(fieldsToValidate);
 
     if (currentStep === 0) {
       const bekerja = getValues('bekerjaDiDirektorat2');
@@ -421,8 +262,7 @@ export default function RegistrationForm() {
 
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
 
-  const onFormError = (formErrors: any) => {
-    console.error('Validation errors on submit:', formErrors);
+  const onFormError = (formErrors: FieldErrors<FormData>) => {
     const step1Keys = Object.keys(step1BaseSchema.shape);
     const hasStep1Error = Object.keys(formErrors).some(key => step1Keys.includes(key));
     if (hasStep1Error) {
@@ -469,65 +309,55 @@ export default function RegistrationForm() {
   };
 
   const handleFinalSubmit = async () => {
-    if (!pendingFormData || isSubmitting) return;
+    if (!pendingFormData) return;
+    if (!acquireSubmissionLock(submissionLockRef)) return;
+
     setIsSubmitting(true);
     setSubmitError(null);
-    setUploadStatusMessage('Mempersiapkan unggahan berkas...');
+    setUploadStatusMessage('Menyiapkan unggahan aman...');
 
-    let uploadedStoragePaths: string[] = [];
+    const credentials = createSubmissionCredentials();
+    const credentialInput = buildSubmissionCredentials(credentials);
 
     try {
-      let documentUrls = {};
-      if (Object.keys(uploadedFiles).length > 0) {
-        const uploadResult = await uploadRegistrationDocuments(
-          pendingFormData.nik,
-          uploadedFiles,
-          (msg) => setUploadStatusMessage(msg)
-        );
+      const preparation = buildRegistrationPreparation(
+        pendingFormData,
+        uploadedFiles,
+        honeypotRef.current?.value ?? '',
+        credentials,
+      );
+      const prepared = await prepareRegistrationAction(preparation);
 
-        if (uploadResult.error) {
-          setSubmitError(uploadResult.error);
-          setIsSubmitting(false);
-          setIsConfirmModalOpen(false);
-          setUploadStatusMessage('');
-          setTimeout(() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }, 100);
-          return;
-        }
-        documentUrls = uploadResult.urls;
-        uploadedStoragePaths = uploadResult.paths || [];
-      }
-
-      setUploadStatusMessage('Menyimpan data pendaftaran ke sistem...');
-      const { success, error } = await submitRegistrationAction(pendingFormData, documentUrls);
-
-      if (!success) {
-        console.error('Error submitting:', error);
-        // Rollback storage files if database insert failed
-        if (uploadedStoragePaths.length > 0) {
-          await rollbackUploadedDocuments(uploadedStoragePaths);
-        }
-        setSubmitError(typeof error === 'string' ? error : 'Terjadi kesalahan saat menyimpan data pendaftaran.');
+      if (!prepared.success) {
+        setSubmitError(prepared.error);
         setIsConfirmModalOpen(false);
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
-      } else {
-        localStorage.removeItem('spmb-draft');
-        localStorage.removeItem('spmb-step');
+        return;
+      }
+
+      setUploadStatusMessage('Mengunggah dokumen 0 dari 4...');
+      await uploadSignedDocuments(prepared.uploads, uploadedFiles, (completed, total) => {
+        setUploadStatusMessage(`Mengunggah dokumen ${completed} dari ${total}...`);
+      });
+      setUploadStatusMessage('Memeriksa dokumen dan menyelesaikan pendaftaran...');
+      const result = await finalizeRegistrationAction(credentialInput);
+      if (!result.success) {
+        await cancelRegistrationAction(credentialInput);
+        setSubmitError(result.error);
         setIsConfirmModalOpen(false);
-        setSubmitSuccess(true);
-        setCurrentStep(3); // Ke halaman sukses
+        return;
       }
-    } catch (err: any) {
-      console.error('Exception:', err);
-      if (uploadedStoragePaths.length > 0) {
-        await rollbackUploadedDocuments(uploadedStoragePaths);
-      }
-      setSubmitError(err?.message || 'Terjadi kesalahan sistem saat mengirim data.');
+
+      setIsConfirmModalOpen(false);
+      setCurrentStep(3);
+    } catch {
+      await cancelRegistrationAction(credentialInput).catch(() => undefined);
+      setSubmitError('Terjadi kesalahan sistem saat mengirim data.');
       setIsConfirmModalOpen(false);
     } finally {
+      releaseSubmissionLock(submissionLockRef);
       setIsSubmitting(false);
       setUploadStatusMessage('');
     }
@@ -593,29 +423,6 @@ export default function RegistrationForm() {
 
         {/* Form Content */}
         <div className="p-5 sm:p-8 md:p-12">
-          {/* Draft Restored Notification Banner */}
-          {hasRestoredDraft && currentStep < 3 && (
-            <motion.div 
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 px-4 py-3 bg-emerald-50/90 border border-emerald-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-emerald-950 shadow-2xs"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#00AA13] animate-pulse shrink-0" />
-                <span className="font-medium">
-                  Draf isian formulir otomatis dipulihkan dari sesi pengisian Anda sebelumnya.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleClearDraft}
-                className="text-xs font-bold text-emerald-800 hover:text-red-600 underline underline-offset-2 transition-colors cursor-pointer self-end sm:self-auto shrink-0"
-              >
-                Mulai Ulang / Kosongkan Draf
-              </button>
-            </motion.div>
-          )}
-
           {submitError && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }} 
@@ -641,6 +448,20 @@ export default function RegistrationForm() {
               }
             }}
           >
+          <div
+            aria-hidden="true"
+            className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden"
+          >
+            <label htmlFor="registration-website">Website</label>
+            <input
+              ref={honeypotRef}
+              id="registration-website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
           <div className={cn("space-y-6", currentStep !== 0 && "hidden")}>
             <div className="flex items-center gap-2.5 sm:gap-3 mb-4 sm:mb-6">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00AA13]/10 flex items-center justify-center text-[#00AA13] shrink-0">
@@ -1476,8 +1297,6 @@ export default function RegistrationForm() {
               <button
                 type="button"
                 onClick={() => {
-                  localStorage.removeItem('spmb-draft');
-                  localStorage.removeItem('spmb-step');
                   window.location.reload();
                 }}
                 className="px-8 py-3 bg-gray-900 text-white rounded-full font-medium hover:bg-gray-800 transition-colors shadow-lg hover:shadow-xl cursor-pointer"
@@ -1623,4 +1442,3 @@ export default function RegistrationForm() {
     </div>
   );
 }
-

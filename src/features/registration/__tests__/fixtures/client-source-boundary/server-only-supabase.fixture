@@ -1,0 +1,4 @@
+import 'server-only';
+import '@supabase/supabase-js';
+
+process.env.SUPABASE_SERVICE_ROLE_KEY;

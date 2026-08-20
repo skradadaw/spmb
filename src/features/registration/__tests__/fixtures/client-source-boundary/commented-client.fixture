@@ -1,0 +1,4 @@
+// A valid directive may follow leading comments and other trivia.
+'use client';
+
+import '@supabase/supabase-js';

@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic';
 import { 
-  Sparkles, 
   BookOpen, 
   Pencil, 
   Rocket, 
@@ -89,7 +88,7 @@ export default function PendaftaranPage() {
           <div className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-base font-semibold text-gray-700 mb-2">
             <span>SD Plus 3 Al-Muhajirin</span>
             <span className="text-[#00AA13]/50 font-bold">|</span>
-            <span>Tahun Ajaran 2026/2027</span>
+            <span>Tahun Ajaran 2027/2028</span>
           </div>
 
           {/* Subtitle Instruction */}

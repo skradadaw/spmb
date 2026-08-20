@@ -4,12 +4,13 @@ import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-plus-jakarta",
 });
 
 export const metadata: Metadata = {
-  title: "PPDB Online SD Plus 3 Al-Muhajirin",
-  description: "Formulir pendaftaran peserta didik baru SD Plus 3 Al-Muhajirin",
+  title: 'SPMB Online SD Plus 3 Al-Muhajirin',
+  description:
+    'Informasi dan formulir Seleksi Penerimaan Murid Baru SD Plus 3 Al-Muhajirin Tahun Ajaran 2027/2028.',
 };
 
 export default function RootLayout({

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertCircle, X, Loader2, FileCheck, User, Phone, School } from 'lucide-react';
+import { CheckCircle2, X, Loader2, FileCheck, User, Phone, School } from 'lucide-react';
 import type { FormData } from '../schema';
 
 export interface ConfirmationModalProps {
