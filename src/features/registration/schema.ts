@@ -9,6 +9,19 @@ const optionalStr = (maxLen = 255) =>
 const oneOf = (msg: string, values: readonly string[]) =>
   reqStr(msg).refine((value) => values.includes(value), msg);
 
+export const DIRECTORATE_2_UNITS = [
+  'RA Al-Muhajirin',
+  'SD Plus 2 Al-Muhajirin',
+  'SD Plus 3 Al-Muhajirin',
+  'SMP Fullday Al-Muhajirin',
+  'SMA Fullday Al-Muhajirin',
+] as const;
+
+const optionalUnit = z.string().trim().refine(
+  (value) => value === '' || DIRECTORATE_2_UNITS.includes(value as (typeof DIRECTORATE_2_UNITS)[number]),
+  'Unit Direktorat 2 tidak valid',
+).optional();
+
 export const step1BaseSchema = z.object({
   // Data Murid
   jenisPendaftaran: oneOf('Jenis pendaftaran wajib dipilih', ['Siswa Baru', 'Pindahan']),
@@ -24,7 +37,11 @@ export const step1BaseSchema = z.object({
     .regex(/^\d{16}$/, 'NIK harus 16 digit angka'),
   nisn: z.string({ message: 'NISN wajib diisi' }).regex(/^\d{4,10}$/, 'NISN harus 4–10 digit angka'),
   bekerjaDiDirektorat2: oneOf('Wajib dipilih', ['Ya', 'Tidak']),
-  profesiDiDirektorat2: optionalStr(100),
+  namaOrangtuaDirektorat2: optionalStr(255),
+  unitOrangtuaDirektorat2: optionalUnit,
+  saudaraDiDirektorat2: oneOf('Wajib dipilih', ['Ya', 'Tidak']),
+  namaSaudaraDirektorat2: optionalStr(255),
+  unitSaudaraDirektorat2: optionalUnit,
   asalSekolah: reqStr('Asal sekolah wajib diisi', 2),
   prestasiAnak: optionalStr(1000),
   tingkatPrestasi: z.string().trim().refine(
@@ -43,15 +60,41 @@ export const step1BaseSchema = z.object({
   provinsi: reqStr('Provinsi wajib dipilih', 1, 100),
 });
 
-export const step1Schema = step1BaseSchema.superRefine((data, ctx) => {
-  if (data.bekerjaDiDirektorat2 === 'Ya' && (!data.profesiDiDirektorat2 || data.profesiDiDirektorat2.trim() === '')) {
+function validateDirectorate2Details(
+  data: z.infer<typeof step1BaseSchema>,
+  ctx: z.RefinementCtx,
+) {
+  if (data.bekerjaDiDirektorat2 === 'Ya' && !data.namaOrangtuaDirektorat2?.trim()) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Profesi wajib diisi jika bekerja di direktorat 2',
-      path: ['profesiDiDirektorat2']
+      message: 'Nama orang tua yang bekerja wajib diisi',
+      path: ['namaOrangtuaDirektorat2'],
     });
   }
-});
+  if (data.bekerjaDiDirektorat2 === 'Ya' && !data.unitOrangtuaDirektorat2) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Unit tempat bekerja wajib dipilih',
+      path: ['unitOrangtuaDirektorat2'],
+    });
+  }
+  if (data.saudaraDiDirektorat2 === 'Ya' && !data.namaSaudaraDirektorat2?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Nama saudara wajib diisi',
+      path: ['namaSaudaraDirektorat2'],
+    });
+  }
+  if (data.saudaraDiDirektorat2 === 'Ya' && !data.unitSaudaraDirektorat2) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Unit sekolah saudara wajib dipilih',
+      path: ['unitSaudaraDirektorat2'],
+    });
+  }
+}
+
+export const step1Schema = step1BaseSchema.superRefine(validateDirectorate2Details);
 
 export const step2Schema = z.object({
   // Data Ayah
@@ -80,14 +123,6 @@ export const step2Schema = z.object({
 export const formSchema = z.object({
   ...step1BaseSchema.shape,
   ...step2Schema.shape,
-}).superRefine((data, ctx) => {
-  if (data.bekerjaDiDirektorat2 === 'Ya' && (!data.profesiDiDirektorat2 || data.profesiDiDirektorat2.trim() === '')) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Profesi wajib diisi jika bekerja di direktorat 2',
-      path: ['profesiDiDirektorat2']
-    });
-  }
-});
+}).superRefine(validateDirectorate2Details);
 
 export type FormData = z.infer<typeof formSchema>;

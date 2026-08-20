@@ -71,7 +71,19 @@ export function toPendaftarRow(
     nik: data.nik,
     nisn: data.nisn || null,
     bekerja_di_direktorat2: data.bekerjaDiDirektorat2 || 'Tidak',
-    profesi_di_direktorat2: data.profesiDiDirektorat2 || null,
+    nama_orangtua_direktorat2: data.bekerjaDiDirektorat2 === 'Ya'
+      ? data.namaOrangtuaDirektorat2 || null
+      : null,
+    unit_orangtua_direktorat2: data.bekerjaDiDirektorat2 === 'Ya'
+      ? data.unitOrangtuaDirektorat2 || null
+      : null,
+    saudara_di_direktorat2: data.saudaraDiDirektorat2 || 'Tidak',
+    nama_saudara_direktorat2: data.saudaraDiDirektorat2 === 'Ya'
+      ? data.namaSaudaraDirektorat2 || null
+      : null,
+    unit_saudara_direktorat2: data.saudaraDiDirektorat2 === 'Ya'
+      ? data.unitSaudaraDirektorat2 || null
+      : null,
     asal_sekolah: data.asalSekolah,
     prestasi_anak: data.prestasiAnak || null,
     tingkat_prestasi: data.tingkatPrestasi || null,

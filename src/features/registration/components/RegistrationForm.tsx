@@ -5,7 +5,7 @@ import { useForm, Controller, useWatch, type FieldErrors } from 'react-hook-form
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { CheckCircle2, ChevronRight, ChevronLeft, Loader2, CalendarIcon, User, Users, MapPin, FileText, GraduationCap, Info, Check } from 'lucide-react';
-import { formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
+import { DIRECTORATE_2_UNITS, formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
 import {
   cancelRegistrationAction,
   finalizeRegistrationAction,
@@ -79,9 +79,9 @@ export default function RegistrationForm() {
     fetchVillages,
   } = useWilayahIndonesia();
 
-  const { register, control, handleSubmit, formState: { errors }, trigger, getValues, setValue, setError, clearErrors } = useForm<FormData>({
+  const { register, control, handleSubmit, formState: { errors }, trigger, getValues, setValue, clearErrors } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    mode: 'onSubmit',
+    mode: 'onChange',
     reValidateMode: 'onChange',
     shouldUnregister: false,
     defaultValues: {
@@ -94,7 +94,11 @@ export default function RegistrationForm() {
       nik: '',
       nisn: '',
       bekerjaDiDirektorat2: 'Tidak',
-      profesiDiDirektorat2: '',
+      namaOrangtuaDirektorat2: '',
+      unitOrangtuaDirektorat2: '',
+      saudaraDiDirektorat2: 'Tidak',
+      namaSaudaraDirektorat2: '',
+      unitSaudaraDirektorat2: '',
       asalSekolah: '',
       prestasiAnak: '',
       tingkatPrestasi: '',
@@ -128,6 +132,7 @@ export default function RegistrationForm() {
   const kecamatanVal = useWatch({ control, name: 'kecamatan' });
 
   const bekerjaDiDirektorat2 = useWatch({ control, name: 'bekerjaDiDirektorat2' });
+  const saudaraDiDirektorat2 = useWatch({ control, name: 'saudaraDiDirektorat2' });
   const tanggalLahir = useWatch({ control, name: 'tanggalLahir' });
   
   let ageYears = 0;
@@ -213,39 +218,11 @@ export default function RegistrationForm() {
     let fieldsToValidate: Array<keyof FormData> = [];
     if (currentStep === 0) {
       fieldsToValidate = Object.keys(step1BaseSchema.shape) as Array<keyof FormData>;
-      const bekerja = getValues('bekerjaDiDirektorat2');
-      const profesi = getValues('profesiDiDirektorat2');
-      if (bekerja === 'Ya' && (!profesi || profesi.trim() === '')) {
-        setError('profesiDiDirektorat2', {
-          type: 'manual',
-          message: 'Profesi wajib diisi jika bekerja di direktorat 2',
-        });
-      } else {
-        clearErrors('profesiDiDirektorat2');
-      }
     } else if (currentStep === 1) {
       fieldsToValidate = Object.keys(step2Schema.shape) as Array<keyof FormData>;
     }
 
     const isStepValid = await trigger(fieldsToValidate);
-
-    if (currentStep === 0) {
-      const bekerja = getValues('bekerjaDiDirektorat2');
-      const profesi = getValues('profesiDiDirektorat2');
-      if (bekerja === 'Ya' && (!profesi || profesi.trim() === '')) {
-        setError('profesiDiDirektorat2', {
-          type: 'manual',
-          message: 'Profesi wajib diisi jika bekerja di direktorat 2',
-        });
-        setTimeout(() => {
-          const firstError = document.querySelector('.border-red-500');
-          if (firstError) {
-            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
-        return;
-      }
-    }
 
     if (isStepValid) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -597,7 +574,15 @@ export default function RegistrationForm() {
                                   locale={idLocale}
                                   selected={parseDateString(field.value)}
                                   onSelect={(date) => {
-                                    field.onChange(date ? format(date, "yyyy-MM-dd") : "");
+                                    setValue(
+                                      'tanggalLahir',
+                                      date ? format(date, 'yyyy-MM-dd') : '',
+                                      {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                        shouldTouch: true,
+                                      },
+                                    );
                                     setIsCalendarOpen(false);
                                   }}
                                   defaultMonth={parseDateString(field.value) || new Date(new Date().getFullYear() - 7, 0)}
@@ -900,8 +885,9 @@ export default function RegistrationForm() {
                                 field.onChange(val);
                                 clearErrors('bekerjaDiDirektorat2');
                                 if (val === 'Tidak') {
-                                  setValue('profesiDiDirektorat2', '');
-                                  clearErrors('profesiDiDirektorat2');
+                                  setValue('namaOrangtuaDirektorat2', '');
+                                  setValue('unitOrangtuaDirektorat2', '');
+                                  clearErrors(['namaOrangtuaDirektorat2', 'unitOrangtuaDirektorat2']);
                                 }
                               }} 
                               value={field.value || undefined}
@@ -919,22 +905,108 @@ export default function RegistrationForm() {
                         {errors.bekerjaDiDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.bekerjaDiDirektorat2.message}</p>}
                       </div>
                       {bekerjaDiDirektorat2 === 'Ya' && (
-                        <div className="space-y-1.5 md:col-span-2">
-                          <label htmlFor="profesiDiDirektorat2" className="text-sm font-medium text-gray-700">Bekerja sebagai profesi apa? *</label>
+                        <>
+                        <div className="space-y-1.5">
+                          <label htmlFor="namaOrangtuaDirektorat2" className="text-sm font-medium text-gray-700">Nama orang tua yang bekerja *</label>
                           <input 
-                            id="profesiDiDirektorat2" 
-                            {...register('profesiDiDirektorat2', {
+                            id="namaOrangtuaDirektorat2"
+                            {...register('namaOrangtuaDirektorat2', {
                               onChange: () => {
-                                if (errors.profesiDiDirektorat2) {
-                                  clearErrors('profesiDiDirektorat2');
+                                if (errors.namaOrangtuaDirektorat2) {
+                                  clearErrors('namaOrangtuaDirektorat2');
                                 }
                               }
                             })} 
-                            className={cn(inputClass, errors.profesiDiDirektorat2 && "border-red-500")} 
-                            placeholder="Contoh: Guru" 
+                            className={cn(inputClass, errors.namaOrangtuaDirektorat2 && "border-red-500")}
+                            placeholder="Masukkan nama orang tua"
                           />
-                          {errors.profesiDiDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.profesiDiDirektorat2.message}</p>}
+                          {errors.namaOrangtuaDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.namaOrangtuaDirektorat2.message}</p>}
                         </div>
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Berada di unit mana? *</label>
+                          <Controller
+                            control={control}
+                            name="unitOrangtuaDirektorat2"
+                            render={({ field }) => (
+                              <Select onValueChange={(val) => { field.onChange(val); clearErrors('unitOrangtuaDirektorat2'); }} value={field.value || undefined}>
+                                <SelectTrigger className={errors.unitOrangtuaDirektorat2 ? "border-red-500" : ""}>
+                                  <SelectValue placeholder="Pilih Unit" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {DIRECTORATE_2_UNITS.map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.unitOrangtuaDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.unitOrangtuaDirektorat2.message}</p>}
+                        </div>
+                        </>
+                      )}
+
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-sm font-medium text-gray-700">Apakah mempunyai saudara yang bersekolah di unit Direktorat 2? *</label>
+                        <Controller
+                          control={control}
+                          name="saudaraDiDirektorat2"
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={(val) => {
+                                field.onChange(val);
+                                clearErrors('saudaraDiDirektorat2');
+                                if (val === 'Tidak') {
+                                  setValue('namaSaudaraDirektorat2', '');
+                                  setValue('unitSaudaraDirektorat2', '');
+                                  clearErrors(['namaSaudaraDirektorat2', 'unitSaudaraDirektorat2']);
+                                }
+                              }}
+                              value={field.value || undefined}
+                            >
+                              <SelectTrigger className={errors.saudaraDiDirektorat2 ? "border-red-500" : ""}>
+                                <SelectValue placeholder="Pilih Jawaban" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Ya">Ya</SelectItem>
+                                <SelectItem value="Tidak">Tidak</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {errors.saudaraDiDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.saudaraDiDirektorat2.message}</p>}
+                      </div>
+
+                      {saudaraDiDirektorat2 === 'Ya' && (
+                        <>
+                          <div className="space-y-1.5">
+                            <label htmlFor="namaSaudaraDirektorat2" className="text-sm font-medium text-gray-700">Nama saudara *</label>
+                            <input
+                              id="namaSaudaraDirektorat2"
+                              {...register('namaSaudaraDirektorat2', {
+                                onChange: () => clearErrors('namaSaudaraDirektorat2'),
+                              })}
+                              className={cn(inputClass, errors.namaSaudaraDirektorat2 && "border-red-500")}
+                              placeholder="Masukkan nama saudara"
+                            />
+                            {errors.namaSaudaraDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.namaSaudaraDirektorat2.message}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-gray-700">Bersekolah di unit mana? *</label>
+                            <Controller
+                              control={control}
+                              name="unitSaudaraDirektorat2"
+                              render={({ field }) => (
+                                <Select onValueChange={(val) => { field.onChange(val); clearErrors('unitSaudaraDirektorat2'); }} value={field.value || undefined}>
+                                  <SelectTrigger className={errors.unitSaudaraDirektorat2 ? "border-red-500" : ""}>
+                                    <SelectValue placeholder="Pilih Unit" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {DIRECTORATE_2_UNITS.map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            />
+                            {errors.unitSaudaraDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.unitSaudaraDirektorat2.message}</p>}
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>

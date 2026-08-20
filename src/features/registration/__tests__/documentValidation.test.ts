@@ -13,6 +13,7 @@ const makeValidRegistrationData = () => ({
   nik: '1234567890123456',
   nisn: '1234567890',
   bekerjaDiDirektorat2: 'Tidak',
+  saudaraDiDirektorat2: 'Tidak',
   asalSekolah: 'TK Melati',
   jarakKeSekolah: '2 km',
   alamatJalan: 'Jalan Melati',
@@ -55,6 +56,49 @@ const makeValidSubmission = () => {
 };
 
 describe('parseRegistrationSubmission', () => {
+  it('accepts parent name and unit instead of the retired profession field', async () => {
+    const submission = makeValidSubmission();
+    submission.set('payload', JSON.stringify({
+      ...makeValidRegistrationData(),
+      bekerjaDiDirektorat2: 'Ya',
+      namaOrangtuaDirektorat2: 'Budi Santoso',
+      unitOrangtuaDirektorat2: 'SD Plus 3 Al-Muhajirin',
+      saudaraDiDirektorat2: 'Tidak',
+    }));
+
+    await expect(parseRegistrationSubmission(submission)).resolves.toMatchObject({
+      success: true,
+    });
+  });
+
+  it('requires sibling name and unit when the sibling answer is Yes', async () => {
+    const submission = makeValidSubmission();
+    submission.set('payload', JSON.stringify({
+      ...makeValidRegistrationData(),
+      saudaraDiDirektorat2: 'Ya',
+    }));
+
+    await expect(parseRegistrationSubmission(submission)).resolves.toEqual({
+      success: false,
+      error: 'Data pendaftaran tidak valid.',
+    });
+  });
+
+  it('rejects a unit outside the approved Direktorat 2 list', async () => {
+    const submission = makeValidSubmission();
+    submission.set('payload', JSON.stringify({
+      ...makeValidRegistrationData(),
+      saudaraDiDirektorat2: 'Ya',
+      namaSaudaraDirektorat2: 'Ahmad Santoso',
+      unitSaudaraDirektorat2: 'Unit Tidak Dikenal',
+    }));
+
+    await expect(parseRegistrationSubmission(submission)).resolves.toEqual({
+      success: false,
+      error: 'Data pendaftaran tidak valid.',
+    });
+  });
+
   it('accepts 4-10 digit NISN and rejects fewer than 4 digits', async () => {
     const fourDigitSubmission = makeValidSubmission();
     fourDigitSubmission.set('payload', JSON.stringify({

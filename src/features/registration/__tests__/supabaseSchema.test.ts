@@ -11,6 +11,19 @@ function compactSql(sql: string) {
 const compactSchema = compactSql(schema);
 
 describe('Supabase registration security schema', () => {
+  it('adds separate parent and sibling Direktorat 2 columns without dropping legacy data', () => {
+    for (const column of [
+      'nama_orangtua_direktorat2 VARCHAR(255)',
+      'unit_orangtua_direktorat2 VARCHAR(100)',
+      "saudara_di_direktorat2 VARCHAR(10) DEFAULT 'Tidak'",
+      'nama_saudara_direktorat2 VARCHAR(255)',
+      'unit_saudara_direktorat2 VARCHAR(100)',
+    ]) {
+      expect(compactSchema).toContain(`ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ${column};`);
+    }
+    expect(schema).not.toMatch(/DROP\s+COLUMN\s+profesi_di_direktorat2/i);
+  });
+
   it('upserts a private document bucket with the server upload limits', () => {
     expect(compactSchema).toContain(
       compactSql(`
