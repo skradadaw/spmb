@@ -26,19 +26,27 @@ export function useWilayahIndonesia() {
 
   // Fetch provinces on mount
   useEffect(() => {
+    let isMounted = true;
     const fetchProvinces = async () => {
       setLoading((prev) => ({ ...prev, provinces: true }));
       try {
         const response = await fetch(`${BASE_URL}/provinces.json`);
         const data = await response.json();
-        setProvinces(data);
+        if (isMounted) {
+          setProvinces(data);
+        }
       } catch (error) {
         console.error('Error fetching provinces:', error);
       } finally {
-        setLoading((prev) => ({ ...prev, provinces: false }));
+        if (isMounted) {
+          setLoading((prev) => ({ ...prev, provinces: false }));
+        }
       }
     };
     fetchProvinces();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const fetchRegencies = useCallback(async (provinceId: string) => {
@@ -50,10 +58,6 @@ export function useWilayahIndonesia() {
       const response = await fetch(`${BASE_URL}/regencies/${provinceId}.json`);
       const data = await response.json();
       setRegencies(data);
-      setDistricts([]);
-      setVillages([]);
-      fetchedRegencyId.current = null;
-      fetchedDistrictId.current = null;
     } catch (error) {
       console.error('Error fetching regencies:', error);
       fetchedProvinceId.current = null;
@@ -71,8 +75,6 @@ export function useWilayahIndonesia() {
       const response = await fetch(`${BASE_URL}/districts/${regencyId}.json`);
       const data = await response.json();
       setDistricts(data);
-      setVillages([]);
-      fetchedDistrictId.current = null;
     } catch (error) {
       console.error('Error fetching districts:', error);
       fetchedRegencyId.current = null;
