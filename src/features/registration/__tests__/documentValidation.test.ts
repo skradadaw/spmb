@@ -55,6 +55,29 @@ const makeValidSubmission = () => {
 };
 
 describe('parseRegistrationSubmission', () => {
+  it('accepts 4-10 digit NISN and rejects fewer than 4 digits', async () => {
+    const fourDigitSubmission = makeValidSubmission();
+    fourDigitSubmission.set('payload', JSON.stringify({
+      ...makeValidRegistrationData(),
+      nisn: '1234',
+    }));
+
+    await expect(parseRegistrationSubmission(fourDigitSubmission)).resolves.toMatchObject({
+      success: true,
+    });
+
+    const threeDigitSubmission = makeValidSubmission();
+    threeDigitSubmission.set('payload', JSON.stringify({
+      ...makeValidRegistrationData(),
+      nisn: '123',
+    }));
+
+    await expect(parseRegistrationSubmission(threeDigitSubmission)).resolves.toEqual({
+      success: false,
+      error: 'Data pendaftaran tidak valid.',
+    });
+  });
+
   it('returns validated registration data and the trusted document extensions', async () => {
     const result = await parseRegistrationSubmission(makeValidSubmission());
 

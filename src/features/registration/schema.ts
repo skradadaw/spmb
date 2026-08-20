@@ -22,7 +22,7 @@ export const step1BaseSchema = z.object({
   ),
   nik: z.string({ message: 'NIK wajib diisi' })
     .regex(/^\d{16}$/, 'NIK harus 16 digit angka'),
-  nisn: z.string({ message: 'NISN wajib diisi' }).regex(/^\d{10}$/, 'NISN harus 10 digit angka'),
+  nisn: z.string({ message: 'NISN wajib diisi' }).regex(/^\d{4,10}$/, 'NISN harus 4–10 digit angka'),
   bekerjaDiDirektorat2: oneOf('Wajib dipilih', ['Ya', 'Tidak']),
   profesiDiDirektorat2: optionalStr(100),
   asalSekolah: reqStr('Asal sekolah wajib diisi', 2),

@@ -552,7 +552,8 @@ export default function RegistrationForm() {
                           {...register('nisn')} 
                           onInput={handleNumericInput('nisn', 10)}
                           className={cn(inputClass, errors.nisn && "border-red-500")} 
-                          placeholder="Nomor Induk Siswa Nasional (10 Digit)" 
+                          placeholder="NISN (4–10 digit angka)" 
+                          minLength={4}
                           maxLength={10}
                         />
                         {errors.nisn && <p className="text-red-500 text-xs mt-1">{errors.nisn.message}</p>}
