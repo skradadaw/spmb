@@ -34,7 +34,7 @@ luar jadwal. Gunakan `closed` sebagai tombol darurat.
    ```
 
 3. Jika ada hasil, hentikan proses dan selesaikan duplikasi secara manual.
-4. Jalankan seluruh isi `supabase_schema.sql`.
+4. Jalankan seluruh isi `supabase/schema.sql`.
 5. Pastikan bucket `dokumen_pendaftaran` berstatus **Private**, batas 5 MB, dan
    hanya menerima PDF, JPEG, PNG, serta WebP.
 6. Pastikan tidak ada policy yang memberi browser akses langsung:

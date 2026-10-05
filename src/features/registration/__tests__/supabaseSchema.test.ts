@@ -1,8 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const schema = readFileSync(resolve(process.cwd(), 'supabase_schema.sql'), 'utf8');
+const schemaPath = existsSync(resolve(process.cwd(), 'supabase/schema.sql'))
+  ? resolve(process.cwd(), 'supabase/schema.sql')
+  : resolve(process.cwd(), 'supabase_schema.sql');
+const schema = readFileSync(schemaPath, 'utf8');
 
 function compactSql(sql: string) {
   return sql.replace(/\s+/g, ' ').trim();

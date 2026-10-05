@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { ArrowRight, FileCheck2 } from 'lucide-react';
-import HomeHero, { HomeHeader } from '@/features/home/components/HomeHero';
-import PaymentInformation from '@/features/home/components/PaymentInformation';
-import RegistrationPreparation from '@/features/home/components/RegistrationPreparation';
-import { registrationInfo } from '@/features/home/data';
+import {
+  HomeHero,
+  HomeHeader,
+  PaymentInformation,
+  RegistrationPreparation,
+  registrationInfo,
+} from '@/features/home';
 
 export default function Home() {
   return (

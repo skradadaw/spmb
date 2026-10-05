@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 const RegistrationForm = dynamic(
-  () => import('@/features/registration/components/RegistrationForm'),
+  () => import('@/features/registration'),
   {
     ssr: false,
     loading: () => (
