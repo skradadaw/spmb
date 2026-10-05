@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, LockKeyhole, Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -50,13 +51,25 @@ export function AdminLoginForm() {
   return (
     <div className="flex w-full flex-1 items-center justify-center p-6 sm:p-10 lg:w-1/2">
       <Card className="w-full max-w-md border-slate-200 bg-white p-2 shadow-xl sm:p-4">
-        <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-[#007A10] shadow-sm ring-8 ring-emerald-50/50">
-            <LockKeyhole className="h-7 w-7" />
+        <CardHeader className="space-y-3 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-white p-1 shadow-md ring-4 ring-emerald-100/70">
+            <Image
+              src="/logo.png"
+              alt="Logo SD Plus 3 Al-Muhajirin"
+              width={64}
+              height={64}
+              className="h-full w-full object-contain"
+              priority
+            />
           </div>
-          <CardTitle className="pt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
-            Masuk Panel Admin
-          </CardTitle>
+          <div>
+            <CardTitle className="pt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+              Masuk Panel Admin
+            </CardTitle>
+            <p className="mt-1 text-xs font-bold text-[#007A10]">
+              SD Plus 3 Al-Muhajirin
+            </p>
+          </div>
           <CardDescription className="text-sm leading-relaxed text-slate-600">
             Masukkan PIN keamanan panitia untuk mengakses dan mengelola seluruh data pendaftaran SPMB.
           </CardDescription>

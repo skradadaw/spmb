@@ -1,9 +1,9 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowRight,
   CalendarDays,
   ClipboardCheck,
-  GraduationCap,
   WalletCards,
 } from 'lucide-react';
 import { registrationInfo } from '@/features/home/data';
@@ -35,8 +35,15 @@ export function HomeHeader() {
           className="flex items-center gap-3"
           aria-label="SD Plus 3 Al-Muhajirin - kembali ke atas"
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#00AA13] text-white shadow-md shadow-emerald-600/20">
-            <GraduationCap size={23} />
+          <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white p-0.5 shadow-md shadow-emerald-600/20 ring-1 ring-emerald-100">
+            <Image
+              src="/logo.png"
+              alt="Logo SD Plus 3 Al-Muhajirin"
+              width={44}
+              height={44}
+              className="h-full w-full object-contain"
+              priority
+            />
           </span>
           <span>
             <span className="block text-sm font-black text-gray-950 sm:text-base">

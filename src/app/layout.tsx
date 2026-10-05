@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   title: 'SPMB Online SD Plus 3 Al-Muhajirin',
   description:
     'Informasi dan formulir Seleksi Penerimaan Murid Baru SD Plus 3 Al-Muhajirin Tahun Ajaran 2027/2028.',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/favicon.ico',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({

@@ -16,8 +16,8 @@ describe('LoginPage (/login)', () => {
   it('renders split screen with LoginHero and AdminLoginForm', () => {
     render(<LoginPage />);
 
-    // Dari LoginHero
-    expect(screen.getByText('SD Plus 3 Al-Muhajirin')).toBeDefined();
+    // Dari LoginHero dan AdminLoginForm
+    expect(screen.getAllByText('SD Plus 3 Al-Muhajirin').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Portal Khusus Panitia SPMB')).toBeDefined();
 
     // Dari AdminLoginForm
