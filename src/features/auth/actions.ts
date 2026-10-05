@@ -13,7 +13,7 @@ const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 60 * 1000; // 60 seconds
 const attempts = new Map<string, AttemptRecord>();
 
-export function resetRateLimitForTesting() {
+export async function resetRateLimitForTesting() {
   attempts.clear();
 }
 

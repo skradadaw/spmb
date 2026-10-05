@@ -65,12 +65,20 @@ export function HomeHeader() {
             </a>
           ))}
         </nav>
-        <Link
-          href="/pendaftaran"
-          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007A10] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition hover:bg-[#00550B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007A10] sm:px-6"
-        >
-          Daftar Sekarang <ArrowRight size={17} />
-        </Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/login"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-emerald-900/10 bg-white px-3.5 py-2 text-xs font-bold text-gray-700 transition hover:bg-emerald-50 hover:text-[#007A10] sm:px-4 sm:text-sm"
+          >
+            Login Panitia
+          </Link>
+          <Link
+            href="/pendaftaran"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007A10] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition hover:bg-[#00550B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007A10] sm:px-6"
+          >
+            Daftar Sekarang <ArrowRight size={17} />
+          </Link>
+        </div>
       </div>
     </header>
   );
