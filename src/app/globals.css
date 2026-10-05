@@ -2,12 +2,24 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+
+  /* Palet Warna Resmi Gojek */
+  --brand-green: #00AA13;
+  --brand-green-hover: #00880F;
+  --brand-green-dark: #00550B;
+  --brand-green-light: #F3FAF4;
+  --brand-green-tint: rgba(0, 170, 19, 0.12);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-hover: var(--brand-green-hover);
+  --color-brand-green-dark: var(--brand-green-dark);
+  --color-brand-green-light: var(--brand-green-light);
+  --color-brand-green-tint: var(--brand-green-tint);
   --font-sans: var(--font-plus-jakarta);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
