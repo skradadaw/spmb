@@ -197,7 +197,7 @@ function findClientViolations(files: string[]) {
   return [...reachable].flatMap(([path, chain]) => {
     const source = sourceByPath.get(path) ?? '';
     const sourceFile = parseSource(path, source);
-    const isSignedUploadClient = path.endsWith('/signedUploadClient.ts');
+    const isSignedUploadClient = path.replace(/\\/g, '/').endsWith('/signedUploadClient.ts');
     const moduleViolations = importedSpecifiers(sourceFile)
       .filter(isSupabaseSpecifier)
       .filter(() => !isSignedUploadClient)
@@ -232,7 +232,7 @@ describe('client source security boundary', () => {
       const source = readFileSync(path, 'utf8');
 
       return forbiddenArtifacts
-        .filter(([label]) => label !== 'public anon key' || !path.endsWith('/signedUploadClient.ts'))
+        .filter(([label]) => label !== 'public anon key' || !path.replace(/\\/g, '/').endsWith('/signedUploadClient.ts'))
         .filter(([, pattern]) => pattern.test(source))
         .map(([label]) => `${displayPath(path)}: ${label}`);
     });
