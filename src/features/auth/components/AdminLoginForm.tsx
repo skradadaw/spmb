@@ -46,7 +46,7 @@ export function AdminLoginForm() {
   };
 
   return (
-    <div data-testid="admin-login-form" className="flex h-full w-full flex-col">
+    <div data-testid="admin-login-form" className="flex h-full w-full flex-col justify-center">
       <div data-testid="mobile-school-identity" className="relative mb-4 flex items-center gap-3 border-b border-emerald-900/10 pb-3 sm:mb-6 sm:gap-3.5 sm:pb-5 lg:hidden">
         <span aria-hidden="true" className="absolute inset-x-0 bottom-[-1px] h-px bg-gradient-to-r from-[#00AA13]/60 via-emerald-300/35 to-transparent" />
         <div className="flex h-12 w-12 shrink-0 items-center justify-center sm:h-14 sm:w-14">
@@ -183,7 +183,7 @@ export function AdminLoginForm() {
       </form>
 
       {/* Footer Support Info */}
-      <div data-testid="login-support" className="mt-auto border-t border-slate-100 pt-3 text-center sm:mt-7 sm:pt-5">
+      <div data-testid="login-support" className="mt-4 border-t border-slate-100 pt-3 text-center sm:mt-7 sm:pt-5">
         <a
           href="https://wa.me/6281234567890"
           target="_blank"

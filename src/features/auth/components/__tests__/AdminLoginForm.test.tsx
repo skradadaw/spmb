@@ -126,6 +126,8 @@ describe('AdminLoginForm Component', () => {
     expect(backLink.className).toContain('h-11');
     expect(screen.getByTestId('mobile-school-identity').className).toContain('mb-4');
     expect(screen.getByTestId('admin-login-form').className).toContain('h-full');
-    expect(screen.getByTestId('login-support').className).toContain('mt-auto');
+    expect(screen.getByTestId('admin-login-form').className).toContain('justify-center');
+    expect(screen.getByTestId('login-support').className).toContain('mt-4');
+    expect(screen.getByTestId('login-support').className).not.toContain('mt-auto');
   });
 });
