@@ -13,7 +13,7 @@ type RegistrationRow = {
 
 type DashboardClient = {
   from(table: 'pendaftar'): {
-    select(columns: string): Promise<{ data: unknown[] | null; error: unknown }>;
+    select(columns: string): PromiseLike<{ data: unknown[] | null; error: unknown }>;
   };
 };
 

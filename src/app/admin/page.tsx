@@ -23,10 +23,10 @@ function DashboardErrorState() {
 }
 
 export default async function AdminPage() {
+  let summary;
   try {
     const repository = createAdminDashboardRepository(getSupabaseAdmin());
-    const summary = await repository.getSummary();
-    return <AdminDashboard summary={summary} />;
+    summary = await repository.getSummary();
   } catch (error) {
     const safeType = error instanceof AdminDashboardLoadError || error instanceof SupabaseConfigurationError
       ? error.name
@@ -34,4 +34,5 @@ export default async function AdminPage() {
     console.error('Admin dashboard load failed.', safeType);
     return <DashboardErrorState />;
   }
+  return <AdminDashboard summary={summary} />;
 }
