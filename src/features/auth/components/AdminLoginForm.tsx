@@ -47,7 +47,7 @@ export function AdminLoginForm() {
 
   return (
     <div data-testid="admin-login-form" className="flex h-full w-full flex-col justify-center">
-      <div data-testid="mobile-school-identity" className="relative mb-4 flex items-center gap-3 border-b border-emerald-900/10 pb-3 sm:mb-6 sm:gap-3.5 sm:pb-5 lg:hidden">
+      <div data-testid="mobile-school-identity" className="relative mb-4 flex items-center justify-center gap-3 border-b border-emerald-900/10 pb-3 sm:mb-6 sm:gap-3.5 sm:pb-5 lg:hidden">
         <span aria-hidden="true" className="absolute inset-x-0 bottom-[-1px] h-px bg-gradient-to-r from-[#00AA13]/60 via-emerald-300/35 to-transparent" />
         <div className="flex h-12 w-12 shrink-0 items-center justify-center sm:h-14 sm:w-14">
           <Image src="/logo.png" alt="" width={56} height={56} className="h-full w-full object-contain drop-shadow-[0_5px_8px_rgba(6,74,24,0.22)]" priority />
@@ -185,7 +185,7 @@ export function AdminLoginForm() {
       {/* Footer Support Info */}
       <div data-testid="login-support" className="mt-4 border-t border-slate-100 pt-3 text-center sm:mt-7 sm:pt-5">
         <a
-          href="https://wa.me/6281234567890"
+          href="https://wa.me/6287723487776"
           target="_blank"
           rel="noopener noreferrer"
           className="group inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-[11px] font-semibold text-slate-500 transition-colors hover:bg-emerald-50 hover:text-[#00880F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00AA13] focus-visible:ring-offset-2 sm:py-2 sm:text-xs"

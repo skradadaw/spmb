@@ -37,7 +37,8 @@ describe('LoginPage (/login)', () => {
     expect(section.className).toContain('h-dvh');
     expect(card?.className).toContain('w-full');
     expect(card?.className).toContain('max-w-[31rem]');
-    expect(card?.className).toContain('min-h-[calc(100dvh-1rem)]');
+    expect(card?.className).toContain('min-h-[80dvh]');
     expect(card?.className).toContain('sm:min-h-0');
+    expect(card?.parentElement?.className).toContain('items-center');
   });
 });

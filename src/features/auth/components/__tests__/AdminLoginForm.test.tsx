@@ -50,6 +50,7 @@ describe('AdminLoginForm Component', () => {
     expect(screen.getByText('SISTEM PENERIMAAN MURID BARU')).toBeDefined();
     const identity = screen.getByTestId('mobile-school-identity');
     expect(identity.className).toContain('border-b');
+    expect(identity.className).toContain('justify-center');
     expect(identity.className).not.toContain('rounded-2xl');
     expect(identity.className).not.toContain('bg-gradient-to-r');
   });
@@ -102,6 +103,13 @@ describe('AdminLoginForm Component', () => {
     render(<AdminLoginForm />);
     const backLink = screen.getByRole('link', { name: /kembali ke beranda spmb/i });
     expect(backLink.getAttribute('href')).toBe('/');
+  });
+
+  it('links support to the official WhatsApp number', () => {
+    render(<AdminLoginForm />);
+    const supportLink = screen.getByRole('link', { name: /hubungi support/i });
+
+    expect(supportLink.getAttribute('href')).toBe('https://wa.me/6287723487776');
   });
 
   it('only enables submission for a complete 6 digit PIN', () => {
