@@ -2,11 +2,17 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupabaseConfigurationError } from '@/features/registration/server/supabaseAdmin';
 
-const mocks = vi.hoisted(() => ({ getSupabaseAdmin: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  getSupabaseAdmin: vi.fn(),
+  getAdminSession: vi.fn(),
+  redirect: vi.fn(() => { throw new Error('NEXT_REDIRECT'); }),
+}));
 vi.mock('@/features/registration/server/supabaseAdmin', async (importOriginal) => ({
   ...await importOriginal<typeof import('@/features/registration/server/supabaseAdmin')>(),
   getSupabaseAdmin: mocks.getSupabaseAdmin,
 }));
+vi.mock('@/features/auth/session', () => ({ getAdminSession: mocks.getAdminSession }));
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 
 import AdminPage from '../page';
 
@@ -15,7 +21,18 @@ function clientReturning(data: unknown[] | null, error: unknown = null) {
 }
 
 describe('AdminPage', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getAdminSession.mockResolvedValue(true);
+  });
+
+  it('redirects before accessing Supabase when the session is invalid', async () => {
+    mocks.getAdminSession.mockResolvedValue(false);
+
+    await expect(AdminPage()).rejects.toThrow('NEXT_REDIRECT');
+    expect(mocks.redirect).toHaveBeenCalledWith('/login');
+    expect(mocks.getSupabaseAdmin).not.toHaveBeenCalled();
+  });
 
   it('renders live registration metrics from Supabase', async () => {
     mocks.getSupabaseAdmin.mockReturnValue(clientReturning([

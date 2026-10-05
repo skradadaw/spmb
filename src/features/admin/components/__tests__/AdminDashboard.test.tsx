@@ -56,6 +56,19 @@ describe('AdminDashboard', () => {
     expect(longNames.every((element) => /truncate|break-words/.test(element.className))).toBe(true);
   });
 
+  it('keeps malformed dates and long statuses safe on mobile', () => {
+    const longStatus = 'Status administratif sangat panjang yang belum dikenali oleh sistem';
+    render(<AdminDashboard summary={{
+      ...summary,
+      recentApplicants: [{ ...summary.recentApplicants[0], status: longStatus, createdAt: null }],
+    }} />);
+
+    expect(screen.getAllByText('Tanggal belum tersedia')).toHaveLength(2);
+    const statuses = screen.getAllByText(longStatus);
+    expect(statuses).toHaveLength(2);
+    expect(statuses.every((element) => element.className.includes('break-words'))).toBe(true);
+  });
+
   it('renders one shared empty state without list structures', () => {
     render(<AdminDashboard summary={{ ...summary, recentApplicants: [] }} />);
     expect(screen.getAllByText('Belum ada data pendaftar. Data akan muncul setelah formulir pendaftaran dikirim.')).toHaveLength(1);

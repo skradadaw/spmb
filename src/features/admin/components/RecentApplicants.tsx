@@ -11,7 +11,8 @@ function statusVariant(status: string): BadgeVariant {
   return 'secondary';
 }
 
-function formattedDate(value: string) {
+function formattedDate(value: string | null) {
+  if (!value || !Number.isFinite(Date.parse(value))) return 'Tanggal belum tersedia';
   return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(value));
 }
 
@@ -38,14 +39,14 @@ export function RecentApplicants({ applicants }: { applicants: RecentApplicant[]
                     <TableCell className="max-w-[260px] font-semibold text-slate-900"><span className="block truncate">{item.namaLengkap}</span></TableCell>
                     <TableCell>{item.pilihanKelas}</TableCell><TableCell>{item.jenisPendaftaran}</TableCell>
                     <TableCell className="whitespace-nowrap text-slate-500">{formattedDate(item.createdAt)}</TableCell>
-                    <TableCell><Badge variant={statusVariant(item.status)}>{item.status}</Badge></TableCell>
+                    <TableCell><Badge variant={statusVariant(item.status)} className="max-w-[11rem] whitespace-normal break-words text-center leading-4">{item.status}</Badge></TableCell>
                   </TableRow>
                 ))}</TableBody>
               </Table>
             </div>
             <div className="space-y-3 md:hidden">{applicants.map((item) => (
               <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4">
-                <div className="flex items-start justify-between gap-3"><p className="min-w-0 break-words text-sm font-bold leading-5 text-slate-900">{item.namaLengkap}</p><Badge variant={statusVariant(item.status)} className="shrink-0">{item.status}</Badge></div>
+                <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between"><p className="min-w-0 break-words text-sm font-bold leading-5 text-slate-900">{item.namaLengkap}</p><Badge variant={statusVariant(item.status)} className="max-w-full whitespace-normal break-words text-center leading-4 sm:max-w-[11rem]">{item.status}</Badge></div>
                 <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500"><span>{item.pilihanKelas}</span><span>•</span><span>{item.jenisPendaftaran}</span></div>
                 <p className="mt-3 flex items-center gap-1.5 text-[11px] text-slate-400"><Clock3 aria-hidden="true" className="h-3.5 w-3.5" />{formattedDate(item.createdAt)}</p>
               </article>

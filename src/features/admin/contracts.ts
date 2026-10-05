@@ -10,7 +10,7 @@ export type RecentApplicant = {
   pilihanKelas: string;
   jenisPendaftaran: string;
   status: string;
-  createdAt: string;
+  createdAt: string | null;
 };
 
 export type AdminDashboardSummary = {

@@ -8,7 +8,7 @@ type RegistrationRow = {
   pilihan_kelas: string | null;
   jenis_pendaftaran: string | null;
   status: string | null;
-  created_at: string;
+  created_at: string | null;
 };
 
 type DashboardClient = {
@@ -47,6 +47,10 @@ function distribution(values: Array<string | null>, knownLabels: readonly string
   return items;
 }
 
+function validDate(value: string | null): string | null {
+  return value && Number.isFinite(Date.parse(value)) ? value : null;
+}
+
 export function createAdminDashboardRepository(client: DashboardClient) {
   return {
     async getSummary(): Promise<AdminDashboardSummary> {
@@ -66,7 +70,7 @@ export function createAdminDashboardRepository(client: DashboardClient) {
         classDistribution: distribution(rows.map((row) => row.pilihan_kelas), CLASS_LABELS),
         typeDistribution: distribution(rows.map((row) => row.jenis_pendaftaran), TYPE_LABELS),
         recentApplicants: [...rows]
-          .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+          .sort((a, b) => (validDate(b.created_at) ? Date.parse(b.created_at!) : -Infinity) - (validDate(a.created_at) ? Date.parse(a.created_at!) : -Infinity))
           .slice(0, 8)
           .map((row) => ({
             id: row.id,
@@ -74,7 +78,7 @@ export function createAdminDashboardRepository(client: DashboardClient) {
             pilihanKelas: CLASS_LABELS.includes(row.pilihan_kelas as (typeof CLASS_LABELS)[number]) ? row.pilihan_kelas! : 'Lainnya',
             jenisPendaftaran: TYPE_LABELS.includes(row.jenis_pendaftaran as (typeof TYPE_LABELS)[number]) ? row.jenis_pendaftaran! : 'Lainnya',
             status: row.status?.trim() || 'Belum diisi',
-            createdAt: row.created_at,
+            createdAt: validDate(row.created_at),
           })),
         updatedAt: new Date().toISOString(),
       };

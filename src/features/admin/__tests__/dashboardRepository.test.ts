@@ -52,6 +52,16 @@ describe('admin dashboard repository', () => {
     expect(summary.typeDistribution).toContainEqual({ label: 'Lainnya', count: 1, percentage: 100 });
   });
 
+  it('normalizes missing or malformed registration dates', async () => {
+    const { client } = clientReturning([
+      { ...rows[0], id: '4', created_at: null },
+      { ...rows[0], id: '5', created_at: 'not-a-date' },
+    ]);
+    const summary = await createAdminDashboardRepository(client).getSummary();
+
+    expect(summary.recentApplicants.map((item) => item.createdAt)).toEqual([null, null]);
+  });
+
   it('limits recent applicants to the newest eight records', async () => {
     const manyRows = Array.from({ length: 10 }, (_, index) => ({
       ...rows[0], id: String(index), nama_lengkap: `Siswa ${index}`, created_at: `2026-10-${String(index + 1).padStart(2, '0')}T08:00:00Z`,

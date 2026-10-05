@@ -1,8 +1,10 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AdminDashboard } from '@/features/admin';
 import { AdminDashboardLoadError, createAdminDashboardRepository } from '@/features/admin/server/dashboardRepository';
+import { getAdminSession } from '@/features/auth/session';
 import { getSupabaseAdmin, SupabaseConfigurationError } from '@/features/registration/server/supabaseAdmin';
 
 function DashboardErrorState() {
@@ -23,6 +25,8 @@ function DashboardErrorState() {
 }
 
 export default async function AdminPage() {
+  if (!await getAdminSession()) redirect('/login');
+
   let summary;
   try {
     const repository = createAdminDashboardRepository(getSupabaseAdmin());
