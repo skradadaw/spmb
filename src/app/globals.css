@@ -10,6 +10,13 @@
   --brand-green-dark: #00550B;
   --brand-green-light: #F3FAF4;
   --brand-green-tint: rgba(0, 170, 19, 0.12);
+
+  /* Admin dashboard semantic surfaces */
+  --admin-canvas: #f5f7f6;
+  --admin-surface: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-muted: #64748b;
+  --admin-sidebar: #07551a;
 }
 
 @theme inline {
