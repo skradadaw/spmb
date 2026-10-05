@@ -25,6 +25,10 @@ import { verifyAdminPinAction, resetRateLimitForTesting } from '@/features/auth/
 describe('Admin PIN verification server action', () => {
   const originalEnv = process.env.ADMIN_PIN;
 
+  afterEach(() => {
+    process.env.ADMIN_PIN = originalEnv;
+  });
+
   beforeEach(async () => {
     vi.clearAllMocks();
     process.env.ADMIN_PIN = '123456';
