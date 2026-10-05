@@ -27,13 +27,13 @@ export function LoginHero() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1.5 shadow-2xl ring-4 ring-emerald-400/30">
+          <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
             <Image
               src="/logo.png"
               alt="Logo SD Plus 3 Al-Muhajirin"
               width={80}
               height={80}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-contain drop-shadow-2xl"
               priority
             />
           </div>

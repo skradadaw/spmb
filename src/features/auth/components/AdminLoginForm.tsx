@@ -62,13 +62,13 @@ export function AdminLoginForm() {
       <Card className="relative z-10 w-full max-w-md rounded-3xl border border-slate-200/80 bg-white/95 p-4 sm:p-6 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
         <CardHeader className="space-y-4 text-center pb-6">
           {/* Sized, Sharp Official School Logo */}
-          <div className="mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white p-1.5 shadow-xl ring-4 ring-emerald-500/15">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center">
             <Image
               src="/logo.png"
               alt="Logo SD Plus 3 Al-Muhajirin"
               width={96}
               height={96}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-contain drop-shadow-xl"
               priority
             />
           </div>

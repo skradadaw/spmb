@@ -35,13 +35,13 @@ export function HomeHeader() {
           className="flex items-center gap-3"
           aria-label="SD Plus 3 Al-Muhajirin - kembali ke atas"
         >
-          <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white p-0.5 shadow-md shadow-emerald-600/20 ring-1 ring-emerald-100">
+          <span className="flex h-11 w-11 items-center justify-center">
             <Image
               src="/logo.png"
               alt="Logo SD Plus 3 Al-Muhajirin"
               width={44}
               height={44}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-contain drop-shadow-sm"
               priority
             />
           </span>
