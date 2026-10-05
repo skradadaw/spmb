@@ -104,4 +104,15 @@ describe('AdminLoginForm Component', () => {
     fireEvent.change(input, { target: { value: '123456' } });
     expect(submitBtn.getAttribute('disabled')).toBeNull();
   });
+
+  it('keeps mobile actions compact with accessible touch targets', () => {
+    render(<AdminLoginForm />);
+
+    const submitBtn = screen.getByRole('button', { name: /masuk ke panel admin/i });
+    const backLink = screen.getByRole('link', { name: /kembali ke beranda spmb/i });
+
+    expect(submitBtn.className).toContain('h-11');
+    expect(backLink.className).toContain('h-11');
+    expect(screen.getByTestId('mobile-school-identity').className).toContain('mb-4');
+  });
 });

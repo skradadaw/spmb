@@ -24,4 +24,18 @@ describe('LoginPage (/login)', () => {
     expect(screen.getByText('Masuk Panel Admin')).toBeDefined();
     expect(screen.getByPlaceholderText(/masukkan pin/i)).toBeDefined();
   });
+
+  it('uses the mobile viewport height with a safe short-screen scroll fallback', () => {
+    render(<LoginPage />);
+
+    const section = screen.getByRole('region', { name: 'Form masuk administrator' });
+    const main = section.closest('main');
+    const card = screen.getByPlaceholderText(/masukkan pin/i).closest('[data-login-card]');
+
+    expect(main?.className).toContain('h-dvh');
+    expect(section.className).toContain('overflow-y-auto');
+    expect(section.className).toContain('h-dvh');
+    expect(card?.className).toContain('w-full');
+    expect(card?.className).toContain('max-w-[31rem]');
+  });
 });
