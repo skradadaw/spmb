@@ -46,15 +46,16 @@ export function AdminLoginForm() {
   };
 
   return (
-    <div className="w-full">
-      <div data-testid="mobile-school-identity" className="mb-4 flex items-center gap-3 border-b border-emerald-950/[0.07] pb-3 sm:mb-6 sm:gap-3.5 sm:pb-5 lg:hidden">
+    <div data-testid="admin-login-form" className="flex h-full w-full flex-col">
+      <div data-testid="mobile-school-identity" className="relative mb-4 flex items-center gap-3 border-b border-emerald-900/10 pb-3 sm:mb-6 sm:gap-3.5 sm:pb-5 lg:hidden">
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-[-1px] h-px bg-gradient-to-r from-[#00AA13]/60 via-emerald-300/35 to-transparent" />
         <div className="flex h-12 w-12 shrink-0 items-center justify-center sm:h-14 sm:w-14">
           <Image src="/logo.png" alt="" width={56} height={56} className="h-full w-full object-contain drop-shadow-[0_5px_8px_rgba(6,74,24,0.22)]" priority />
         </div>
         <span aria-hidden="true" className="h-9 w-px shrink-0 bg-gradient-to-b from-transparent via-emerald-900/15 to-transparent" />
         <div>
-          <p className="text-sm font-bold leading-tight tracking-[-0.02em] text-slate-900">SD Plus 3 Al-Muhajirin</p>
-          <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#087A20]">Sistem Penerimaan Murid Baru</p>
+          <p className="text-sm font-bold leading-tight tracking-[-0.02em] text-slate-900">SD PLUS 3 AL-MUHAJIRIN</p>
+          <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#087A20]">SISTEM PENERIMAAN MURID BARU</p>
         </div>
       </div>
 
@@ -64,7 +65,12 @@ export function AdminLoginForm() {
           <span className="h-1.5 w-1.5 rounded-full bg-[#00AA13] shadow-[0_0_0_3px_rgba(0,170,19,0.10)]" />
           <span>Akses Administrator</span>
         </div>
-        <div className="space-y-2.5">
+        <div className="relative space-y-2.5 pt-2.5">
+          <span
+            data-testid="login-heading-accent"
+            aria-hidden="true"
+            className="absolute left-0 top-0 h-1 w-10 rounded-full bg-gradient-to-r from-[#087A20] via-[#00AA13] to-emerald-300 shadow-[0_3px_10px_rgba(0,170,19,0.24)]"
+          />
           <h2 className="text-2xl font-bold leading-tight tracking-[-0.035em] text-slate-950 sm:text-[2rem]">
             Masuk Panel Admin
           </h2>
@@ -177,7 +183,7 @@ export function AdminLoginForm() {
       </form>
 
       {/* Footer Support Info */}
-      <div className="mt-4 border-t border-slate-100 pt-3 text-center sm:mt-7 sm:pt-5">
+      <div data-testid="login-support" className="mt-auto border-t border-slate-100 pt-3 text-center sm:mt-7 sm:pt-5">
         <a
           href="https://wa.me/6281234567890"
           target="_blank"

@@ -6,7 +6,8 @@ import { LoginHero } from '../LoginHero';
 describe('LoginHero Component', () => {
   it('renders school branding and administration heading', () => {
     render(<LoginHero />);
-    expect(screen.getByText(/SD Plus 3 Al-Muhajirin/i)).toBeDefined();
+    expect(screen.getByText('SD PLUS 3 AL-MUHAJIRIN')).toBeDefined();
+    expect(screen.getByText('SISTEM PENERIMAAN MURID BARU')).toBeDefined();
     expect(screen.getByText('Panel Administrasi SPMB')).toBeDefined();
   });
 

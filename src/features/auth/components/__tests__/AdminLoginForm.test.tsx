@@ -46,8 +46,19 @@ describe('AdminLoginForm Component', () => {
   it('keeps the school identity visible when the desktop hero is unavailable', () => {
     render(<AdminLoginForm />);
 
-    expect(screen.getByText('SD Plus 3 Al-Muhajirin')).toBeDefined();
-    expect(screen.getByText('Sistem Penerimaan Murid Baru')).toBeDefined();
+    expect(screen.getByText('SD PLUS 3 AL-MUHAJIRIN')).toBeDefined();
+    expect(screen.getByText('SISTEM PENERIMAAN MURID BARU')).toBeDefined();
+    const identity = screen.getByTestId('mobile-school-identity');
+    expect(identity.className).toContain('border-b');
+    expect(identity.className).not.toContain('rounded-2xl');
+    expect(identity.className).not.toContain('bg-gradient-to-r');
+  });
+
+  it('adds a compact green accent to the form heading', () => {
+    render(<AdminLoginForm />);
+    const accent = screen.getByTestId('login-heading-accent');
+    expect(accent.getAttribute('aria-hidden')).toBe('true');
+    expect(accent.className).toContain('bg-gradient-to-r');
   });
 
   it('calls verifyAdminPinAction and redirects on success', async () => {
@@ -114,5 +125,7 @@ describe('AdminLoginForm Component', () => {
     expect(submitBtn.className).toContain('h-11');
     expect(backLink.className).toContain('h-11');
     expect(screen.getByTestId('mobile-school-identity').className).toContain('mb-4');
+    expect(screen.getByTestId('admin-login-form').className).toContain('h-full');
+    expect(screen.getByTestId('login-support').className).toContain('mt-auto');
   });
 });
