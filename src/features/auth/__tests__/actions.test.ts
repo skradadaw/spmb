@@ -20,7 +20,7 @@ vi.mock('next/headers', () => ({
   headers: mocks.getHeaders,
 }));
 
-import { verifyAdminPinAction, resetRateLimitForTesting } from '@/features/auth/actions';
+import { verifyAdminPinAction, resetRateLimitForTesting } from '../actions';
 
 describe('Admin PIN verification server action', () => {
   const originalEnv = process.env.ADMIN_PIN;
