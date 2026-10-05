@@ -1,76 +1,42 @@
 import React from 'react';
 import Image from 'next/image';
-import { ShieldCheck, LockKeyhole } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 export function LoginHero() {
   return (
-    <div className="relative hidden w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-[#00550B] via-[#006E0E] to-[#00AA13] p-10 text-white lg:flex lg:w-1/2 lg:p-12 xl:p-16">
-      {/* Soft Ambient Glows (Clean & Calm) */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-white/10 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-[#00AA13]/30 blur-3xl"
-      />
-
-      {/* Top Header / Branding */}
-      <div className="relative z-10 space-y-5">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-semibold tracking-wide text-white/95 backdrop-blur-md">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-200" />
-          <span>Portal Khusus Panitia SPMB</span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center sm:h-18 sm:w-18">
-            <Image
-              src="/logo.png"
-              alt="Logo SD Plus 3 Al-Muhajirin"
-              width={72}
-              height={72}
-              className="h-full w-full object-contain drop-shadow-md"
-              priority
-            />
-          </div>
-          <div className="space-y-0.5">
-            <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-              SD Plus 3 Al-Muhajirin
-            </h1>
-            <p className="text-xs font-medium text-emerald-100/90 sm:text-sm">
-              Sistem Penerimaan Murid Baru
-            </p>
-            <span className="inline-block text-[11px] font-semibold text-emerald-200/75 uppercase tracking-wider">
-              Purwakarta — Jawa Barat
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Centerpiece: Clean, Spacious & Proportional Typography */}
-      <div className="relative z-10 my-auto max-w-lg space-y-3.5 py-8">
-        <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-[34px] lg:leading-[1.25]">
-          Kelola data pendaftar dengan aman, cepat, dan transparan.
-        </h2>
-        <p className="text-sm sm:text-base leading-relaxed text-emerald-50/85 font-normal">
-          Panel administrasi ini memungkinkan panitia memeriksa kelengkapan berkas murid,
-          memvalidasi pembayaran, dan memperbarui status pendaftaran secara real-time.
+    <div className="flex w-full flex-col items-center text-center lg:w-1/2 lg:items-start lg:text-left">
+      <div className="space-y-2">
+        <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#00880F]">
+          Portal Khusus Panitia SPMB
+        </span>
+        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-[40px] lg:leading-[1.18]">
+          Selamat datang di <br />
+          <span className="text-[#00AA13]">SD Plus 3 Al-Muhajirin</span>
+        </h1>
+        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+          Purwakarta — Jawa Barat
         </p>
       </div>
 
-      {/* Bottom Security Assurance: Structured & Balanced */}
-      <div className="relative z-10 flex items-start gap-3.5 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md shadow-lg">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white mt-0.5">
-          <LockKeyhole className="h-4 w-4" />
-        </div>
-        <div className="space-y-1 text-xs">
-          <h3 className="font-semibold text-white tracking-wide">
-            Akses Khusus & Terproteksi
-          </h3>
-          <p className="leading-relaxed text-emerald-100/80">
-            Pastikan tidak membagikan PIN keamanan Anda kepada pihak yang tidak berkepentingan demi kerahasiaan data calon murid.
-          </p>
-        </div>
+      {/* Official School Logo replacing the GoFood illustration */}
+      <div className="my-8 flex h-48 w-48 sm:h-56 sm:w-56 items-center justify-center">
+        <Image
+          src="/logo.png"
+          alt="Logo SD Plus 3 Al-Muhajirin"
+          width={220}
+          height={220}
+          className="h-full w-full object-contain drop-shadow-sm"
+          priority
+        />
+      </div>
+
+      {/* Security note matching test assertions */}
+      <div className="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-200/80 px-4 py-2.5 text-xs text-gray-600 shadow-xs">
+        <ShieldCheck className="h-4 w-4 text-[#00AA13] shrink-0" />
+        <span>
+          <strong className="font-semibold text-gray-800">Akses Khusus & Terproteksi.</strong>{' '}
+          Pastikan tidak membagikan PIN keamanan Anda kepada pihak yang tidak berkepentingan demi kerahasiaan data calon murid.
+        </span>
       </div>
     </div>
   );
