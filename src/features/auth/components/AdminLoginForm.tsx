@@ -69,10 +69,10 @@ export function AdminLoginForm() {
               <span>Portal Panitia SPMB</span>
             </div>
 
-            <CardTitle className="pt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            <CardTitle className="pt-1.5 text-2xl font-bold tracking-tight text-slate-900 sm:text-[26px]">
               Masuk Panel Admin
             </CardTitle>
-            <p className="text-xs font-semibold text-[#00880F]">
+            <p className="text-xs font-semibold text-[#00880F] tracking-wide">
               SD Plus 3 Al-Muhajirin
             </p>
           </div>
@@ -97,7 +97,7 @@ export function AdminLoginForm() {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="admin-pin-input"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-700"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
                 >
                   PIN Keamanan
                 </label>
