@@ -31,6 +31,7 @@ describe('AdminLoginForm Component', () => {
 
     const toggleBtn = screen.getByRole('button', { name: /tampilkan pin/i });
     expect(toggleBtn).toBeDefined();
+    expect(toggleBtn.tabIndex).toBe(0);
 
     // Click toggle to show PIN
     fireEvent.click(toggleBtn);
@@ -40,6 +41,13 @@ describe('AdminLoginForm Component', () => {
     const hideBtn = screen.getByRole('button', { name: /sembunyikan pin/i });
     fireEvent.click(hideBtn);
     expect(input.type).toBe('password');
+  });
+
+  it('keeps the school identity visible when the desktop hero is unavailable', () => {
+    render(<AdminLoginForm />);
+
+    expect(screen.getByText('SD Plus 3 Al-Muhajirin')).toBeDefined();
+    expect(screen.getByText('Sistem Penerimaan Murid Baru')).toBeDefined();
   });
 
   it('calls verifyAdminPinAction and redirects on success', async () => {
@@ -73,6 +81,9 @@ describe('AdminLoginForm Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('PIN salah. Sisa 3 kesempatan.')).toBeDefined();
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      expect(input.getAttribute('aria-describedby')).toContain('admin-pin-error');
+      expect(screen.getByRole('alert').getAttribute('id')).toBe('admin-pin-error');
     });
   });
 
@@ -80,5 +91,17 @@ describe('AdminLoginForm Component', () => {
     render(<AdminLoginForm />);
     const backLink = screen.getByRole('link', { name: /kembali ke beranda spmb/i });
     expect(backLink.getAttribute('href')).toBe('/');
+  });
+
+  it('only enables submission for a complete 6 digit PIN', () => {
+    render(<AdminLoginForm />);
+    const input = screen.getByPlaceholderText(/masukkan pin/i);
+    const submitBtn = screen.getByRole('button', { name: /masuk ke panel admin/i });
+
+    fireEvent.change(input, { target: { value: '12345' } });
+    expect(submitBtn.getAttribute('disabled')).not.toBeNull();
+
+    fireEvent.change(input, { target: { value: '123456' } });
+    expect(submitBtn.getAttribute('disabled')).toBeNull();
   });
 });

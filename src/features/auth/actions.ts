@@ -1,21 +1,13 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { timingSafeEqual } from 'node:crypto';
 import type { VerifyPinResult } from './contracts';
 import { setAdminSession } from './session';
-
-interface AttemptRecord {
-  count: number;
-  lockedUntil: number | null;
-}
+import { clearAttemptRecord, getAttemptRecord, setAttemptRecord } from './rate-limit';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 60 * 1000; // 60 seconds
-const attempts = new Map<string, AttemptRecord>();
-
-export async function resetRateLimitForTesting() {
-  attempts.clear();
-}
 
 async function getClientIp(): Promise<string> {
   const reqHeaders = await headers();
@@ -36,9 +28,22 @@ export async function verifyAdminPinAction(pin: string): Promise<VerifyPinResult
     return { success: false, error: 'PIN harus berupa angka' };
   }
 
+  if (!/^\d{6}$/.test(cleanPin)) {
+    return { success: false, error: 'PIN harus terdiri dari 6 angka' };
+  }
+
+  const expectedPin = process.env.ADMIN_PIN;
+  if (!expectedPin || !/^\d{6}$/.test(expectedPin)) {
+    console.error('ADMIN_PIN must be configured as exactly 6 digits.');
+    return {
+      success: false,
+      error: 'Konfigurasi keamanan belum tersedia. Hubungi administrator.',
+    };
+  }
+
   const clientIp = await getClientIp();
   const now = Date.now();
-  const record = attempts.get(clientIp) || { count: 0, lockedUntil: null };
+  const record = getAttemptRecord(clientIp);
 
   if (record.lockedUntil && record.lockedUntil > now) {
     const secondsRemaining = Math.ceil((record.lockedUntil - now) / 1000);
@@ -48,12 +53,11 @@ export async function verifyAdminPinAction(pin: string): Promise<VerifyPinResult
     };
   }
 
-  const expectedPin = process.env.ADMIN_PIN || '123456';
-
-  if (cleanPin !== expectedPin) {
+  const pinMatches = timingSafeEqual(Buffer.from(cleanPin), Buffer.from(expectedPin));
+  if (!pinMatches) {
     const newCount = (record.count || 0) + 1;
     if (newCount >= MAX_ATTEMPTS) {
-      attempts.set(clientIp, {
+      setAttemptRecord(clientIp, {
         count: newCount,
         lockedUntil: now + LOCKOUT_DURATION_MS,
       });
@@ -63,7 +67,7 @@ export async function verifyAdminPinAction(pin: string): Promise<VerifyPinResult
       };
     }
 
-    attempts.set(clientIp, { count: newCount, lockedUntil: null });
+    setAttemptRecord(clientIp, { count: newCount, lockedUntil: null });
     const remaining = MAX_ATTEMPTS - newCount;
     return {
       success: false,
@@ -73,8 +77,16 @@ export async function verifyAdminPinAction(pin: string): Promise<VerifyPinResult
   }
 
   // PIN benar, reset rekor percobaan
-  attempts.delete(clientIp);
-  await setAdminSession();
+  clearAttemptRecord(clientIp);
+  try {
+    await setAdminSession();
+  } catch (error) {
+    console.error('Unable to create the admin session.', error);
+    return {
+      success: false,
+      error: 'Konfigurasi keamanan belum tersedia. Hubungi administrator.',
+    };
+  }
 
   return {
     success: true,
