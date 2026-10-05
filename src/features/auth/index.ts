@@ -3,3 +3,4 @@ export { LoginHero } from './components/LoginHero';
 export * from './actions';
 export * from './session';
 export * from './contracts';
+export { logoutAdminAction } from './logout-action';
