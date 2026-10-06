@@ -54,6 +54,15 @@ export function createSignedUploadRepository(client: SupabaseClient) {
       return data === true;
     },
 
+    async hasCapacity(capacity: number) {
+      const { count, error } = await client
+        .from('pendaftar')
+        .select('id', { count: 'exact', head: true })
+        .neq('status', 'Menunggu Unggahan');
+      if (error) fail();
+      return (count ?? 0) < capacity;
+    },
+
     getPending,
 
     async createPending(

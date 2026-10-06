@@ -1,6 +1,5 @@
-'use client';
-
-import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { 
   BookOpen, 
   Pencil, 
@@ -12,21 +11,32 @@ import {
   Smile, 
   Heart 
 } from 'lucide-react';
+import { REGISTRATION_CAPACITY } from '@/lib/registrationConfig';
+import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
+import { createSignedUploadRepository } from '@/features/registration/server/signedUploadRepository';
+import { RegistrationCapacityGate, RegistrationForm } from '@/features/registration';
 
-const RegistrationForm = dynamic(
-  () => import('@/features/registration'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full max-w-6xl mx-auto bg-white/95 backdrop-blur-xl rounded-3xl p-16 text-center shadow-xl border border-gray-100 min-h-[420px] flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#00AA13] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-gray-600 font-semibold text-sm">Memuat Formulir Pendaftaran...</p>
-      </div>
-    ),
+export const metadata: Metadata = {
+  title: 'Formulir Pendaftaran | SD Plus 3 Al-Muhajirin',
+  description: 'Formulir Seleksi Penerimaan Murid Baru SD Plus 3 Al-Muhajirin Tahun Ajaran 2027/2028.',
+};
+
+export const dynamic = 'force-dynamic';
+
+async function checkIsCapacityFull(): Promise<boolean> {
+  try {
+    const repository = createSignedUploadRepository(getSupabaseAdmin());
+    const hasCapacity = await repository.hasCapacity(REGISTRATION_CAPACITY);
+    return !hasCapacity;
+  } catch (error) {
+    console.error('Gagal memeriksa kapasitas pendaftaran:', error);
+    return false;
   }
-);
+}
 
-export default function PendaftaranPage() {
+export default async function PendaftaranPage() {
+  const isFull = await checkIsCapacityFull();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F3FAF4] via-[#F8FAF8] to-gray-50 py-10 sm:py-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* ========================================================================= */}
@@ -97,8 +107,19 @@ export default function PendaftaranPage() {
           </p>
         </div>
 
-        {/* Form Container */}
-        <RegistrationForm />
+        {/* Form Container with Capacity Gate */}
+        <RegistrationCapacityGate isFull={isFull}>
+          <Suspense
+            fallback={
+              <div className="w-full max-w-6xl mx-auto bg-white/95 backdrop-blur-xl rounded-3xl p-16 text-center shadow-xl border border-gray-100 min-h-[420px] flex flex-col items-center justify-center">
+                <div className="w-12 h-12 border-4 border-[#00AA13] border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-gray-600 font-semibold text-sm">Memuat Formulir Pendaftaran...</p>
+              </div>
+            }
+          >
+            <RegistrationForm />
+          </Suspense>
+        </RegistrationCapacityGate>
       </div>
     </div>
   );
