@@ -25,7 +25,7 @@ describe('LoginPage (/login)', () => {
     expect(screen.getByPlaceholderText(/masukkan pin/i)).toBeDefined();
   });
 
-  it('uses the mobile viewport height with a safe short-screen scroll fallback', () => {
+  it('keeps mobile scrolling while preventing desktop form-panel scrolling', () => {
     render(<LoginPage />);
 
     const section = screen.getByRole('region', { name: 'Form masuk administrator' });
@@ -34,11 +34,13 @@ describe('LoginPage (/login)', () => {
 
     expect(main?.className).toContain('h-dvh');
     expect(section.className).toContain('overflow-y-auto');
+    expect(section.className).toContain('lg:overflow-hidden');
     expect(section.className).toContain('h-dvh');
     expect(card?.className).toContain('w-full');
     expect(card?.className).toContain('max-w-[31rem]');
     expect(card?.className).toContain('min-h-[80dvh]');
     expect(card?.className).toContain('sm:min-h-0');
+    expect(card?.className).toContain('lg:max-h-[calc(100dvh-3rem)]');
     expect(card?.parentElement?.className).toContain('items-center');
   });
 });

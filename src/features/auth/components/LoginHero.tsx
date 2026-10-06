@@ -22,18 +22,15 @@ export function LoginHero() {
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl items-center px-12 py-10 xl:px-16 xl:py-12">
         <div className="w-full max-w-xl space-y-10 xl:space-y-12">
-          <header className="relative w-fit overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-white/[0.075] via-white/[0.035] to-transparent px-4 py-3 shadow-[0_18px_42px_-30px_rgba(0,0,0,0.75)] backdrop-blur-sm">
-            <span aria-hidden="true" className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-emerald-200/80 to-transparent" />
+          <header className="w-fit">
             <div className="flex min-w-0 items-center gap-4">
               <div className="relative flex h-[5.5rem] w-[5.5rem] shrink-0 items-center justify-center">
-                <span aria-hidden="true" className="absolute inset-2 rounded-full bg-emerald-300/12 blur-xl" />
-                <span aria-hidden="true" className="absolute inset-1 rounded-full border border-emerald-200/12" />
                 <Image
                   src="/logo.png"
                   alt="Logo SD Plus 3 Al-Muhajirin"
                   width={88}
                   height={88}
-                  className="relative h-full w-full object-contain drop-shadow-[0_8px_12px_rgba(0,32,7,0.48)]"
+                  className="h-full w-full object-contain"
                   priority
                 />
               </div>

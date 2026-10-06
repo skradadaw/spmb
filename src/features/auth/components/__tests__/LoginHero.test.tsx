@@ -16,4 +16,19 @@ describe('LoginHero Component', () => {
     expect(screen.getByText(/Akses khusus panitia/i)).toBeDefined();
     expect(screen.getByText(/Jangan bagikan PIN akses/i)).toBeDefined();
   });
+
+  it('presents the desktop school identity without a card while keeping its separator', () => {
+    render(<LoginHero />);
+
+    const identity = screen.getByText('SD PLUS 3 AL-MUHAJIRIN').closest('header');
+    const logo = screen.getByAltText('Logo SD Plus 3 Al-Muhajirin');
+    const separator = logo.parentElement?.nextElementSibling;
+
+    expect(identity?.className).not.toContain('rounded-2xl');
+    expect(identity?.className).not.toContain('border');
+    expect(identity?.className).not.toContain('bg-gradient-to-r');
+    expect(identity?.className).not.toContain('shadow-[');
+    expect(identity?.className).not.toContain('backdrop-blur');
+    expect(separator?.className).toContain('w-px');
+  });
 });

@@ -60,7 +60,7 @@ export function AdminLoginForm() {
       </div>
 
       {/* Header Form */}
-      <div className="space-y-3 pb-4 text-left sm:space-y-5 sm:pb-8">
+      <div className="space-y-3 pb-4 text-left sm:space-y-5 sm:pb-8 lg:space-y-3 lg:pb-5 xl:space-y-4 xl:pb-6">
         <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-1 text-[10px] font-bold text-[#087A20] sm:py-1.5 sm:text-[11px]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#00AA13] shadow-[0_0_0_3px_rgba(0,170,19,0.10)]" />
           <span>Akses Administrator</span>
@@ -80,7 +80,7 @@ export function AdminLoginForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4.5">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4.5 lg:space-y-3.5">
         {/* Error Notification */}
         {errorMessage && (
           <div
@@ -183,7 +183,7 @@ export function AdminLoginForm() {
       </form>
 
       {/* Footer Support Info */}
-      <div data-testid="login-support" className="mt-4 border-t border-slate-100 pt-3 text-center sm:mt-7 sm:pt-5">
+      <div data-testid="login-support" className="mt-4 border-t border-slate-100 pt-3 text-center sm:mt-7 sm:pt-5 lg:mt-4 lg:pt-3">
         <a
           href="https://wa.me/6287723487776"
           target="_blank"
