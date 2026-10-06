@@ -219,6 +219,58 @@ FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.consume_registration_rate_limit(TEXT, INTEGER, INTEGER)
 TO service_role;
 
+-- Finalisasi pendaftaran dan reservasi kuota dilakukan dalam satu transaksi.
+CREATE OR REPLACE FUNCTION public.finalize_registration_with_capacity(
+  p_submission_id UUID,
+  p_capacity INTEGER
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_completed INTEGER;
+  v_updated INTEGER;
+BEGIN
+  IF p_submission_id IS NULL OR p_capacity <= 0 THEN
+    RAISE EXCEPTION 'Invalid registration capacity parameters';
+  END IF;
+
+  LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
+
+  IF EXISTS (
+    SELECT 1
+    FROM public.pendaftar
+    WHERE submission_id = p_submission_id
+      AND status <> 'Menunggu Unggahan'
+  ) THEN
+    RETURN TRUE;
+  END IF;
+
+  SELECT count(*) INTO v_completed
+  FROM public.pendaftar
+  WHERE status <> 'Menunggu Unggahan';
+
+  IF v_completed >= p_capacity THEN
+    RETURN FALSE;
+  END IF;
+
+  UPDATE public.pendaftar
+  SET status = 'Menunggu Verifikasi'
+  WHERE submission_id = p_submission_id
+    AND status = 'Menunggu Unggahan';
+
+  GET DIAGNOSTICS v_updated = ROW_COUNT;
+  RETURN v_updated = 1;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.finalize_registration_with_capacity(UUID, INTEGER)
+FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.finalize_registration_with_capacity(UUID, INTEGER)
+TO service_role;
+
 -- Jalankan berkala dari SQL Editor/cron untuk membuang sesi dan rate-limit kedaluwarsa.
 CREATE OR REPLACE FUNCTION public.cleanup_expired_registration_security_data()
 RETURNS TABLE(submission_id UUID, document_paths TEXT[])

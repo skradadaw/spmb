@@ -13,7 +13,7 @@ Tambahkan untuk Production, Preview, dan Development sesuai kebutuhan:
 - `SUPABASE_SERVICE_ROLE_KEY`: rahasia server; jangan memakai awalan `NEXT_PUBLIC_`.
 - `REGISTRATION_OVERRIDE=closed`: tutup pendaftaran selama migrasi dan smoke test.
 - Opsional `REGISTRATION_OPENS_AT` dan `REGISTRATION_CLOSES_AT` dalam ISO-8601.
-  Tanpa override, nilai bawaan adalah 1 September sampai 10 Oktober 2026 WIB.
+  Tanpa override, nilai bawaan adalah 1 Oktober sampai 17 Oktober 2026 WIB.
 
 Setelah verifikasi selesai, hapus `REGISTRATION_OVERRIDE` agar jadwal berlaku,
 atau ubah sementara menjadi `open` hanya ketika panitia memang ingin membuka di
@@ -34,7 +34,9 @@ luar jadwal. Gunakan `closed` sebagai tombol darurat.
    ```
 
 3. Jika ada hasil, hentikan proses dan selesaikan duplikasi secara manual.
-4. Jalankan seluruh isi `supabase/schema.sql`.
+4. Jalankan seluruh isi `supabase/schema.sql`. Migrasi ini juga memasang fungsi
+   `finalize_registration_with_capacity`, yang mengunci proses finalisasi secara
+   atomik agar jumlah pendaftar lengkap tidak melampaui 112 peserta.
 5. Pastikan bucket `dokumen_pendaftaran` berstatus **Private**, batas 5 MB, dan
    hanya menerima PDF, JPEG, PNG, serta WebP.
 6. Pastikan tidak ada policy yang memberi browser akses langsung:
@@ -67,8 +69,12 @@ luar jadwal. Gunakan `closed` sebagai tombol darurat.
 4. Coba file dengan ekstensi palsu atau PDF tanpa header `%PDF-`; finalisasi harus
    ditolak dan data pending dibersihkan.
 5. Pastikan submit NIK yang sama ditolak ketika finalisasi.
-6. Hapus row dan file sintetis dari dashboard.
-7. Hapus override agar jadwal normal kembali, lalu deploy ulang.
+6. Pastikan progres di landing page bertambah setelah dokumen lengkap, tetapi
+   tidak bertambah untuk row berstatus `Menunggu Unggahan`.
+7. Saat jumlah pendaftar lengkap mencapai 112, pastikan peserta berikutnya
+   menerima pesan bahwa kuota Open Booking sudah penuh.
+8. Hapus row dan file sintetis dari dashboard.
+9. Hapus override agar jadwal normal kembali, lalu deploy ulang.
 
 Jika orang tua perlu memperbaiki pendaftaran dengan NIK yang sudah tercatat,
 panitia menangani pemulihan identitas dan perubahan data secara manual. Jangan

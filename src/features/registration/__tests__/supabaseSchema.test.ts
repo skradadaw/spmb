@@ -167,4 +167,27 @@ describe('Supabase registration security schema', () => {
       /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.consume_registration_rate_limit\([\s\S]*?\)\s+TO\s+(?:PUBLIC|anon|authenticated)\b/i,
     );
   });
+
+  it('finalizes registrations under one table lock and enforces the completed capacity atomically', () => {
+    const functionMatch = schema.match(
+      /CREATE OR REPLACE FUNCTION public\.finalize_registration_with_capacity\([\s\S]*?\$\$;/,
+    );
+
+    expect(functionMatch).not.toBeNull();
+    const functionSql = compactSql(functionMatch?.[0] ?? '');
+    expect(functionSql).toContain('LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;');
+    expect(functionSql).toContain(
+      "IF EXISTS ( SELECT 1 FROM public.pendaftar WHERE submission_id = p_submission_id AND status <> 'Menunggu Unggahan' ) THEN RETURN TRUE;",
+    );
+    expect(functionSql).toContain("WHERE status <> 'Menunggu Unggahan'");
+    expect(functionSql).toContain('IF v_completed >= p_capacity THEN RETURN FALSE;');
+    expect(functionSql).toContain("SET status = 'Menunggu Verifikasi'");
+    expect(functionSql).toContain("AND status = 'Menunggu Unggahan'");
+    expect(compactSchema).toContain(
+      'GRANT EXECUTE ON FUNCTION public.finalize_registration_with_capacity(UUID, INTEGER) TO service_role;',
+    );
+    expect(schema).not.toMatch(
+      /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.finalize_registration_with_capacity\([\s\S]*?\)\s+TO\s+(?:PUBLIC|anon|authenticated)\b/i,
+    );
+  });
 });

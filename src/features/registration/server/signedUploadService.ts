@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { REGISTRATION_CAPACITY } from '@/lib/registrationConfig';
+
 import {
   DOCUMENT_DEFINITIONS,
   type PrepareRegistrationResult,
@@ -23,6 +25,7 @@ const DUPLICATE_NIK_ERROR = 'Data dengan NIK ini sudah pernah terdaftar. Hubungi
 const GENERIC_ERROR = 'Terjadi kesalahan saat menyimpan data pendaftaran.';
 const CLOSED_ERROR = 'Pendaftaran sedang ditutup. Silakan hubungi panitia untuk informasi lebih lanjut.';
 const INVALID_ERROR = 'Data pendaftaran atau dokumen tidak valid.';
+const CAPACITY_ERROR = `Kuota pendaftaran sudah penuh (${REGISTRATION_CAPACITY} peserta). Silakan hubungi panitia untuk informasi lebih lanjut.`;
 
 type Credentials = { submissionId: string; submissionSecret: string };
 
@@ -72,12 +75,12 @@ function parseMetadata(value: FormDataEntryValue | null) {
   }
 }
 
-function registrationIsOpen(now = new Date()) {
+export function registrationIsOpen(now = new Date()) {
   const override = process.env.REGISTRATION_OVERRIDE?.trim().toLowerCase();
   if (override === 'open') return true;
   if (override === 'closed') return false;
-  const opensAt = new Date(process.env.REGISTRATION_OPENS_AT || '2026-09-01T00:00:00+07:00');
-  const closesAt = new Date(process.env.REGISTRATION_CLOSES_AT || '2026-10-10T23:59:59+07:00');
+  const opensAt = new Date(process.env.REGISTRATION_OPENS_AT || '2026-10-01T00:00:00+07:00');
+  const closesAt = new Date(process.env.REGISTRATION_CLOSES_AT || '2026-10-17T23:59:59+07:00');
   return Number.isFinite(opensAt.getTime())
     && Number.isFinite(closesAt.getTime())
     && now >= opensAt
@@ -203,7 +206,11 @@ export async function finalizeSignedRegistration(
         return { success: false, error: `Dokumen ${DOCUMENT_DEFINITIONS.find((item) => item.id === id)?.title} tidak valid.` };
       }
     }
-    await repository.finalize(submissionId);
+    const hasCapacity = await repository.finalize(submissionId, REGISTRATION_CAPACITY);
+    if (!hasCapacity) {
+      await cleanupPending(repository, submissionId, Object.values(paths));
+      return { success: false, error: CAPACITY_ERROR };
+    }
     return { success: true };
   } catch (error) {
     if (error instanceof DuplicateRegistrationError) {

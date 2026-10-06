@@ -90,16 +90,16 @@ export function createSignedUploadRepository(client: SupabaseClient) {
       return data;
     },
 
-    async finalize(submissionId: string) {
-      const { error } = await client
-        .from('pendaftar')
-        .update({ status: 'Menunggu Verifikasi' })
-        .eq('submission_id', submissionId)
-        .eq('status', 'Menunggu Unggahan');
+    async finalize(submissionId: string, capacity: number) {
+      const { data, error } = await client.rpc('finalize_registration_with_capacity', {
+        p_submission_id: submissionId,
+        p_capacity: capacity,
+      });
       if (error?.code === '23505' && error.message?.includes('uq_pendaftar_nik')) {
         throw new DuplicateRegistrationError();
       }
       if (error) fail();
+      return data === true;
     },
 
     async removePending(submissionId: string, paths: string[]) {

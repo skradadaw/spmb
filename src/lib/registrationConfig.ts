@@ -1,0 +1,1 @@
+export const REGISTRATION_CAPACITY = 112;
