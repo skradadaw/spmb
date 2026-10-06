@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -27,7 +30,7 @@ export default function RootLayout({
     <html
       lang="id"
       data-scroll-behavior="smooth"
-      className={`${plusJakartaSans.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", plusJakartaSans.variable, "font-sans")}
       suppressHydrationWarning
     >
       <body className={`${plusJakartaSans.className} min-h-full flex flex-col`} suppressHydrationWarning>

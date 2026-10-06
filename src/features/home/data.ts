@@ -4,8 +4,6 @@ export const registrationInfo = {
   academicYear: '2027/2028',
   wave: {
     name: 'Gelombang 1',
-    period: '1 Oktober–17 Oktober 2026',
-    testDate: '25 Oktober 2026',
   },
   okb: {
     fee: 'Rp375.000',

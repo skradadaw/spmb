@@ -21,6 +21,19 @@ describe('UI Primitives (Shadcn)', () => {
       expect(btn.disabled).toBe(true);
       expect(btn.className).toContain('bg-destructive');
     });
+
+    it('renders polymorphically with custom element via render prop maintaining link role and data-slot', () => {
+      render(
+        <Button variant="outline" render={<a href="/login">Login</a>}>
+          Login
+        </Button>
+      );
+      const link = screen.getByRole('link', { name: 'Login' });
+      expect(link).toBeDefined();
+      expect(link.getAttribute('href')).toBe('/login');
+      expect(link.getAttribute('data-slot')).toBe('button');
+      expect(link.className).toContain('border-border');
+    });
   });
 
   describe('Input', () => {
