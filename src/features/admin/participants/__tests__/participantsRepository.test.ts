@@ -9,6 +9,17 @@ function fixture() {
   return { q, repo: createParticipantsRepository({ from: vi.fn(() => q) } as unknown as SupabaseClient) };
 }
 describe('participants repository', () => {
+  it('exports complete student fields using active filters and excludes document storage paths', async () => {
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: [{ id: 'a', created_at: '2026-10-11T00:00:00Z', nama_lengkap: 'Ani', nama_ayah: 'Budi', alamat_rumah: 'Jalan Melati', catatan_admin: 'Catatan', dokumen_pas_foto: 'secret/path' }], error: null });
+    const result = await repo.exportDetails(parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler')));
+    expect(q.select).toHaveBeenCalledWith(expect.stringContaining('nama_ayah'));
+    expect(q.select).toHaveBeenCalledWith(expect.not.stringContaining('dokumen_pas_foto'));
+    expect(q.ilike).toHaveBeenCalledWith('nama_lengkap', '%Ani%');
+    expect(q.eq).toHaveBeenCalledWith('pilihan_kelas', 'Reguler');
+    expect(result[0]).toMatchObject({ fields: { namaLengkap: 'Ani', fatherNama: 'Budi' }, adminNote: 'Catatan' });
+  });
+
   it('escapes literal wildcards, filters, paginates and orders with minimal columns', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [], count: 41, error: null }).mockResolvedValueOnce({ data: [{ id: 'a', nama_lengkap: null, asal_sekolah: 'TK Melati' }], count: 41, error: null });

@@ -1,7 +1,7 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ParticipantDetail, ParticipantDocumentReviews, ParticipantListItem, ParticipantListQuery, ParticipantListResult } from '../contracts';
-import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_LIST_COLUMNS, PARTICIPANT_PAGE_SIZE } from '../contracts';
+import type { ParticipantDetail, ParticipantDocumentReviews, ParticipantExportRecord, ParticipantListItem, ParticipantListQuery, ParticipantListResult } from '../contracts';
+import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS, PARTICIPANT_PAGE_SIZE } from '../contracts';
 import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
 import { escapeSearch } from '../query';
 import { DOCUMENT_DEFINITIONS } from '@/features/registration/contracts';
@@ -52,6 +52,36 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         .range((page - 1) * PARTICIPANT_PAGE_SIZE, page * PARTICIPANT_PAGE_SIZE - 1);
       if (result.error || !result.data) throw failure();
       return { items: result.data.map(row => mapList(row as Record<string, unknown>)), page, pageSize: PARTICIPANT_PAGE_SIZE, total, totalPages };
+    },
+    async exportAll(query: ParticipantListQuery): Promise<ParticipantListItem[]> {
+      const items: ParticipantListItem[] = [];
+      for (let offset = 0; ; offset += 1000) {
+        const result = await filtered(query).order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 999);
+        if (result.error || !result.data) throw failure();
+        items.push(...result.data.map(row => mapList(row as Record<string, unknown>)));
+        if (result.data.length < 1000) return items;
+      }
+    },
+    async exportDetails(query: ParticipantListQuery): Promise<ParticipantExportRecord[]> {
+      const records: ParticipantExportRecord[] = [];
+      for (let offset = 0; ; offset += 1000) {
+        let request = client.from('pendaftar').select(PARTICIPANT_EXPORT_COLUMNS);
+        if (query.search) request = request.ilike('nama_lengkap', `%${escapeSearch(query.search)}%`);
+        if (query.classFilter) request = request.eq('pilihan_kelas', query.classFilter);
+        if (query.typeFilter) request = request.eq('jenis_pendaftaran', query.typeFilter);
+        if (query.statusFilter) request = request.eq('status', query.statusFilter);
+        const result = await request.order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 999);
+        if (result.error || !result.data) throw failure();
+        for (const raw of result.data) {
+          const row = raw as Record<string, unknown>;
+          const fields: Record<string, string | null> = {};
+          for (const [group, definitions] of Object.entries(PARTICIPANT_FIELDS)) {
+            for (const [key, column] of definitions) fields[group === 'father' ? `father${key[0].toUpperCase()}${key.slice(1)}` : group === 'mother' ? `mother${key[0].toUpperCase()}${key.slice(1)}` : key] = text(row[column]);
+          }
+          records.push({ id: String(row.id), createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi', adminNote: text(row.catatan_admin), fields });
+        }
+        if (result.data.length < 1000) return records;
+      }
     },
     async getStatuses(): Promise<string[]> {
       if (statusCache && statusCache.expiresAt > Date.now()) return statusCache.values;

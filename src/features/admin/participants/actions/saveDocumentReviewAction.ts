@@ -36,5 +36,18 @@ export async function saveDocumentReviewAction(formData: FormData): Promise<void
   }, { onConflict: 'pendaftar_id,dokumen_id' });
   if (error) throw new Error('Status verifikasi tidak dapat disimpan.');
 
+  const allDocumentsUploaded = DOCUMENT_DEFINITIONS.every(document => typeof participant[document.dbColumn] === 'string' && (participant[document.dbColumn] as string).trim().length > 0);
+  if (allDocumentsUploaded) {
+    const { data: reviews, error: reviewError } = await supabase.from('verifikasi_dokumen').select('dokumen_id,status').eq('pendaftar_id', participantId);
+    if (reviewError || !reviews) throw new Error('Status verifikasi dokumen tidak dapat diperiksa.');
+    const verifiedIds = new Set(reviews.filter(review => review.status === 'verified').map(review => review.dokumen_id));
+    const allDocumentsVerified = DOCUMENT_DEFINITIONS.every(document => verifiedIds.has(document.id));
+    if (allDocumentsVerified) {
+      const { error: statusError } = await supabase.from('pendaftar').update({ status: 'Terverifikasi' }).eq('id', participantId).eq('status', 'Menunggu Verifikasi');
+      if (statusError) throw new Error('Status peserta tidak dapat diperbarui.');
+      revalidatePath('/admin/pendaftar');
+    }
+  }
+
   revalidatePath(`/admin/pendaftar/${participantId}`);
 }

@@ -22,12 +22,14 @@ describe('DocumentPreviewButton', () => {
     expect(screen.getByRole('link', { name: 'Unduh berkas Akta Kelahiran' }).getAttribute('href')).toBe(`${href}&download=1`);
   });
 
-  it('keeps PDF preview and provides a private download link', async () => {
+  it('opens PDF inline in a new tab without downloading it', () => {
     const href = '/admin/pendaftar/id/dokumen/aktaKelahiran?contentType=application%2Fpdf';
     render(<DocumentPreviewButton href={href} title="Akta Kelahiran" />);
-    fireEvent.click(screen.getByRole('button', { name: 'Lihat berkas Akta Kelahiran' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Berkas Akta Kelahiran' });
-    expect(dialog.querySelector('iframe')?.getAttribute('src')).toBe(href);
+    const preview = screen.getByRole('link', { name: 'Lihat pratinjau PDF Akta Kelahiran' });
+    expect(preview.getAttribute('href')).toBe(href);
+    expect(preview.getAttribute('target')).toBe('_blank');
+    expect(preview.getAttribute('rel')).toBe('noreferrer');
+    expect(screen.queryByRole('button', { name: 'Lihat berkas Akta Kelahiran' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Unduh berkas Akta Kelahiran' }).getAttribute('href')).toBe(`${href}&download=1`);
   });
 });

@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useRef, useState, type PointerEvent, type WheelEvent } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
-import { Download, Eye, Minus, Plus, RotateCcw, X } from 'lucide-react';
+import { Download, ExternalLink, Eye, Minus, Plus, RotateCcw, X } from 'lucide-react';
 import Image from 'next/image';
 
 type ViewState = { scale: number; x: number; y: number };
@@ -25,6 +25,10 @@ export function DocumentPreviewButton({ href, title }: { href: string; title: st
   const [dragging, setDragging] = useState(false);
   const drag = useRef<DragState | null>(null);
   const downloadHref = getDownloadHref(href);
+
+  if (previewType === 'pdf') {
+    return <div className="flex items-center gap-1"><Dialog.Root><Dialog.Trigger aria-label={`Lihat pratinjau PDF ${title}`} className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><ExternalLink aria-hidden="true" className="size-3.5" />Pratinjau PDF</Dialog.Trigger><Dialog.Portal><Dialog.Backdrop className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-[2px]" /><Dialog.Popup className="fixed left-1/2 top-1/2 z-50 flex h-[min(78dvh,48rem)] w-[min(88vw,56rem)] max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-1rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl outline-none"><div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3"><Dialog.Title className="min-w-0 truncate text-sm font-semibold text-slate-900">Berkas {title}</Dialog.Title><div className="flex shrink-0 items-center gap-1"><a href={downloadHref} aria-label={`Unduh berkas ${title}`} download className="inline-flex size-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-blue-50 hover:text-blue-700"><Download aria-hidden="true" className="size-4" /></a><Dialog.Close aria-label="Tutup berkas" className="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"><X aria-hidden="true" className="size-4" /></Dialog.Close></div></div><div className="min-h-0 flex-1 bg-slate-100 p-2 sm:p-4"><iframe src={href} title={`Berkas ${title}`} className="h-full min-h-0 w-full bg-white" /></div></Dialog.Popup></Dialog.Portal></Dialog.Root><a href={downloadHref} aria-label={`Unduh berkas ${title}`} download className="inline-flex size-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><Download aria-hidden="true" className="size-4" /></a></div>;
+  }
 
   function handlePreviewWheel(event: WheelEvent<HTMLDivElement>) {
     if (previewType !== 'image') return;

@@ -4,12 +4,14 @@ const mocks = vi.hoisted(() => ({
   session: vi.fn(),
   getDocumentRow: vi.fn(),
   upsert: vi.fn(),
+  reviewRows: vi.fn(),
+  updateStatus: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock('@/features/auth/session', () => ({ getAdminSession: mocks.session }));
-vi.mock('@/features/registration/server/supabaseAdmin', () => ({ getSupabaseAdmin: () => ({ from: () => ({ upsert: mocks.upsert }) }) }));
+vi.mock('@/features/registration/server/supabaseAdmin', () => ({ getSupabaseAdmin: () => ({ from: (table: string) => table === 'verifikasi_dokumen' ? { upsert: mocks.upsert, select: () => ({ eq: mocks.reviewRows }) } : { update: () => ({ eq: () => ({ eq: mocks.updateStatus }) }) } }) }));
 vi.mock('../../server/participantsRepository', () => ({ createParticipantsRepository: () => ({ getDocumentRow: mocks.getDocumentRow }) }));
 
 import { saveDocumentReviewAction } from '../saveDocumentReviewAction';
@@ -27,8 +29,10 @@ describe('saveDocumentReviewAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.session.mockResolvedValue(true);
-    mocks.getDocumentRow.mockResolvedValue({ dokumen_akta_kelahiran: 'registrations/test/aktaKelahiran.pdf' });
+    mocks.getDocumentRow.mockResolvedValue({ dokumen_akta_kelahiran: 'registrations/test/aktaKelahiran.pdf', dokumen_kartu_keluarga: 'registrations/test/kk.pdf', dokumen_pas_foto: 'registrations/test/foto.png', dokumen_bukti_pembayaran: 'registrations/test/bukti.pdf' });
     mocks.upsert.mockResolvedValue({ error: null });
+    mocks.reviewRows.mockResolvedValue({ data: [{ dokumen_id: 'aktaKelahiran', status: 'verified' }, { dokumen_id: 'kartuKeluarga', status: 'verified' }, { dokumen_id: 'pasFoto', status: 'verified' }, { dokumen_id: 'buktiPembayaran', status: 'verified' }], error: null });
+    mocks.updateStatus.mockResolvedValue({ error: null });
   });
 
   it('rejects requests without an admin session', async () => {
@@ -40,6 +44,24 @@ describe('saveDocumentReviewAction', () => {
   it('allows per-document follow-up without a document-specific note', async () => {
     await saveDocumentReviewAction(form('follow_up'));
     expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({ status: 'follow_up' }), { onConflict: 'pendaftar_id,dokumen_id' });
+  });
+
+  it('marks participant verified when every required document is uploaded and reviewed', async () => {
+    await saveDocumentReviewAction(form('verified'));
+    expect(mocks.updateStatus).toHaveBeenCalledWith('status', 'Menunggu Verifikasi');
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pendaftar');
+  });
+
+  it('does not mark participant verified when any required document is missing', async () => {
+    mocks.getDocumentRow.mockResolvedValue({ dokumen_akta_kelahiran: 'akta.pdf', dokumen_kartu_keluarga: 'kk.pdf', dokumen_pas_foto: 'foto.png', dokumen_bukti_pembayaran: null });
+    await saveDocumentReviewAction(form('verified'));
+    expect(mocks.updateStatus).not.toHaveBeenCalled();
+  });
+
+  it('does not mark participant verified when any review needs follow-up', async () => {
+    mocks.reviewRows.mockResolvedValue({ data: [{ dokumen_id: 'aktaKelahiran', status: 'verified' }, { dokumen_id: 'kartuKeluarga', status: 'verified' }, { dokumen_id: 'pasFoto', status: 'follow_up' }, { dokumen_id: 'buktiPembayaran', status: 'verified' }], error: null });
+    await saveDocumentReviewAction(form('verified'));
+    expect(mocks.updateStatus).not.toHaveBeenCalled();
   });
 
   it('saves review metadata and refreshes only that participant detail', async () => {
