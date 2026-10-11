@@ -1,0 +1,40 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { DOCUMENT_DEFINITIONS, type RegistrationDocumentId } from '@/features/registration/contracts';
+import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
+import { getAdminSession } from '@/features/auth/session';
+import { createParticipantsRepository } from '../server/participantsRepository';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const REVIEW_STATUSES = new Set(['verified', 'follow_up']);
+
+export async function saveDocumentReviewAction(formData: FormData): Promise<void> {
+  if (!await getAdminSession()) throw new Error('Sesi admin tidak valid. Silakan masuk kembali.');
+
+  const participantId = String(formData.get('participantId') ?? '');
+  const documentId = String(formData.get('documentId') ?? '');
+  const status = String(formData.get('status') ?? '');
+  if (!UUID_PATTERN.test(participantId)) throw new Error('Data peserta tidak valid.');
+  if (!DOCUMENT_DEFINITIONS.some(document => document.id === documentId)) throw new Error('Jenis dokumen tidak valid.');
+  if (!REVIEW_STATUSES.has(status)) throw new Error('Status pemeriksaan tidak valid.');
+
+  const supabase = getSupabaseAdmin();
+  const participant = await createParticipantsRepository(supabase).getDocumentRow(participantId);
+  const definition = DOCUMENT_DEFINITIONS.find(document => document.id === documentId as RegistrationDocumentId);
+  if (!participant || !definition || typeof participant[definition.dbColumn] !== 'string') {
+    throw new Error('Berkas tidak ditemukan atau belum diunggah.');
+  }
+
+  const { error } = await supabase.from('verifikasi_dokumen').upsert({
+    pendaftar_id: participantId,
+    dokumen_id: documentId,
+    status,
+    catatan: null,
+    diperiksa_oleh: 'Admin',
+    diperiksa_pada: new Date().toISOString(),
+  }, { onConflict: 'pendaftar_id,dokumen_id' });
+  if (error) throw new Error('Status verifikasi tidak dapat disimpan.');
+
+  revalidatePath(`/admin/pendaftar/${participantId}`);
+}

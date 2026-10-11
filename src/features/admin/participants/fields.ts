@@ -1,0 +1,11 @@
+/** Field labels are shared by server mapping and the read-only detail UI. */
+export const PARTICIPANT_FIELDS = {
+  identity: [['namaLengkap', 'nama_lengkap', 'Nama lengkap'], ['jenisKelamin', 'jenis_kelamin', 'Jenis kelamin'], ['tempatLahir', 'tempat_lahir', 'Tempat lahir'], ['tanggalLahir', 'tanggal_lahir', 'Tanggal lahir'], ['nik', 'nik', 'NIK'], ['nisn', 'nisn', 'NISN']],
+  registration: [['jenisPendaftaran', 'jenis_pendaftaran', 'Jenis pendaftaran'], ['pilihanKelas', 'pilihan_kelas', 'Pilihan kelas']],
+  school: [['asalSekolah', 'asal_sekolah', 'Asal sekolah'], ['prestasiAnak', 'prestasi_anak', 'Prestasi anak'], ['tingkatPrestasi', 'tingkat_prestasi', 'Tingkat prestasi'], ['jarakKeSekolah', 'jarak_ke_sekolah', 'Jarak ke sekolah']],
+  affiliation: [['bekerjaDiDirektorat2', 'bekerja_di_direktorat2', 'Orang tua bekerja di Direktorat 2'], ['profesiDiDirektorat2', 'profesi_di_direktorat2', 'Profesi di Direktorat 2'], ['namaOrangtuaDirektorat2', 'nama_orangtua_direktorat2', 'Nama orang tua'], ['unitOrangtuaDirektorat2', 'unit_orangtua_direktorat2', 'Unit orang tua'], ['saudaraDiDirektorat2', 'saudara_di_direktorat2', 'Memiliki saudara di Direktorat 2'], ['namaSaudaraDirektorat2', 'nama_saudara_direktorat2', 'Nama saudara'], ['unitSaudaraDirektorat2', 'unit_saudara_direktorat2', 'Unit saudara']],
+  address: [['alamatJalan', 'alamat_jalan', 'Alamat jalan'], ['rt', 'rt', 'RT'], ['rw', 'rw', 'RW'], ['kelurahan', 'kelurahan', 'Desa / kelurahan'], ['kecamatan', 'kecamatan', 'Kecamatan'], ['kota', 'kota', 'Kabupaten / kota'], ['provinsi', 'provinsi', 'Provinsi'], ['alamatRumah', 'alamat_rumah', 'Alamat rumah']],
+  father: [['nama', 'nama_ayah', 'Nama ayah'], ['nik', 'nik_ayah', 'NIK ayah'], ['pendidikan', 'pendidikan_ayah', 'Pendidikan'], ['pekerjaan', 'pekerjaan_ayah', 'Pekerjaan'], ['penghasilan', 'penghasilan_ayah', 'Penghasilan'], ['telepon', 'telepon_ayah', 'Nomor telepon'], ['alamat', 'alamat_ayah', 'Alamat']],
+  mother: [['nama', 'nama_ibu', 'Nama ibu'], ['nik', 'nik_ibu', 'NIK ibu'], ['pendidikan', 'pendidikan_ibu', 'Pendidikan'], ['pekerjaan', 'pekerjaan_ibu', 'Pekerjaan'], ['penghasilan', 'penghasilan_ibu', 'Penghasilan'], ['telepon', 'telepon_ibu', 'Nomor telepon'], ['alamat', 'alamat_ibu', 'Alamat']],
+} as const;
+export type ParticipantFieldGroupName = keyof typeof PARTICIPANT_FIELDS;

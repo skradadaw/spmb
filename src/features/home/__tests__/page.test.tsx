@@ -99,6 +99,9 @@ describe('Open Booking landing page', () => {
 
     const mobileNavigation = screen.getByRole('navigation', { name: 'Navigasi seluler' });
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(mobileNavigation.className).toContain('bg-gradient-to-b');
+    expect(within(mobileNavigation).getByText('Menu Utama')).toBeDefined();
+    expect(within(mobileNavigation).getByText('Informasi Open Booking')).toBeDefined();
     expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(6);
     expect(within(mobileNavigation).getByRole('link', { name: 'Daftar Sekarang' })).toBeDefined();
 

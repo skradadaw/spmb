@@ -145,6 +145,30 @@ END $$;
 
 REVOKE ALL ON TABLE public.pendaftar FROM PUBLIC, anon, authenticated;
 
+-- 6a. Internal admin document reviews
+CREATE TABLE IF NOT EXISTS public.verifikasi_dokumen (
+  pendaftar_id UUID NOT NULL REFERENCES public.pendaftar(id) ON DELETE CASCADE,
+  dokumen_id TEXT NOT NULL CHECK (dokumen_id IN ('aktaKelahiran', 'kartuKeluarga', 'pasFoto', 'buktiPembayaran')),
+  status TEXT NOT NULL CHECK (status IN ('verified', 'follow_up')),
+  catatan TEXT,
+  diperiksa_oleh TEXT NOT NULL DEFAULT 'Admin',
+  diperiksa_pada TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (pendaftar_id, dokumen_id)
+);
+ALTER TABLE public.verifikasi_dokumen DROP CONSTRAINT IF EXISTS verifikasi_dokumen_check;
+UPDATE public.pendaftar AS peserta
+SET catatan_admin = catatan_terlama.catatan
+FROM (
+  SELECT pendaftar_id, string_agg(DISTINCT trim(catatan), E'\n' ORDER BY trim(catatan)) AS catatan
+  FROM public.verifikasi_dokumen
+  WHERE catatan IS NOT NULL AND trim(catatan) <> ''
+  GROUP BY pendaftar_id
+) AS catatan_terlama
+WHERE peserta.id = catatan_terlama.pendaftar_id
+  AND peserta.catatan_admin IS NULL;
+ALTER TABLE public.verifikasi_dokumen ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.verifikasi_dokumen FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.verifikasi_dokumen TO service_role;
 -- 7. Setup Storage Bucket (Supabase Storage)
 INSERT INTO storage.buckets (
   id, name, public, file_size_limit, allowed_mime_types

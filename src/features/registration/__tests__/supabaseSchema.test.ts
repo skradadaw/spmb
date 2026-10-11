@@ -14,6 +14,15 @@ function compactSql(sql: string) {
 const compactSchema = compactSql(schema);
 
 describe('Supabase registration security schema', () => {
+  it('stores internal document reviews privately per participant and document', () => {
+    expect(compactSchema).toContain('CREATE TABLE IF NOT EXISTS public.verifikasi_dokumen');
+    expect(compactSchema).toContain('PRIMARY KEY (pendaftar_id, dokumen_id)');
+    expect(compactSchema).toContain("status IN ('verified', 'follow_up')");
+    expect(compactSchema).toContain('ALTER TABLE public.verifikasi_dokumen ENABLE ROW LEVEL SECURITY;');
+    expect(compactSchema).toContain('REVOKE ALL ON TABLE public.verifikasi_dokumen FROM PUBLIC, anon, authenticated;');
+    expect(compactSchema).toContain('GRANT ALL ON TABLE public.verifikasi_dokumen TO service_role;');
+    expect(compactSchema).toContain('ALTER TABLE public.verifikasi_dokumen DROP CONSTRAINT IF EXISTS verifikasi_dokumen_check;');
+  });
   it('adds separate parent and sibling Direktorat 2 columns without dropping legacy data', () => {
     for (const column of [
       'nama_orangtua_direktorat2 VARCHAR(255)',
