@@ -34,8 +34,8 @@ describe('Open Booking landing page', () => {
 
     const schedule = screen.getByRole('complementary', { name: 'Jadwal penting' });
     expect(within(schedule).getByText('Ringkasan Open Booking')).toBeDefined();
-    expect(within(schedule).getByText('1 Okt–17 Nov 2026')).toBeDefined();
-    expect(within(schedule).getByText('25 November 2026')).toBeDefined();
+    expect(within(schedule).getByText('1 Oktober – 17 November 2026')).toBeDefined();
+    expect(within(schedule).getByText('21 November 2026')).toBeDefined();
     expect(within(schedule).getByText('Rp375.000')).toBeDefined();
     expect(
       within(schedule).getByText('Simpan bukti pembayaran untuk diunggah saat pendaftaran.'),

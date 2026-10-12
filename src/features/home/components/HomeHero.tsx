@@ -260,7 +260,7 @@ export default function HomeHero({ completedCount }: { completedCount: number | 
                 <div className="min-w-0">
                   <dt className="text-sm font-medium text-emerald-950/70">Gelombang 1</dt>
                   <dd className="mt-0.5 text-base font-bold text-slate-900">
-                    1 Okt–17 Nov 2026
+                    1 Oktober – 17 November 2026
                   </dd>
                   <dd className="mt-1 text-sm text-slate-600">Periode Open Booking</dd>
                 </div>
@@ -273,7 +273,7 @@ export default function HomeHero({ completedCount }: { completedCount: number | 
                 <div className="min-w-0">
                   <dt className="text-sm font-medium text-emerald-950/70">Tes OKB</dt>
                   <dd className="mt-0.5 text-base font-bold text-slate-900">
-                    25 November 2026
+                    21 November 2026
                   </dd>
                   <dd className="mt-1 text-sm text-slate-600">
                     Jadwal observasi kesiapan belajar
