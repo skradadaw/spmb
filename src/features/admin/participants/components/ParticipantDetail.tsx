@@ -101,7 +101,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                   <article
                     key={document.id}
                     data-review-state={status}
-                    className={`flex min-w-0 flex-col justify-between gap-2 rounded-xl border p-2.5 transition-colors sm:flex-row sm:items-center ${
+                    className={`flex min-w-0 flex-col justify-between rounded-xl border p-2.5 transition-colors ${
                       status === 'missing'
                         ? 'border-slate-300 bg-slate-100'
                         : status === 'follow_up'
@@ -111,50 +111,52 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                         : 'border-blue-200 bg-blue-50'
                     }`}
                   >
-                    <div className="flex min-w-0 items-start gap-2">
+                    <div className="flex min-w-0 items-start gap-2.5">
                       <span
                         aria-hidden="true"
                         data-document-index
-                        className={`flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${numberStyles}`}
+                        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${numberStyles}`}
                       >
                         {String(index + 1).padStart(2, '0')}
                       </span>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <h3 className="break-words text-xs font-semibold leading-4 text-slate-950">{document.title}</h3>
-                        <span className={`mt-0.5 inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium leading-3 ${statusStyles}`}>
-                          {statusLabel}
-                        </span>
+                        <div className="mt-1">
+                          <span className={`inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium leading-3 ${statusStyles}`}>
+                            {statusLabel}
+                          </span>
+                        </div>
+                        {document.path && (
+                          <form action={saveDocumentReviewAction} className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                            <input type="hidden" name="participantId" value={participant.id} />
+                            <input type="hidden" name="documentId" value={document.id} />
+                            <Button
+                              type="submit"
+                              name="status"
+                              value={'verified' satisfies DocumentReviewStatus}
+                              aria-label={`Verifikasi ${document.title}`}
+                              aria-pressed={status === 'verified'}
+                              size="sm"
+                              className={`h-8 rounded-md px-2 text-[11px] font-semibold shadow-none ${
+                                status === 'verified'
+                                ? 'bg-emerald-700 text-white hover:bg-emerald-800'
+                                : 'border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50'
+                              }`}
+                            >
+                              <Check aria-hidden="true" className="size-3" />
+                              Verifikasi
+                            </Button>
+                            <DocumentPreviewButton
+                              compact
+                              href={`/admin/pendaftar/${participant.id}/dokumen/${document.id}?contentType=${encodeURIComponent(
+                                getDocumentContentType(document.path),
+                              )}`}
+                              title={document.title}
+                            />
+                          </form>
+                        )}
                       </div>
                     </div>
-                    {document.path && (
-                      <form action={saveDocumentReviewAction} className="flex shrink-0 items-center gap-1.5 sm:self-center">
-                        <input type="hidden" name="participantId" value={participant.id} />
-                        <input type="hidden" name="documentId" value={document.id} />
-                        <Button
-                          type="submit"
-                          name="status"
-                          value={'verified' satisfies DocumentReviewStatus}
-                          aria-label={`Verifikasi ${document.title}`}
-                          aria-pressed={status === 'verified'}
-                          size="sm"
-                          className={`h-8 rounded-md px-2 text-[11px] font-semibold shadow-none ${
-                            status === 'verified'
-                              ? 'bg-emerald-700 text-white hover:bg-emerald-800'
-                              : 'border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50'
-                          }`}
-                        >
-                          <Check aria-hidden="true" className="size-3" />
-                          Verifikasi
-                        </Button>
-                        <DocumentPreviewButton
-                          compact
-                          href={`/admin/pendaftar/${participant.id}/dokumen/${document.id}?contentType=${encodeURIComponent(
-                            getDocumentContentType(document.path),
-                          )}`}
-                          title={document.title}
-                        />
-                      </form>
-                    )}
                   </article>
                 );
               })}
