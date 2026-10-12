@@ -3,7 +3,7 @@
 import { useRef, useState, type PointerEvent, type WheelEvent } from 'react';
 import dynamic from 'next/dynamic';
 import { Dialog } from '@base-ui/react/dialog';
-import { Eye, FileText, ImageIcon, Minus, Plus, RotateCcw, RotateCw, X } from 'lucide-react';
+import { Download, Eye, FileText, ImageIcon, Minus, Plus, RotateCcw, RotateCw, X } from 'lucide-react';
 import Image from 'next/image';
 
 type ViewState = { scale: number; x: number; y: number; rotation: number };
@@ -100,7 +100,18 @@ export function DocumentPreviewButton({ href, title, compact = false }: { href: 
                 <span className="mt-0.5 inline-flex rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600">{previewType === 'pdf' ? 'PDF' : 'Gambar'}</span>
               </div>
             </div>
-            <Dialog.Close aria-label="Tutup berkas" onClick={resetZoom} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><X aria-hidden="true" className="size-4" /></Dialog.Close>
+            <div className="flex items-center gap-2">
+              <a
+                href={`${href}${href.includes('?') ? '&' : '?'}download=1`}
+                download
+                aria-label={`Unduh berkas ${title}`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                <Download aria-hidden="true" className="size-4 text-slate-600" />
+                <span className="hidden sm:inline">Unduh berkas</span>
+              </a>
+              <Dialog.Close aria-label="Tutup berkas" onClick={resetZoom} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><X aria-hidden="true" className="size-4" /></Dialog.Close>
+            </div>
           </header>
           <div data-document-preview onWheel={handlePreviewWheel} onDoubleClick={event => { if (previewType === 'image') { event.preventDefault(); if (view.scale === 1) { const bounds = event.currentTarget.getBoundingClientRect(); setView({ scale: 2, x: -(event.clientX - bounds.left), y: -(event.clientY - bounds.top), rotation: view.rotation }); } else { resetZoom(); } } }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} className={`relative min-h-0 flex-1 overflow-hidden bg-slate-900 ${view.scale > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}>
             {previewType === 'image' ? (

@@ -25,7 +25,7 @@ describe('DocumentPreviewButton', () => {
     expect(screen.getByText('120%')).toBeTruthy();
     expect(screen.getByRole('img', { name: 'Akta Kelahiran' }).getAttribute('style')).toContain('scale(1.2)');
     expect(screen.getByRole('img', { name: 'Akta Kelahiran' }).getAttribute('style')).toContain('translate3d(20px, 20px, 0)');
-    expect(screen.queryByRole('link', { name: 'Unduh berkas Akta Kelahiran' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Unduh berkas Akta Kelahiran' }).getAttribute('href')).toBe(`${href}&download=1`);
   });
 
   it('uses the in-app PDF.js renderer instead of a browser PDF frame', async () => {
@@ -34,6 +34,7 @@ describe('DocumentPreviewButton', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' }));
     const dialog = await screen.findByRole('dialog', { name: 'Berkas Akta Kelahiran' });
     expect(dialog.querySelector('iframe')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Unduh berkas Akta Kelahiran' }).getAttribute('href')).toBe(`${href}&download=1`);
     expect(await screen.findByTestId('pdfjs-preview')).toBeTruthy();
   });
 });

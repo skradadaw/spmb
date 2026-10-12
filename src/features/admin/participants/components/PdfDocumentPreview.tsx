@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, LoaderCircle, Maximize2, Minus, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, LoaderCircle, Maximize2, Minus, Plus } from 'lucide-react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
 
 type LoadState = 'loading' | 'ready' | 'error';
@@ -121,6 +121,16 @@ export function PdfDocumentPreview({ href }: { href: string }) {
         <button type="button" aria-label="Perkecil PDF" onClick={() => changeScale(-0.2)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 hover:bg-white/10"><Minus aria-hidden="true" className="size-4" /></button>
         <button type="button" aria-label="Sesuaikan lebar" aria-pressed={fitWidth} onClick={() => setFitWidth(true)} className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-200 hover:bg-white/10"><Maximize2 aria-hidden="true" className="size-3.5" />Lebar</button>
         <button type="button" aria-label="Perbesar PDF" onClick={() => changeScale(0.2)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 hover:bg-white/10"><Plus aria-hidden="true" className="size-4" /></button>
+        <span aria-hidden="true" className="mx-1 h-5 w-px bg-white/15" />
+        <a
+          href={`${href}${href.includes('?') ? '&' : '?'}download=1`}
+          download
+          aria-label="Unduh berkas PDF"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-200 hover:bg-white/10"
+        >
+          <Download aria-hidden="true" className="size-3.5" />
+          Unduh
+        </a>
       </div>}
     </div>
   );
