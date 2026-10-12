@@ -65,7 +65,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
         </div>
         <Badge>{participant.status}</Badge>
       </div>
-      <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_31.5rem]">
+      <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_33rem]">
         <Card className="min-w-0 rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
           <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Informasi siswa</CardTitle></CardHeader>
           <CardContent className="space-y-3 px-4 pb-5 pt-0 sm:px-5" data-detail-groups>
@@ -127,7 +127,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                           </span>
                         </div>
                         {document.path && (
-                          <form action={saveDocumentReviewAction} className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                          <form action={saveDocumentReviewAction} className="mt-2.5 flex flex-nowrap items-center gap-1.5">
                             <input type="hidden" name="participantId" value={participant.id} />
                             <input type="hidden" name="documentId" value={document.id} />
                             <Button
@@ -137,7 +137,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                               aria-label={`Verifikasi ${document.title}`}
                               aria-pressed={status === 'verified'}
                               size="sm"
-                              className={`h-8 rounded-md px-2 text-[11px] font-semibold shadow-none ${
+                              className={`h-8 shrink-0 gap-1 rounded-md px-2 text-[11px] font-semibold shadow-none ${
                                 status === 'verified'
                                 ? 'bg-emerald-700 text-white hover:bg-emerald-800'
                                 : 'border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50'

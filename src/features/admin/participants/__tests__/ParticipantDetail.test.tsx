@@ -66,7 +66,7 @@ describe('ParticipantDetail', () => {
     expect(documentsCard?.contains(screen.getByText('Pas Foto Anak (Terbaru)'))).toBe(true);
     expect(documentsCard?.contains(screen.getByText('Bukti Pembayaran OKB'))).toBe(true);
     expect(documentsCard).not.toBe(detailsCard);
-    expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_31.5rem]');
+    expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_33rem]');
     expect(documentsCard?.className).toContain('xl:sticky');
     expect(detailsCard?.querySelector('[data-detail-groups]')?.className).not.toContain('xl:grid-cols-3');
     expect(detailsCard?.querySelector('[data-detail-group]')?.className).not.toContain('lg:grid-cols-[10rem_minmax(0,1fr)]');
