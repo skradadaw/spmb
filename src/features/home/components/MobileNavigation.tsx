@@ -76,46 +76,49 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
           <nav
             id="mobile-navigation"
             aria-label="Navigasi seluler"
-            className="h-full overflow-y-auto overscroll-contain border-t border-emerald-950/10 bg-white px-4 pt-4 shadow-xl shadow-emerald-950/15 sm:px-6"
+            className="h-full overflow-y-auto overscroll-contain border-t border-emerald-950/10 bg-gradient-to-b from-white via-white to-emerald-50/20 px-4 pt-4 shadow-xl shadow-emerald-950/15 sm:px-6"
           >
             <div className="mx-auto flex min-h-full max-w-7xl flex-col justify-between pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               <div className="space-y-4">
-                {/* Menu items card with dividers */}
-                <div className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-xs divide-y divide-slate-100">
-                  {items.map(([label, href]) => {
-                    const IconComponent = navigationIcons[label] || CircleArrowRight;
-                    return (
-                      <a
-                        key={href}
-                        href={href}
-                        onClick={closeMenu}
-                        className="group flex min-h-[54px] items-center justify-between px-4 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-emerald-50/70 hover:text-emerald-950 active:bg-emerald-100/60 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#007A10]"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span
+                <div className="space-y-2">
+                  <p className="px-1 text-xs font-bold uppercase tracking-wider text-emerald-900/70">Menu Utama</p>
+                  {/* Menu items card with dividers */}
+                  <div className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-xs divide-y divide-slate-100">
+                    {items.map(([label, href]) => {
+                      const IconComponent = navigationIcons[label] || CircleArrowRight;
+                      return (
+                        <a
+                          key={href}
+                          href={href}
+                          onClick={closeMenu}
+                          className="group flex min-h-[54px] items-center justify-between px-4 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-emerald-50/70 hover:text-emerald-950 active:bg-emerald-100/60 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#007A10]"
+                        >
+                          <span className="flex items-center gap-3">
+                            <span
+                              aria-hidden="true"
+                              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[#007A10] transition-colors group-hover:bg-[#007A10] group-hover:text-white"
+                            >
+                              <IconComponent aria-hidden="true" className="size-4" />
+                            </span>
+                            <span className="font-semibold text-slate-800 transition-colors group-hover:text-emerald-950">
+                              {label}
+                            </span>
+                          </span>
+                          <ChevronRight
                             aria-hidden="true"
-                            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[#007A10] transition-colors group-hover:bg-[#007A10] group-hover:text-white"
-                          >
-                            <IconComponent aria-hidden="true" className="size-4" />
-                          </span>
-                          <span className="font-semibold text-slate-800 transition-colors group-hover:text-emerald-950">
-                            {label}
-                          </span>
-                        </span>
-                        <ChevronRight
-                          aria-hidden="true"
-                          className="size-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-700"
-                        />
-                      </a>
-                    );
-                  })}
+                            className="size-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-700"
+                          />
+                        </a>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Helpful registration announcement card */}
                 <div className="rounded-2xl border border-emerald-900/10 bg-gradient-to-br from-emerald-50/90 via-emerald-50/40 to-lime-50/50 p-4 text-xs text-emerald-950 shadow-xs">
                   <div className="flex items-center gap-2 font-bold text-emerald-900">
                     <Sparkles aria-hidden="true" className="size-4 text-emerald-700" />
-                    <span>Informasi Pendaftaran</span>
+                    <span>Informasi Open Booking</span>
                   </div>
                   <p className="mt-1.5 leading-relaxed text-slate-600">
                     Kuota penerimaan murid baru terbatas. Segera lengkapi formulir pendaftaran dan unggah berkas sebelum kuota terpenuhi.
