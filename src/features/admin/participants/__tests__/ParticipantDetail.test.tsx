@@ -1,5 +1,6 @@
 ﻿import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { within } from '@testing-library/react';
 import { ParticipantDetail } from '../components/ParticipantDetail';
 import type { ParticipantDetail as ParticipantDetailData } from '../contracts';
 
@@ -15,7 +16,10 @@ const participant: ParticipantDetailData = {
   address: { alamatJalan: 'KP KRAJAN maracang', rt: '8', rw: '001', kelurahan: 'Mawar', kecamatan: 'Purwakarta', kota: 'Purwakarta', provinsi: 'Jawa Barat', alamatRumah: null },
   father: { nama: 'BUDI SANTOSO', nik: '123', pendidikan: 'SMA', pekerjaan: 'KARYAWAN SWASTA', penghasilan: null, telepon: '081234', alamat: null },
   mother: { nama: 'Siti', nik: '456', pendidikan: 'SMP', pekerjaan: 'Ibu rumah tangga', penghasilan: null, telepon: '085678', alamat: null },
-  documentReviews: {},
+  documentReviews: {
+    aktaKelahiran: { status: 'verified', reviewedAt: '2026-10-10T01:00:00Z', reviewedBy: 'Admin' },
+    kartuKeluarga: { status: 'follow_up', reviewedAt: '2026-10-10T02:00:00Z', reviewedBy: 'Admin' },
+  },
   adminNote: null,
   documents: [
     { id: 'aktaKelahiran', title: 'Akta Kelahiran', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/aktaKelahiran.pdf' },
@@ -51,7 +55,7 @@ describe('ParticipantDetail', () => {
     expect(screen.getByText('22 Februari 2021')).toBeDefined();
     expect(screen.getByText('5 KM')).toBeDefined();
     expect(screen.getByText('08')).toBeDefined();
-    expect(screen.getByText('01')).toBeDefined();
+    expect(within(detailsCard as HTMLElement).getByText('01')).toBeDefined();
     const parentAddresses = screen.getAllByText('Alamat').map((label) => label.parentElement);
     expect(parentAddresses).toHaveLength(2);
     expect(parentAddresses.every((address) => address?.className.includes('col-span-full'))).toBe(true);
@@ -62,7 +66,7 @@ describe('ParticipantDetail', () => {
     expect(documentsCard?.contains(screen.getByText('Pas Foto Anak (Terbaru)'))).toBe(true);
     expect(documentsCard?.contains(screen.getByText('Bukti Pembayaran OKB'))).toBe(true);
     expect(documentsCard).not.toBe(detailsCard);
-    expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_22rem]');
+    expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_minmax(34rem,40rem)]');
     expect(documentsCard?.className).toContain('xl:sticky');
     expect(detailsCard?.querySelector('[data-detail-groups]')?.className).not.toContain('xl:grid-cols-3');
     expect(detailsCard?.querySelector('[data-detail-group]')?.className).not.toContain('lg:grid-cols-[10rem_minmax(0,1fr)]');
@@ -70,11 +74,35 @@ describe('ParticipantDetail', () => {
     expect(detailsCard?.querySelector('dl')?.className).not.toMatch(/sm:grid-cols-2|xl:grid-cols-3/);
   });
 
-  it('renders compact document preview triggers with admin-only review controls', () => {
+  it('renders documents in a compact responsive grid with distinct review actions', () => {
     render(<ParticipantDetail participant={participant} />);
-    expect(screen.getAllByRole('button', { name: /^Lihat berkas / })).toHaveLength(4);
-    expect(screen.getAllByRole('button', { name: 'Tandai terverifikasi' })).toHaveLength(4);
-    expect(screen.getAllByRole('button', { name: 'Perlu ditindaklanjuti' })).toHaveLength(4);
+    const documentGrid = screen.getByTestId('document-grid');
+    expect(documentGrid.className).toContain('md:grid-cols-2');
+    expect(documentGrid.getAttribute('data-density')).toBe('compact');
+    expect(within(documentGrid).getAllByText('Lihat berkas')).toHaveLength(4);
+    expect(within(documentGrid).queryByText('Pratinjau PDF')).toBeNull();
+    expect(screen.getAllByRole('button', { name: /^Lihat berkas / })).toHaveLength(3);
+    expect(screen.getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' })).toBeDefined();
+    expect(screen.getAllByRole('button', { name: /^Verifikasi / })).toHaveLength(4);
+    expect(screen.queryByRole('button', { name: /^Tindak lanjut / })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Verifikasi Akta Kelahiran' }).getAttribute('aria-pressed')).toBe('true');
+    const aktaActions = screen.getByRole('button', { name: 'Verifikasi Akta Kelahiran' }).closest('form');
+    expect(aktaActions).not.toBeNull();
+    expect(within(aktaActions as HTMLFormElement).getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' })).toBeDefined();
+    expect(Array.from((aktaActions as HTMLFormElement).querySelectorAll('button')).map(button => button.getAttribute('aria-label'))).toEqual([
+      'Verifikasi Akta Kelahiran',
+      'Lihat pratinjau PDF Akta Kelahiran',
+    ]);
     expect(screen.getAllByLabelText('Catatan admin')).toHaveLength(1);
+  });
+
+  it('uses clearly different surfaces for verified and pending documents', () => {
+    render(<ParticipantDetail participant={participant} />);
+    const verified = screen.getByText('Akta Kelahiran').closest('article');
+    const pending = screen.getByText('Bukti Pembayaran OKB').closest('article');
+    expect(verified?.getAttribute('data-review-state')).toBe('verified');
+    expect(verified?.className).toContain('bg-emerald-100');
+    expect(pending?.getAttribute('data-review-state')).toBe('pending');
+    expect(pending?.className).toContain('bg-blue-50');
   });
 });

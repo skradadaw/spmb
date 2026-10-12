@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, ClipboardCheck, MessageSquareText } from 'lucide-react';
+import { ArrowLeft, Check, ClipboardCheck, MessageSquareText } from 'lucide-react';
 import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminNoteAction';
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
 import { DocumentPreviewButton } from './DocumentPreviewButton';
@@ -65,7 +65,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
         </div>
         <Badge>{participant.status}</Badge>
       </div>
-      <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(34rem,40rem)]">
         <Card className="min-w-0 rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
           <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Informasi siswa</CardTitle></CardHeader>
           <CardContent className="space-y-3 px-4 pb-5 pt-0 sm:px-5" data-detail-groups>
@@ -79,18 +79,18 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
           </CardContent>
         </Card>
         <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm xl:sticky xl:top-4">
-          <CardHeader className="border-b border-slate-200 bg-slate-50/80 p-5 pb-4">
+          <CardHeader className="border-b border-slate-200 bg-slate-50/80 p-4 pb-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <CardTitle className="text-base font-semibold tracking-tight text-slate-950">Dokumen terunggah</CardTitle>
-                <p className="mt-1.5 text-sm leading-5 text-slate-600">{reviewedCount} dari {uploadedDocuments.length} berkas sudah diperiksa</p>
+                <p className="mt-1 text-xs leading-4 text-slate-600">{reviewedCount} dari {uploadedDocuments.length} berkas sudah diperiksa</p>
               </div>
               <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-800"><ClipboardCheck aria-hidden="true" className="size-4" /></span>
             </div>
             {followUpCount > 0 && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">{followUpCount} berkas perlu ditindaklanjuti</p>}
           </CardHeader>
-          <CardContent className="space-y-3 p-4 sm:p-5">
-            <div className="space-y-2.5">
+          <CardContent className="space-y-3 p-3 sm:p-4">
+            <div data-testid="document-grid" data-density="compact" className="grid gap-2 md:grid-cols-2">
               {participant.documents.map((document, index) => {
                 const review = participant.documentReviews[document.id];
                 const status = !document.path ? 'missing' : review?.status ?? 'pending';
@@ -98,23 +98,22 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                 const statusStyles = status === 'missing' ? 'bg-slate-200 text-slate-700' : status === 'verified' ? 'bg-emerald-100 text-emerald-800' : status === 'follow_up' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700';
                 const numberStyles = status === 'missing' ? 'bg-slate-200 text-slate-600' : status === 'verified' ? 'bg-emerald-100 text-emerald-800' : status === 'follow_up' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
                 return (
-                  <article key={document.id} className={`rounded-xl border p-3.5 transition-colors ${status === 'missing' ? 'border-slate-200 bg-slate-50' : status === 'follow_up' ? 'border-amber-200 bg-amber-50/40' : status === 'verified' ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200 bg-white'}`}>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <article key={document.id} data-review-state={status} className={`flex min-w-0 flex-col rounded-xl border p-2.5 transition-colors ${status === 'missing' ? 'border-slate-300 bg-slate-100' : status === 'follow_up' ? 'border-amber-300 bg-amber-50' : status === 'verified' ? 'border-emerald-400 bg-emerald-100/80' : 'border-blue-200 bg-blue-50'}`}>
+                    <div className="flex items-start justify-between gap-2">
                       <div className="flex min-w-0 items-start gap-2.5">
-                        <span aria-hidden="true" data-document-index className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-[11px] font-bold ${numberStyles}`}>{String(index + 1).padStart(2, '0')}</span>
+                        <span aria-hidden="true" data-document-index className={`flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${numberStyles}`}>{String(index + 1).padStart(2, '0')}</span>
                         <div className="min-w-0">
-                          <h3 className="break-words text-sm font-semibold leading-5 text-slate-950">{document.title}</h3>
-                          <span className={`mt-1.5 inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${statusStyles}`}>{statusLabel}</span>
+                          <h3 className="break-words text-xs font-semibold leading-4 text-slate-950">{document.title}</h3>
+                          <span className={`mt-1 inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium leading-3 ${statusStyles}`}>{statusLabel}</span>
                         </div>
                       </div>
-                      {document.path && <DocumentPreviewButton href={`/admin/pendaftar/${participant.id}/dokumen/${document.id}?contentType=${encodeURIComponent(getDocumentContentType(document.path))}`} title={document.title} />}
                     </div>
                     {document.path && (
-                      <form action={saveDocumentReviewAction} className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3 sm:flex sm:flex-wrap">
+                      <form action={saveDocumentReviewAction} className="mt-2 flex flex-wrap justify-end gap-1.5 border-t border-slate-200 pt-2">
                         <input type="hidden" name="participantId" value={participant.id} />
                         <input type="hidden" name="documentId" value={document.id} />
-                        <Button type="submit" name="status" value={'verified' satisfies DocumentReviewStatus} variant="outline" size="sm" className="h-9 rounded-lg border-emerald-300 bg-white px-2.5 text-xs font-medium text-emerald-800 shadow-none hover:border-emerald-400 hover:bg-emerald-50">Tandai terverifikasi</Button>
-                        <Button type="submit" name="status" value={'follow_up' satisfies DocumentReviewStatus} variant="outline" size="sm" className="h-9 rounded-lg border-amber-300 bg-white px-2.5 text-xs font-medium text-amber-800 shadow-none hover:border-amber-400 hover:bg-amber-50">Perlu ditindaklanjuti</Button>
+                        <Button type="submit" name="status" value={'verified' satisfies DocumentReviewStatus} aria-label={`Verifikasi ${document.title}`} aria-pressed={status === 'verified'} size="sm" className={`h-8 rounded-md px-2 text-[11px] font-semibold shadow-none ${status === 'verified' ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50'}`}><Check aria-hidden="true" className="size-3" />Verifikasi</Button>
+                        <DocumentPreviewButton compact href={`/admin/pendaftar/${participant.id}/dokumen/${document.id}?contentType=${encodeURIComponent(getDocumentContentType(document.path))}`} title={document.title} />
                       </form>
                     )}
                   </article>

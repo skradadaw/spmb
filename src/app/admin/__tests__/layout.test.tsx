@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/features/auth/session', () => ({ getAdminSession: mocks.getAdminSession }));
-vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect, usePathname: () => '/admin' }));
 
 import AdminLayout from '../layout';
 
@@ -25,6 +25,7 @@ describe('AdminLayout', () => {
     mocks.getAdminSession.mockResolvedValue(true);
     render(await AdminLayout({ children: <div>Dashboard aman</div> }));
     expect(screen.getByText('Dashboard aman')).toBeDefined();
+    expect(screen.getByTestId('admin-sidebar')).toBeDefined();
     expect(mocks.getAdminSession).toHaveBeenCalledTimes(1);
   });
 });

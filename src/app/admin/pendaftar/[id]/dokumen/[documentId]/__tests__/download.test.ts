@@ -27,4 +27,20 @@ describe('participant document route downloads', () => {
     expect(response.headers.get('cache-control')).toContain('no-store');
     fetchMock.mockRestore();
   });
+
+  it('serves PDF.js preview bytes as a generic binary stream', async () => {
+    const pdfContext = { params: Promise.resolve({ id, documentId: 'aktaKelahiran' }) };
+    const pdfRequest = new Request(`https://example.test/admin/pendaftar/${id}/dokumen/aktaKelahiran?preview=pdfjs`);
+    const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: { id, submission_id: id, dokumen_akta_kelahiran: `registrations/${id}/aktaKelahiran.pdf` }, error: null }) };
+    const createSignedUrl = vi.fn().mockResolvedValue({ data: { signedUrl: 'https://storage.example/signed-pdf' }, error: null });
+    mocks.getSupabaseAdmin.mockReturnValue({ from: vi.fn(() => query), storage: { from: vi.fn(() => ({ createSignedUrl })) } });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('pdf-content', { status: 200 }));
+
+    const response = await GET(pdfRequest, pdfContext);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/octet-stream');
+    expect(response.headers.get('content-disposition')).toBeNull();
+    fetchMock.mockRestore();
+  });
 });

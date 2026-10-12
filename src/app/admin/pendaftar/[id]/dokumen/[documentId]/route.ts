@@ -40,14 +40,16 @@ export async function GET(request: Request, { params }: Context) {
     const extension = document.path.match(/\.(pdf|jpg|png|webp)$/i)?.[1]?.toLowerCase();
     if (!extension || !MIME_TYPES[extension]) return errorResponse('Dokumen tidak ditemukan.', 404);
 
-    const download = new URL(request.url).searchParams.get('download') === '1';
+    const searchParams = new URL(request.url).searchParams;
+    const download = searchParams.get('download') === '1';
+    const pdfJsPreview = searchParams.get('preview') === 'pdfjs' && extension === 'pdf';
     return new Response(upstream.body, {
       status: 200,
       headers: {
         ...PRIVATE_HEADERS,
-        'Content-Type': MIME_TYPES[extension],
+        'Content-Type': pdfJsPreview ? 'application/octet-stream' : MIME_TYPES[extension],
         'X-Content-Type-Options': 'nosniff',
-        'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename="${id}-${documentId}.${extension}"`,
+        ...(pdfJsPreview ? {} : { 'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename="${id}-${documentId}.${extension}"` }),
       },
     });
   } catch {

@@ -9,7 +9,7 @@ import { getSupabaseAdmin, SupabaseConfigurationError } from '@/features/registr
 
 function DashboardErrorState() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--admin-canvas)] px-4">
+    <section className="flex min-h-[60vh] items-center justify-center px-4">
       <Alert variant="destructive" className="max-w-lg rounded-2xl p-6 shadow-lg shadow-rose-950/5">
         <AlertCircle aria-hidden="true" className="h-5 w-5" />
         <AlertTitle className="text-base">Dashboard belum dapat dimuat</AlertTitle>
@@ -20,7 +20,7 @@ function DashboardErrorState() {
           </Button>
         </form>
       </Alert>
-    </main>
+    </section>
   );
 }
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ParticipantList } from '../components/ParticipantList';
 import { ParticipantFilters } from '../components/ParticipantFilters';
@@ -39,6 +39,7 @@ describe('Data Peserta UI', () => {
   });
   it('provides matching desktop/mobile navigation with Data Peserta active', () => {
     render(<AdminShell active="participants"><h1>Content</h1></AdminShell>);
+    fireEvent.click(screen.getByRole('button', { name: 'Buka menu admin' }));
     expect(screen.getAllByRole('link', { name: 'Data Peserta' })).toHaveLength(2);
     expect(screen.getAllByRole('link', { name: 'Data Peserta' }).every(link => link.getAttribute('aria-current') === 'page')).toBe(true);
     expect(screen.getAllByRole('link', { name: 'Ringkasan' }).every(link => !link.hasAttribute('aria-current'))).toBe(true);

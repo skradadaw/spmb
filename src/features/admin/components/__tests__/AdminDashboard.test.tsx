@@ -26,11 +26,9 @@ const summary: AdminDashboardSummary = {
 };
 
 describe('AdminDashboard', () => {
-  it('renders navigation, metrics, distributions, and recent applicants', () => {
+  it('renders metrics, distributions, and recent applicants', () => {
     render(<AdminDashboard summary={summary} />);
 
-    expect(screen.getAllByText('SD Plus 3 Al-Muhajirin').length).toBeGreaterThan(0);
-    expect(screen.getByRole('navigation', { name: 'Navigasi admin' })).toBeDefined();
     expect(screen.getByText('Total pendaftar')).toBeDefined();
     expect(screen.getByText('Menunggu verifikasi')).toBeDefined();
     expect(screen.getByText('Pendaftaran selesai')).toBeDefined();
@@ -40,7 +38,6 @@ describe('AdminDashboard', () => {
     expect(screen.getByText('Jenis pendaftaran')).toBeDefined();
     expect(screen.getAllByText('Bima Pratama')).toHaveLength(2);
     expect(screen.getAllByText('Terverifikasi')[0].className).toContain('text-emerald-700');
-    expect(screen.getAllByRole('button', { name: 'Keluar dari panel admin' })).toHaveLength(2);
   });
 
   it('provides semantic progress values', () => {

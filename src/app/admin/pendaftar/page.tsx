@@ -1,5 +1,4 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AdminShell } from '@/features/admin/components/AdminShell';
 import { ParticipantFilters } from '@/features/admin/participants/components/ParticipantFilters';
 import { ParticipantList } from '@/features/admin/participants/components/ParticipantList';
 import { PARTICIPANT_DEFAULT_STATUSES, PARTICIPANT_PAGE_SIZE, type ParticipantListResult } from '@/features/admin/participants/contracts';
@@ -44,7 +43,7 @@ export default async function ParticipantsPage({ searchParams }: Props) {
     listUnavailable = true;
   }
 
-  return <AdminShell active="participants">
+  return <>
     <section className="flex flex-col gap-2">
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
       <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Data Peserta</h1>
@@ -57,5 +56,5 @@ export default async function ParticipantsPage({ searchParams }: Props) {
         <ParticipantList result={result} query={query} />
       </>}
     </div>
-  </AdminShell>;
+  </>;
 }

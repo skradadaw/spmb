@@ -1,5 +1,4 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AdminShell } from '@/features/admin/components/AdminShell';
 import { ParticipantDetail } from '@/features/admin/participants/components/ParticipantDetail';
 import { createParticipantsRepository } from '@/features/admin/participants/server/participantsRepository';
 import { getAdminSession } from '@/features/auth/session';
@@ -36,10 +35,10 @@ export default async function ParticipantPage({ params, searchParams }: Props) {
   try {
     participant = await createParticipantsRepository(getSupabaseAdmin()).getById(id);
   } catch {
-    return <AdminShell active="participants"><Alert variant="destructive"><AlertTitle>Detail peserta belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau kembali ke daftar peserta.</AlertDescription></Alert></AdminShell>;
+    return <Alert variant="destructive"><AlertTitle>Detail peserta belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau kembali ke daftar peserta.</AlertDescription></Alert>;
   }
 
   if (!participant) notFound();
 
-  return <AdminShell active="participants"><ParticipantDetail participant={participant} backHref={backHref} /></AdminShell>;
+  return <ParticipantDetail participant={participant} backHref={backHref} />;
 }

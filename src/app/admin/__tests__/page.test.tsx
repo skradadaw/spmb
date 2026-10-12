@@ -56,6 +56,7 @@ describe('AdminPage', () => {
     render(await AdminPage());
 
     expect(screen.getByRole('alert').textContent).toContain('Dashboard belum dapat dimuat');
+    expect(screen.queryByRole('main')).toBeNull();
     expect(document.body.textContent).not.toContain('service role');
     expect(screen.getByRole('button', { name: 'Muat ulang halaman' }).closest('form')?.getAttribute('action')).toBe('/admin');
   });
