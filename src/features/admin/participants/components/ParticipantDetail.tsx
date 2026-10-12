@@ -65,7 +65,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
         </div>
         <Badge>{participant.status}</Badge>
       </div>
-      <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(34rem,40rem)]">
+      <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_31.5rem]">
         <Card className="min-w-0 rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
           <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Informasi siswa</CardTitle></CardHeader>
           <CardContent className="space-y-3 px-4 pb-5 pt-0 sm:px-5" data-detail-groups>
