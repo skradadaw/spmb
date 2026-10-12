@@ -13,6 +13,7 @@ const participant: ParticipantDetailData = {
   registration: { jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Reguler' },
   school: { asalSekolah: 'TK PLUS ROUDHOH PURWAKARTA', prestasiAnak: 'JUARA 3 LOMBA FASHION SHOW', tingkatPrestasi: null, jarakKeSekolah: '5' },
   affiliation: { bekerjaDiDirektorat2: null },
+  referral: { adaPengusul: 'Tidak' },
   address: { alamatJalan: 'KP KRAJAN maracang', rt: '8', rw: '001', kelurahan: 'Mawar', kecamatan: 'Purwakarta', kota: 'Purwakarta', provinsi: 'Jawa Barat', alamatRumah: null },
   father: { nama: 'BUDI SANTOSO', nik: '123', pendidikan: 'SMA', pekerjaan: 'KARYAWAN SWASTA', penghasilan: null, telepon: '081234', alamat: null },
   mother: { nama: 'Siti', nik: '456', pendidikan: 'SMP', pekerjaan: 'Ibu rumah tangga', penghasilan: null, telepon: '085678', alamat: null },

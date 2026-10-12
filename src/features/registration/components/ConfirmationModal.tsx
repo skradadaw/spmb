@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, X, Loader2, FileCheck, User, Phone, School } from 'lucide-react';
+import { CheckCircle2, X, Loader2, FileCheck, User, Phone, School, UserCheck } from 'lucide-react';
 import type { FormData } from '../schema';
 
 export interface ConfirmationModalProps {
@@ -110,6 +110,17 @@ export function ConfirmationModal({
                   <p className="text-gray-500 text-[11px]">WhatsApp: {formData.teleponAyah || formData.teleponIbu || '-'}</p>
                 </div>
               </div>
+
+              {formData.adaPengusul === 'Ya' && (
+                <div className="flex items-start gap-2.5 pb-2.5 border-b border-gray-200/60">
+                  <UserCheck size={15} className="text-[#00AA13] mt-0.5 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-500 text-[11px]">Pengusul / Rujukan</p>
+                    <p className="font-semibold text-gray-900">{formData.namaPengusul} ({formData.tipePengusul === 'Kepala TK' ? `Kepala ${formData.namaTkPengusul}` : formData.tipePengusul})</p>
+                    <p className="text-gray-500 text-[11px]">WhatsApp: {formData.nomorWaPengusul || '-'}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-between pt-1">
                 <span className="text-gray-600 font-medium text-[11px]">Status Dokumen:</span>

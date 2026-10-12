@@ -61,6 +61,11 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kecamatan VARCHAR(100);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kota VARCHAR(100);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS provinsi VARCHAR(100);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS alamat_rumah TEXT;
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ada_pengusul VARCHAR(10) DEFAULT 'Tidak';
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS tipe_pengusul VARCHAR(50);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nama_tk_pengusul VARCHAR(255);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nama_pengusul VARCHAR(255);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_wa_pengusul VARCHAR(20);
 
 -- Data Ayah
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nama_ayah VARCHAR(255);

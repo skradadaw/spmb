@@ -65,4 +65,15 @@ describe('RegistrationForm validation feedback', () => {
       expect(screen.queryByText('Tanggal lahir tidak valid')).toBeNull();
     });
   });
+
+  it('renders referral section and confirmation statement', () => {
+    render(<RegistrationForm />);
+    expect(screen.getByText('Pengusul / Rujukan Murid')).toBeDefined();
+    expect(screen.getByText(/Apakah pendaftaran murid ini berdasarkan pengusulan\/rujukan/i)).toBeDefined();
+  });
+
+  it('renders unified Direktorat 2 question for parent or sibling affiliation', () => {
+    render(<RegistrationForm />);
+    expect(screen.getByText(/Apakah mempunyai orang tua yang bekerja atau saudara yang bersekolah di Direktorat 2 Al-Muhajirin\?/i)).toBeDefined();
+  });
 });

@@ -36,6 +36,18 @@ describe('Supabase registration security schema', () => {
     expect(schema).not.toMatch(/DROP\s+COLUMN\s+profesi_di_direktorat2/i);
   });
 
+  it('adds referral columns to pendaftar table', () => {
+    for (const column of [
+      "ada_pengusul VARCHAR(10) DEFAULT 'Tidak'",
+      'tipe_pengusul VARCHAR(50)',
+      'nama_tk_pengusul VARCHAR(255)',
+      'nama_pengusul VARCHAR(255)',
+      'nomor_wa_pengusul VARCHAR(20)',
+    ]) {
+      expect(compactSchema).toContain(`ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ${column};`);
+    }
+  });
+
   it('upserts a private document bucket with the server upload limits', () => {
     expect(compactSchema).toContain(
       compactSql(`

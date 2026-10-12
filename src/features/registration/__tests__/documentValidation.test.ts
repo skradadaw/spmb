@@ -14,6 +14,7 @@ const makeValidRegistrationData = () => ({
   nisn: '1234567890',
   bekerjaDiDirektorat2: 'Tidak',
   saudaraDiDirektorat2: 'Tidak',
+  adaPengusul: 'Tidak',
   asalSekolah: 'TK Melati',
   jarakKeSekolah: '2 km',
   alamatJalan: 'Jalan Melati',

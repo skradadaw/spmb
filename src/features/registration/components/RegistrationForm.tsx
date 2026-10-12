@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm, Controller, useWatch, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ChevronRight, ChevronLeft, Loader2, CalendarIcon, User, Users, MapPin, FileText, GraduationCap, Info, Check } from 'lucide-react';
-import { DIRECTORATE_2_UNITS, formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
+import { CheckCircle2, ChevronRight, ChevronLeft, Loader2, CalendarIcon, User, Users, MapPin, FileText, GraduationCap, Info, Check, UserCheck } from 'lucide-react';
+import { DIRECTORATE_2_UNITS, REFERRAL_TYPES, formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
 import {
   cancelRegistrationAction,
   finalizeRegistrationAction,
@@ -40,7 +40,7 @@ const steps = [
 const DOCUMENTS = DOCUMENT_DEFINITIONS;
 
 type NumericField = 'nik' | 'nisn' | 'rt' | 'rw' | 'nikAyah' | 'nikIbu';
-type PhoneField = 'teleponAyah' | 'teleponIbu';
+type PhoneField = 'teleponAyah' | 'teleponIbu' | 'nomorWaPengusul';
 
 const parseDateString = (str?: string): Date | undefined => {
   if (!str) return undefined;
@@ -110,6 +110,11 @@ export default function RegistrationForm() {
       kecamatan: '',
       kota: '',
       provinsi: '',
+      adaPengusul: 'Tidak',
+      tipePengusul: '',
+      namaTkPengusul: '',
+      namaPengusul: '',
+      nomorWaPengusul: '',
       namaAyah: '',
       nikAyah: '',
       pendidikanAyah: '',
@@ -133,6 +138,28 @@ export default function RegistrationForm() {
 
   const bekerjaDiDirektorat2 = useWatch({ control, name: 'bekerjaDiDirektorat2' });
   const saudaraDiDirektorat2 = useWatch({ control, name: 'saudaraDiDirektorat2' });
+
+  const [adaAfiliasiDirektorat2, setAdaAfiliasiDirektorat2] = useState<'Ya' | 'Tidak'>(() => {
+    return (bekerjaDiDirektorat2 === 'Ya' || saudaraDiDirektorat2 === 'Ya') ? 'Ya' : 'Tidak';
+  });
+  const [tipeAfiliasiDirektorat2, setTipeAfiliasiDirektorat2] = useState<'Orang Tua' | 'Saudara' | ''>(() => {
+    if (bekerjaDiDirektorat2 === 'Ya') return 'Orang Tua';
+    if (saudaraDiDirektorat2 === 'Ya') return 'Saudara';
+    return '';
+  });
+  const [afiliasiDirektorat2Error, setAfiliasiDirektorat2Error] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (bekerjaDiDirektorat2 === 'Ya') {
+      setAdaAfiliasiDirektorat2('Ya');
+      setTipeAfiliasiDirektorat2('Orang Tua');
+    } else if (saudaraDiDirektorat2 === 'Ya') {
+      setAdaAfiliasiDirektorat2('Ya');
+      setTipeAfiliasiDirektorat2('Saudara');
+    }
+  }, [bekerjaDiDirektorat2, saudaraDiDirektorat2]);
+  const adaPengusul = useWatch({ control, name: 'adaPengusul' });
+  const tipePengusul = useWatch({ control, name: 'tipePengusul' });
   const tanggalLahir = useWatch({ control, name: 'tanggalLahir' });
   
   let ageYears = 0;
@@ -215,6 +242,19 @@ export default function RegistrationForm() {
   };
 
   const nextStep = async () => {
+    if (currentStep === 0) {
+      if (adaAfiliasiDirektorat2 === 'Ya' && !tipeAfiliasiDirektorat2) {
+        setAfiliasiDirektorat2Error('Pilih status keluarga di Direktorat 2 (Orang Tua Bekerja atau Saudara Bersekolah)');
+        setTimeout(() => {
+          const firstError = document.querySelector('.border-red-500');
+          if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+        return;
+      }
+    }
+
     let fieldsToValidate: Array<keyof FormData> = [];
     if (currentStep === 0) {
       fieldsToValidate = Object.keys(step1BaseSchema.shape) as Array<keyof FormData>;
@@ -462,7 +502,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="jenisPendaftaran"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('jenisPendaftaran'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('jenisPendaftaran'); }} value={field.value || ''}>
                               <SelectTrigger className={errors.jenisPendaftaran ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Jenis Pendaftaran" />
                               </SelectTrigger>
@@ -481,7 +521,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="pilihanKelas"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('pilihanKelas'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('pilihanKelas'); }} value={field.value || ''}>
                               <SelectTrigger className={errors.pilihanKelas ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Kelas" />
                               </SelectTrigger>
@@ -605,7 +645,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="jenisKelamin"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('jenisKelamin'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('jenisKelamin'); }} value={field.value || ''}>
                               <SelectTrigger className={errors.jenisKelamin ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Jenis Kelamin" />
                               </SelectTrigger>
@@ -648,7 +688,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="tingkatPrestasi"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('tingkatPrestasi'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('tingkatPrestasi'); }} value={field.value || ''}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Pilih Tingkat" />
                               </SelectTrigger>
@@ -693,7 +733,7 @@ export default function RegistrationForm() {
                                 const prov = provinces.find(p => p.name === val);
                                 if (prov) fetchRegencies(prov.id);
                               }}
-                              value={field.value || undefined}
+                              value={field.value || ''}
                             >
                               <SelectTrigger className={errors.provinsi ? "border-red-500" : ""}>
                                 <SelectValue placeholder={wilayahLoading.provinces ? "Memuat..." : "Pilih Provinsi"} />
@@ -731,7 +771,7 @@ export default function RegistrationForm() {
                                 const kota = regencies.find(r => r.name === val);
                                 if (kota) fetchDistricts(kota.id);
                               }}
-                              value={field.value || undefined}
+                              value={field.value || ''}
                               disabled={!provinsiVal}
                             >
                               <SelectTrigger className={errors.kota ? "border-red-500" : ""}>
@@ -769,7 +809,7 @@ export default function RegistrationForm() {
                                 const kec = districts.find(d => d.name === val);
                                 if (kec) fetchVillages(kec.id);
                               }}
-                              value={field.value || undefined}
+                              value={field.value || ''}
                               disabled={!kotaVal}
                             >
                               <SelectTrigger className={errors.kecamatan ? "border-red-500" : ""}>
@@ -801,7 +841,7 @@ export default function RegistrationForm() {
                                 field.onChange(val);
                                 clearErrors('kelurahan');
                               }}
-                              value={field.value || undefined}
+                              value={field.value || ''}
                               disabled={!kecamatanVal}
                             >
                               <SelectTrigger className={errors.kelurahan ? "border-red-500" : ""}>
@@ -874,140 +914,340 @@ export default function RegistrationForm() {
                       <h4 className="text-sm font-semibold text-gray-900">Informasi Tambahan</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Pertanyaan Gabungan Afiliasi Direktorat 2 */}
                       <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-sm font-medium text-gray-700">Apakah orangtua bekerja di direktorat 2 Al-Muhajirin? *</label>
-                        <Controller
-                          control={control}
-                          name="bekerjaDiDirektorat2"
-                          render={({ field }) => (
-                            <Select 
-                              onValueChange={(val) => {
-                                field.onChange(val);
-                                clearErrors('bekerjaDiDirektorat2');
-                                if (val === 'Tidak') {
-                                  setValue('namaOrangtuaDirektorat2', '');
-                                  setValue('unitOrangtuaDirektorat2', '');
-                                  clearErrors(['namaOrangtuaDirektorat2', 'unitOrangtuaDirektorat2']);
-                                }
-                              }} 
-                              value={field.value || undefined}
-                            >
-                              <SelectTrigger className={errors.bekerjaDiDirektorat2 ? "border-red-500" : ""}>
-                                <SelectValue placeholder="Pilih Jawaban" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Ya">Ya</SelectItem>
-                                <SelectItem value="Tidak">Tidak</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
-                        />
-                        {errors.bekerjaDiDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.bekerjaDiDirektorat2.message}</p>}
+                        <label className="text-sm font-medium text-gray-700">
+                          Apakah mempunyai orang tua yang bekerja atau saudara yang bersekolah di Direktorat 2 Al-Muhajirin? *
+                        </label>
+                        <Select 
+                          onValueChange={(val) => {
+                            setAdaAfiliasiDirektorat2(val as 'Ya' | 'Tidak');
+                            setAfiliasiDirektorat2Error(null);
+                            if (val === 'Tidak') {
+                              setTipeAfiliasiDirektorat2('');
+                              setValue('bekerjaDiDirektorat2', 'Tidak');
+                              setValue('namaOrangtuaDirektorat2', '');
+                              setValue('unitOrangtuaDirektorat2', '');
+                              setValue('saudaraDiDirektorat2', 'Tidak');
+                              setValue('namaSaudaraDirektorat2', '');
+                              setValue('unitSaudaraDirektorat2', '');
+                              clearErrors([
+                                'bekerjaDiDirektorat2',
+                                'namaOrangtuaDirektorat2',
+                                'unitOrangtuaDirektorat2',
+                                'saudaraDiDirektorat2',
+                                'namaSaudaraDirektorat2',
+                                'unitSaudaraDirektorat2',
+                              ]);
+                            }
+                          }} 
+                          value={adaAfiliasiDirektorat2}
+                        >
+                          <SelectTrigger className={afiliasiDirektorat2Error ? "border-red-500" : ""}>
+                            <SelectValue placeholder="Pilih Jawaban" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Ya">Ya</SelectItem>
+                            <SelectItem value="Tidak">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {afiliasiDirektorat2Error && <p className="text-red-500 text-xs mt-1">{afiliasiDirektorat2Error}</p>}
                       </div>
-                      {bekerjaDiDirektorat2 === 'Ya' && (
-                        <>
-                        <div className="space-y-1.5">
-                          <label htmlFor="namaOrangtuaDirektorat2" className="text-sm font-medium text-gray-700">Nama orang tua yang bekerja *</label>
-                          <input 
-                            id="namaOrangtuaDirektorat2"
-                            {...register('namaOrangtuaDirektorat2', {
-                              onChange: () => {
-                                if (errors.namaOrangtuaDirektorat2) {
-                                  clearErrors('namaOrangtuaDirektorat2');
-                                }
-                              }
-                            })} 
-                            className={cn(inputClass, errors.namaOrangtuaDirektorat2 && "border-red-500")}
-                            placeholder="Masukkan nama orang tua"
-                          />
-                          {errors.namaOrangtuaDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.namaOrangtuaDirektorat2.message}</p>}
+
+                      {adaAfiliasiDirektorat2 === 'Ya' && (
+                        <div className="space-y-6 md:col-span-2 pt-2 border-t border-gray-100">
+                          {/* Pilihan Afiliasi: Orang Tua atau Saudara */}
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Pilih hubungan keluarga di Direktorat 2: *
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <label
+                                className={cn(
+                                  "flex items-center gap-3 p-3.5 rounded-xl border text-sm font-medium cursor-pointer transition-all",
+                                  tipeAfiliasiDirektorat2 === 'Orang Tua'
+                                    ? "border-[#00AA13] bg-[#00AA13]/5 text-[#00AA13]"
+                                    : "border-gray-200 hover:border-gray-300 text-gray-700"
+                                )}
+                              >
+                                <input
+                                  type="radio"
+                                  name="tipeAfiliasiDirektorat2"
+                                  value="Orang Tua"
+                                  checked={tipeAfiliasiDirektorat2 === 'Orang Tua'}
+                                  onChange={() => {
+                                    setTipeAfiliasiDirektorat2('Orang Tua');
+                                    setAfiliasiDirektorat2Error(null);
+                                    setValue('bekerjaDiDirektorat2', 'Ya');
+                                    setValue('saudaraDiDirektorat2', 'Tidak');
+                                    setValue('namaSaudaraDirektorat2', '');
+                                    setValue('unitSaudaraDirektorat2', '');
+                                    clearErrors(['saudaraDiDirektorat2', 'namaSaudaraDirektorat2', 'unitSaudaraDirektorat2', 'bekerjaDiDirektorat2']);
+                                  }}
+                                  className="w-4 h-4 text-[#00AA13] focus:ring-[#00AA13] border-gray-300"
+                                />
+                                <span>Orang Tua Bekerja</span>
+                              </label>
+
+                              <label
+                                className={cn(
+                                  "flex items-center gap-3 p-3.5 rounded-xl border text-sm font-medium cursor-pointer transition-all",
+                                  tipeAfiliasiDirektorat2 === 'Saudara'
+                                    ? "border-[#00AA13] bg-[#00AA13]/5 text-[#00AA13]"
+                                    : "border-gray-200 hover:border-gray-300 text-gray-700"
+                                )}
+                              >
+                                <input
+                                  type="radio"
+                                  name="tipeAfiliasiDirektorat2"
+                                  value="Saudara"
+                                  checked={tipeAfiliasiDirektorat2 === 'Saudara'}
+                                  onChange={() => {
+                                    setTipeAfiliasiDirektorat2('Saudara');
+                                    setAfiliasiDirektorat2Error(null);
+                                    setValue('bekerjaDiDirektorat2', 'Tidak');
+                                    setValue('saudaraDiDirektorat2', 'Ya');
+                                    setValue('namaOrangtuaDirektorat2', '');
+                                    setValue('unitOrangtuaDirektorat2', '');
+                                    clearErrors(['bekerjaDiDirektorat2', 'namaOrangtuaDirektorat2', 'unitOrangtuaDirektorat2', 'saudaraDiDirektorat2']);
+                                  }}
+                                  className="w-4 h-4 text-[#00AA13] focus:ring-[#00AA13] border-gray-300"
+                                />
+                                <span>Saudara Bersekolah</span>
+                              </label>
+                            </div>
+                          </div>
+
+                          {/* Field Isian jika Orang Tua Bekerja */}
+                          {tipeAfiliasiDirektorat2 === 'Orang Tua' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-1.5">
+                                <label htmlFor="namaOrangtuaDirektorat2" className="text-sm font-medium text-gray-700">Nama orang tua yang bekerja *</label>
+                                <input 
+                                  id="namaOrangtuaDirektorat2"
+                                  {...register('namaOrangtuaDirektorat2', {
+                                    onChange: () => {
+                                      if (errors.namaOrangtuaDirektorat2) {
+                                        clearErrors('namaOrangtuaDirektorat2');
+                                      }
+                                    }
+                                  })} 
+                                  className={cn(inputClass, errors.namaOrangtuaDirektorat2 && "border-red-500")}
+                                  placeholder="Masukkan nama orang tua"
+                                />
+                                {errors.namaOrangtuaDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.namaOrangtuaDirektorat2.message}</p>}
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-sm font-medium text-gray-700">Berada di unit mana? *</label>
+                                <Controller
+                                  control={control}
+                                  name="unitOrangtuaDirektorat2"
+                                  render={({ field }) => (
+                                    <Select onValueChange={(val) => { field.onChange(val); clearErrors('unitOrangtuaDirektorat2'); }} value={field.value || ''}>
+                                      <SelectTrigger className={errors.unitOrangtuaDirektorat2 ? "border-red-500" : ""}>
+                                        <SelectValue placeholder="Pilih Unit" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {DIRECTORATE_2_UNITS.map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                                {errors.unitOrangtuaDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.unitOrangtuaDirektorat2.message}</p>}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Field Isian jika Saudara Bersekolah */}
+                          {tipeAfiliasiDirektorat2 === 'Saudara' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-1.5">
+                                <label htmlFor="namaSaudaraDirektorat2" className="text-sm font-medium text-gray-700">Nama saudara yang bersekolah *</label>
+                                <input
+                                  id="namaSaudaraDirektorat2"
+                                  {...register('namaSaudaraDirektorat2', {
+                                    onChange: () => clearErrors('namaSaudaraDirektorat2'),
+                                  })}
+                                  className={cn(inputClass, errors.namaSaudaraDirektorat2 && "border-red-500")}
+                                  placeholder="Masukkan nama saudara"
+                                />
+                                {errors.namaSaudaraDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.namaSaudaraDirektorat2.message}</p>}
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-sm font-medium text-gray-700">Bersekolah di unit mana? *</label>
+                                <Controller
+                                  control={control}
+                                  name="unitSaudaraDirektorat2"
+                                  render={({ field }) => (
+                                    <Select onValueChange={(val) => { field.onChange(val); clearErrors('unitSaudaraDirektorat2'); }} value={field.value || ''}>
+                                      <SelectTrigger className={errors.unitSaudaraDirektorat2 ? "border-red-500" : ""}>
+                                        <SelectValue placeholder="Pilih Unit" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {DIRECTORATE_2_UNITS.map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                                {errors.unitSaudaraDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.unitSaudaraDirektorat2.message}</p>}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="space-y-1.5">
-                          <label className="text-sm font-medium text-gray-700">Berada di unit mana? *</label>
-                          <Controller
-                            control={control}
-                            name="unitOrangtuaDirektorat2"
-                            render={({ field }) => (
-                              <Select onValueChange={(val) => { field.onChange(val); clearErrors('unitOrangtuaDirektorat2'); }} value={field.value || undefined}>
-                                <SelectTrigger className={errors.unitOrangtuaDirektorat2 ? "border-red-500" : ""}>
-                                  <SelectValue placeholder="Pilih Unit" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {DIRECTORATE_2_UNITS.map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                          {errors.unitOrangtuaDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.unitOrangtuaDirektorat2.message}</p>}
-                        </div>
-                        </>
                       )}
 
-                      <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-sm font-medium text-gray-700">Apakah mempunyai saudara yang bersekolah di unit Direktorat 2? *</label>
-                        <Controller
-                          control={control}
-                          name="saudaraDiDirektorat2"
-                          render={({ field }) => (
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(val);
-                                clearErrors('saudaraDiDirektorat2');
-                                if (val === 'Tidak') {
-                                  setValue('namaSaudaraDirektorat2', '');
-                                  setValue('unitSaudaraDirektorat2', '');
-                                  clearErrors(['namaSaudaraDirektorat2', 'unitSaudaraDirektorat2']);
-                                }
-                              }}
-                              value={field.value || undefined}
-                            >
-                              <SelectTrigger className={errors.saudaraDiDirektorat2 ? "border-red-500" : ""}>
-                                <SelectValue placeholder="Pilih Jawaban" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Ya">Ya</SelectItem>
-                                <SelectItem value="Tidak">Tidak</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
-                        />
-                        {errors.saudaraDiDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.saudaraDiDirektorat2.message}</p>}
-                      </div>
+                      {/* Pengusul / Rujukan Murid */}
+                      <div className="md:col-span-2 space-y-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-[#00AA13] uppercase tracking-wider">
+                          <UserCheck size={15} />
+                          <span>Pengusul / Rujukan Murid</span>
+                        </div>
 
-                      {saudaraDiDirektorat2 === 'Ya' && (
-                        <>
-                          <div className="space-y-1.5">
-                            <label htmlFor="namaSaudaraDirektorat2" className="text-sm font-medium text-gray-700">Nama saudara *</label>
-                            <input
-                              id="namaSaudaraDirektorat2"
-                              {...register('namaSaudaraDirektorat2', {
-                                onChange: () => clearErrors('namaSaudaraDirektorat2'),
-                              })}
-                              className={cn(inputClass, errors.namaSaudaraDirektorat2 && "border-red-500")}
-                              placeholder="Masukkan nama saudara"
-                            />
-                            {errors.namaSaudaraDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.namaSaudaraDirektorat2.message}</p>}
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-gray-700">Bersekolah di unit mana? *</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-1.5 md:col-span-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Apakah pendaftaran murid ini berdasarkan pengusulan/rujukan dari seseorang? *
+                            </label>
                             <Controller
                               control={control}
-                              name="unitSaudaraDirektorat2"
+                              name="adaPengusul"
                               render={({ field }) => (
-                                <Select onValueChange={(val) => { field.onChange(val); clearErrors('unitSaudaraDirektorat2'); }} value={field.value || undefined}>
-                                  <SelectTrigger className={errors.unitSaudaraDirektorat2 ? "border-red-500" : ""}>
-                                    <SelectValue placeholder="Pilih Unit" />
+                                <Select 
+                                  onValueChange={(val) => {
+                                    field.onChange(val);
+                                    clearErrors('adaPengusul');
+                                    if (val === 'Tidak') {
+                                      setValue('tipePengusul', '');
+                                      setValue('namaTkPengusul', '');
+                                      setValue('namaPengusul', '');
+                                      setValue('nomorWaPengusul', '');
+                                      clearErrors(['tipePengusul', 'namaTkPengusul', 'namaPengusul', 'nomorWaPengusul']);
+                                    }
+                                  }} 
+                                  value={field.value || 'Tidak'}
+                                >
+                                  <SelectTrigger className={errors.adaPengusul ? "border-red-500" : ""}>
+                                    <SelectValue placeholder="Pilih Jawaban" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {DIRECTORATE_2_UNITS.map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                    <SelectItem value="Ya">Ya</SelectItem>
+                                    <SelectItem value="Tidak">Tidak</SelectItem>
                                   </SelectContent>
                                 </Select>
                               )}
                             />
-                            {errors.unitSaudaraDirektorat2 && <p className="text-red-500 text-xs mt-1">{errors.unitSaudaraDirektorat2.message}</p>}
+                            {errors.adaPengusul && <p className="text-red-500 text-xs mt-1">{errors.adaPengusul.message}</p>}
                           </div>
-                        </>
-                      )}
+
+                          {adaPengusul === 'Ya' && (
+                            <div className="space-y-6 md:col-span-2 pt-2 border-t border-gray-100">
+                              {/* Nama Pengusul / Rujukan (Kategori) & Nama Asal TK */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-gray-700">Nama Pengusul/Rujukan: *</label>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                  {REFERRAL_TYPES.map((type) => {
+                                    const isSelected = tipePengusul === type;
+                                    return (
+                                      <label
+                                        key={type}
+                                        className={cn(
+                                          "flex items-center gap-3 p-3.5 rounded-xl border text-sm font-medium cursor-pointer transition-all",
+                                          isSelected
+                                            ? "border-[#00AA13] bg-[#00AA13]/5 text-[#00AA13]"
+                                            : "border-gray-200 hover:border-gray-300 text-gray-700"
+                                        )}
+                                      >
+                                        <input
+                                          type="radio"
+                                          name="tipePengusul"
+                                          value={type}
+                                          checked={isSelected}
+                                          onChange={() => {
+                                            setValue('tipePengusul', type, { shouldValidate: true });
+                                            if (type !== 'Kepala TK') {
+                                              setValue('namaTkPengusul', '');
+                                            }
+                                            clearErrors(['tipePengusul', 'namaTkPengusul']);
+                                          }}
+                                          className="w-4 h-4 text-[#00AA13] focus:ring-[#00AA13] border-gray-300"
+                                        />
+                                        <span>{type === 'Kepala TK' ? 'Kepala TK' : type}</span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                                {errors.tipePengusul && <p className="text-red-500 text-xs mt-1">{errors.tipePengusul.message}</p>}
+                              </div>
+
+                              {/* Jika Kepala TK: Nama TK */}
+                              {tipePengusul === 'Kepala TK' && (
+                                <div className="space-y-1.5">
+                                  <label htmlFor="namaTkPengusul" className="text-sm font-medium text-gray-700">Nama Asal TK *</label>
+                                  <input
+                                    id="namaTkPengusul"
+                                    {...register('namaTkPengusul', {
+                                      onChange: () => {
+                                        if (errors.namaTkPengusul) clearErrors('namaTkPengusul');
+                                      }
+                                    })}
+                                    className={cn(inputClass, errors.namaTkPengusul && "border-red-500")}
+                                    placeholder="Contoh: TK Al-Muhajirin"
+                                  />
+                                  {errors.namaTkPengusul && <p className="text-red-500 text-xs mt-1">{errors.namaTkPengusul.message}</p>}
+                                </div>
+                              )}
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Nama Lengkap Pengusul */}
+                                <div className="space-y-1.5">
+                                  <label htmlFor="namaPengusul" className="text-sm font-medium text-gray-700">Nama lengkap pengusul: *</label>
+                                  <input
+                                    id="namaPengusul"
+                                    {...register('namaPengusul', {
+                                      onChange: () => {
+                                        if (errors.namaPengusul) clearErrors('namaPengusul');
+                                      }
+                                    })}
+                                    className={cn(inputClass, errors.namaPengusul && "border-red-500")}
+                                    placeholder="Masukkan nama lengkap pengusul"
+                                  />
+                                  {errors.namaPengusul && <p className="text-red-500 text-xs mt-1">{errors.namaPengusul.message}</p>}
+                                </div>
+
+                                {/* Nomor WhatsApp Pengusul */}
+                                <div className="space-y-1.5">
+                                  <label htmlFor="nomorWaPengusul" className="text-sm font-medium text-gray-700">Nomor WhatsApp pengusul: *</label>
+                                  <input
+                                    id="nomorWaPengusul"
+                                    {...register('nomorWaPengusul', {
+                                      onChange: () => {
+                                        if (errors.nomorWaPengusul) clearErrors('nomorWaPengusul');
+                                      }
+                                    })}
+                                    onInput={handleNumericInput('nomorWaPengusul', 15)}
+                                    className={cn(inputClass, errors.nomorWaPengusul && "border-red-500")}
+                                    placeholder="081234567890"
+                                  />
+                                  {errors.nomorWaPengusul && <p className="text-red-500 text-xs mt-1">{errors.nomorWaPengusul.message}</p>}
+                                </div>
+                              </div>
+
+                              {/* Pernyataan Konfirmasi */}
+                              <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-start gap-3">
+                                <div className="w-5 h-5 rounded-full bg-[#00AA13] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                                  <Check size={12} strokeWidth={3} />
+                                </div>
+                                <div className="text-xs text-gray-700 leading-relaxed">
+                                  <span className="font-semibold text-gray-900 block mb-0.5">Pernyataan Konfirmasi</span>
+                                  Dengan mengisi nama pengusul/rujukan, orang tua/wali menyatakan bahwa nama tersebut merupakan pihak yang mengenalkan, merekomendasikan, atau mengarahkan calon murid untuk mendaftar di SD Plus 3 Al-Muhajirin.
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1055,7 +1295,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="pendidikanAyah"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('pendidikanAyah'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('pendidikanAyah'); }} value={field.value || ''}>
                               <SelectTrigger className={errors.pendidikanAyah ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Pendidikan" />
                               </SelectTrigger>
@@ -1084,7 +1324,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="penghasilanAyah"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('penghasilanAyah'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('penghasilanAyah'); }} value={field.value || ''}>
                               <SelectTrigger className={errors.penghasilanAyah ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Rentang" />
                               </SelectTrigger>
@@ -1169,7 +1409,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="pendidikanIbu"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('pendidikanIbu'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('pendidikanIbu'); }} value={field.value || ''}>
                               <SelectTrigger className={errors.pendidikanIbu ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Pendidikan" />
                               </SelectTrigger>
@@ -1198,7 +1438,7 @@ export default function RegistrationForm() {
                           control={control}
                           name="penghasilanIbu"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('penghasilanIbu'); }} value={field.value || undefined}>
+                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('penghasilanIbu'); }} value={field.value || ''}>
                               <SelectTrigger className={errors.penghasilanIbu ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Rentang" />
                               </SelectTrigger>
@@ -1252,6 +1492,7 @@ export default function RegistrationForm() {
                       </div>
                     </div>
                   </div>
+
                 </div>
               </div>
 

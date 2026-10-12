@@ -21,15 +21,15 @@ function getDocumentContentType(path: string) {
 type GroupProps = {
   title: string;
   name: ParticipantFieldGroupName;
-  values: Record<string, string | null>;
+  values?: Record<string, string | null>;
   hiddenFields?: string[];
   fullWidthFields?: string[];
 };
 
-function Group({ title, name, values, hiddenFields = [], fullWidthFields = [] }: GroupProps) {
+function Group({ title, name, values = {}, hiddenFields = [], fullWidthFields = [] }: GroupProps) {
   const entries = PARTICIPANT_FIELDS[name]
     .filter(([key]) => !hiddenFields.includes(key))
-    .map(([key, , label]) => [key, label, values[key]] as const);
+    .map(([key, , label]) => [key, label, values?.[key] ?? null] as const);
 
   return (
     <section aria-labelledby={`participant-${name}-heading`} data-detail-group className="grid min-w-0 gap-2 border-b border-slate-200/70 pb-4 last:border-b-0 last:pb-0">
@@ -76,6 +76,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
             <Group title="Data ayah" name="father" values={participant.father} fullWidthFields={['alamat']} />
             <Group title="Data ibu" name="mother" values={participant.mother} fullWidthFields={['alamat']} />
             <Group title="Afiliasi Direktorat 2" name="affiliation" values={participant.affiliation} />
+            <Group title="Pengusul / rujukan murid" name="referral" values={participant.referral} />
           </CardContent>
         </Card>
         <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm xl:sticky xl:top-4">

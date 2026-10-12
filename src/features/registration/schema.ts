@@ -17,6 +17,13 @@ export const DIRECTORATE_2_UNITS = [
   'SMA Fullday Al-Muhajirin',
 ] as const;
 
+export const REFERRAL_TYPES = [
+  'Guru/Karyawan SD Plus 3',
+  'Kepala TK',
+] as const;
+
+export type ReferralType = (typeof REFERRAL_TYPES)[number];
+
 const optionalUnit = z.string().trim().refine(
   (value) => value === '' || DIRECTORATE_2_UNITS.includes(value as (typeof DIRECTORATE_2_UNITS)[number]),
   'Unit Direktorat 2 tidak valid',
@@ -58,6 +65,14 @@ export const step1BaseSchema = z.object({
   kecamatan: reqStr('Kecamatan wajib dipilih', 1, 100),
   kota: reqStr('Kota/Kabupaten wajib dipilih', 1, 100),
   provinsi: reqStr('Provinsi wajib dipilih', 1, 100),
+  adaPengusul: oneOf('Wajib dipilih', ['Ya', 'Tidak']),
+  tipePengusul: z.string().trim().refine(
+    (value) => value === '' || REFERRAL_TYPES.includes(value as ReferralType),
+    'Kategori pengusul tidak valid',
+  ).optional(),
+  namaTkPengusul: optionalStr(255),
+  namaPengusul: optionalStr(255),
+  nomorWaPengusul: optionalStr(20),
 });
 
 function validateDirectorate2Details(
@@ -94,7 +109,45 @@ function validateDirectorate2Details(
   }
 }
 
-export const step1Schema = step1BaseSchema.superRefine(validateDirectorate2Details);
+function validateReferralDetails(
+  data: z.infer<typeof step1BaseSchema>,
+  ctx: z.RefinementCtx,
+) {
+  if (data.adaPengusul === 'Ya') {
+    if (!data.tipePengusul || !REFERRAL_TYPES.includes(data.tipePengusul as ReferralType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Kategori pengusul wajib dipilih',
+        path: ['tipePengusul'],
+      });
+    }
+    if (data.tipePengusul === 'Kepala TK' && !data.namaTkPengusul?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Nama TK pengusul wajib diisi',
+        path: ['namaTkPengusul'],
+      });
+    }
+    if (!data.namaPengusul?.trim() || data.namaPengusul.trim().length < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Nama lengkap pengusul wajib diisi',
+        path: ['namaPengusul'],
+      });
+    }
+    if (!data.nomorWaPengusul?.trim() || !/^(^\+62|62|^08)\d{8,12}$/.test(data.nomorWaPengusul.trim())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Nomor WhatsApp pengusul tidak valid',
+        path: ['nomorWaPengusul'],
+      });
+    }
+  }
+}
+
+export const step1Schema = step1BaseSchema
+  .superRefine(validateDirectorate2Details)
+  .superRefine(validateReferralDetails);
 
 export const step2Schema = z.object({
   // Data Ayah
@@ -123,6 +176,8 @@ export const step2Schema = z.object({
 export const formSchema = z.object({
   ...step1BaseSchema.shape,
   ...step2Schema.shape,
-}).superRefine(validateDirectorate2Details);
+})
+  .superRefine(validateDirectorate2Details)
+  .superRefine(validateReferralDetails);
 
 export type FormData = z.infer<typeof formSchema>;

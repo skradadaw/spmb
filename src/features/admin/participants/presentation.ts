@@ -9,6 +9,7 @@ const PROPER_NAME_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>
   address: new Set(['alamatJalan', 'kelurahan', 'kecamatan', 'kota']),
   father: new Set(['nama', 'alamat']),
   mother: new Set(['nama', 'alamat']),
+  referral: new Set(['namaTkPengusul', 'namaPengusul']),
 };
 const SENTENCE_CASE_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
   school: new Set(['prestasiAnak']),

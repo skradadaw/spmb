@@ -96,6 +96,13 @@ export function toPendaftarRow(
     kota: data.kota,
     provinsi: data.provinsi,
     alamat_rumah: `${data.alamatJalan}, RT ${data.rt}/RW ${data.rw}, Kel. ${data.kelurahan}, Kec. ${data.kecamatan}, Kota/Kab. ${data.kota}, Prov. ${data.provinsi}`,
+    ada_pengusul: data.adaPengusul || 'Tidak',
+    tipe_pengusul: data.adaPengusul === 'Ya' ? data.tipePengusul || null : null,
+    nama_tk_pengusul: data.adaPengusul === 'Ya' && data.tipePengusul === 'Kepala TK'
+      ? data.namaTkPengusul || null
+      : null,
+    nama_pengusul: data.adaPengusul === 'Ya' ? data.namaPengusul || null : null,
+    nomor_wa_pengusul: data.adaPengusul === 'Ya' ? data.nomorWaPengusul || null : null,
     nama_ayah: data.namaAyah,
     nik_ayah: data.nikAyah || null,
     pendidikan_ayah: data.pendidikanAyah || null,
