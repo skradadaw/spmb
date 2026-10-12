@@ -6,7 +6,7 @@ import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from 'pdfjs
 
 type LoadState = 'loading' | 'ready' | 'error';
 
-export function PdfDocumentPreview({ href }: { href: string }) {
+export function PdfDocumentPreview({ href, title = 'dokumen' }: { href: string; title?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const documentRef = useRef<PDFDocumentProxy | null>(null);
@@ -15,7 +15,7 @@ export function PdfDocumentPreview({ href }: { href: string }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [pageCount, setPageCount] = useState(0);
   const [scale, setScale] = useState(1);
-  const [fitWidth, setFitWidth] = useState(true);
+  const [fitWidth, setFitWidth] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [attempt, setAttempt] = useState(0);
 
@@ -119,12 +119,25 @@ export function PdfDocumentPreview({ href }: { href: string }) {
         <button type="button" aria-label="Halaman berikutnya" disabled={pageNumber >= pageCount} onClick={() => setPageNumber(value => value + 1)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 hover:bg-white/10 disabled:opacity-30"><ChevronRight aria-hidden="true" className="size-4" /></button>
         <span aria-hidden="true" className="mx-1 h-5 w-px bg-white/15" />
         <button type="button" aria-label="Perkecil PDF" onClick={() => changeScale(-0.2)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 hover:bg-white/10"><Minus aria-hidden="true" className="size-4" /></button>
-        <button type="button" aria-label="Sesuaikan lebar" aria-pressed={fitWidth} onClick={() => setFitWidth(true)} className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-200 hover:bg-white/10"><Maximize2 aria-hidden="true" className="size-3.5" />Lebar</button>
+        <button
+          type="button"
+          aria-label="Sesuaikan lebar"
+          aria-pressed={fitWidth}
+          onClick={() => {
+            setFitWidth(current => !current);
+            if (fitWidth) setScale(1);
+          }}
+          className={`inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition-colors ${
+            fitWidth ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10'
+          }`}
+        >
+          <Maximize2 aria-hidden="true" className="size-3.5" />Lebar
+        </button>
         <button type="button" aria-label="Perbesar PDF" onClick={() => changeScale(0.2)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 hover:bg-white/10"><Plus aria-hidden="true" className="size-4" /></button>
         <span aria-hidden="true" className="mx-1 h-5 w-px bg-white/15" />
         <a
           href={`${href}${href.includes('?') ? '&' : '?'}download=1`}
-          download
+          download={`${title}.pdf`}
           aria-label="Unduh berkas PDF"
           className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-200 hover:bg-white/10"
         >

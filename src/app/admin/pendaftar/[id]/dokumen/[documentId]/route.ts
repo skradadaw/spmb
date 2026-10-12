@@ -1,4 +1,4 @@
-﻿import { getAdminSession } from '@/features/auth/session';
+import { getAdminSession } from '@/features/auth/session';
 import { createParticipantsRepository } from '@/features/admin/participants/server/participantsRepository';
 import { createParticipantDocumentUrl } from '@/features/admin/participants/server/participantDocumentService';
 import { DOCUMENT_DEFINITIONS, type RegistrationDocumentId } from '@/features/registration/contracts';
@@ -43,11 +43,13 @@ export async function GET(request: Request, { params }: Context) {
     const searchParams = new URL(request.url).searchParams;
     const download = searchParams.get('download') === '1';
     const pdfJsPreview = searchParams.get('preview') === 'pdfjs' && extension === 'pdf';
-    return new Response(upstream.body, {
+    const buffer = await upstream.arrayBuffer();
+    return new Response(buffer, {
       status: 200,
       headers: {
         ...PRIVATE_HEADERS,
         'Content-Type': pdfJsPreview ? 'application/octet-stream' : MIME_TYPES[extension],
+        'Content-Length': String(buffer.byteLength),
         'X-Content-Type-Options': 'nosniff',
         ...(pdfJsPreview ? {} : { 'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename="${id}-${documentId}.${extension}"` }),
       },

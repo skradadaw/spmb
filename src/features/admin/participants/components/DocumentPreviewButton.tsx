@@ -19,6 +19,15 @@ function getPreviewType(href: string) {
   return contentType?.startsWith('image/') ? 'image' : 'pdf';
 }
 
+function getExtension(href: string) {
+  const contentType = new URL(href, 'http://localhost').searchParams.get('contentType');
+  if (contentType === 'application/pdf') return 'pdf';
+  if (contentType === 'image/jpeg') return 'jpg';
+  if (contentType === 'image/png') return 'png';
+  if (contentType === 'image/webp') return 'webp';
+  return contentType?.startsWith('image/') ? 'jpg' : 'pdf';
+}
+
 export function DocumentPreviewButton({ href, title, compact = false }: { href: string; title: string; compact?: boolean }) {
   const previewType = getPreviewType(href);
   const [view, setView] = useState<ViewState>({ scale: 1, x: 0, y: 0, rotation: 0 });
@@ -28,6 +37,19 @@ export function DocumentPreviewButton({ href, title, compact = false }: { href: 
 
   function handleOpenChange(nextOpen: boolean) {
     setOpen(nextOpen);
+    if (!nextOpen) {
+      resetZoom();
+    }
+  }
+
+  function handleRotate(direction: -1 | 1) {
+    setView(current => ({
+      ...current,
+      scale: 1,
+      rotation: current.rotation + direction * 90,
+      x: 0,
+      y: 0,
+    }));
   }
   function handlePreviewWheel(event: WheelEvent<HTMLDivElement>) {
     if (previewType !== 'image') return;
@@ -103,7 +125,7 @@ export function DocumentPreviewButton({ href, title, compact = false }: { href: 
             <div className="flex items-center gap-2">
               <a
                 href={`${href}${href.includes('?') ? '&' : '?'}download=1`}
-                download
+                download={`${title}.${getExtension(href)}`}
                 aria-label={`Unduh berkas ${title}`}
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               >
@@ -113,22 +135,67 @@ export function DocumentPreviewButton({ href, title, compact = false }: { href: 
               <Dialog.Close aria-label="Tutup berkas" onClick={resetZoom} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><X aria-hidden="true" className="size-4" /></Dialog.Close>
             </div>
           </header>
-          <div data-document-preview onWheel={handlePreviewWheel} onDoubleClick={event => { if (previewType === 'image') { event.preventDefault(); if (view.scale === 1) { const bounds = event.currentTarget.getBoundingClientRect(); setView({ scale: 2, x: -(event.clientX - bounds.left), y: -(event.clientY - bounds.top), rotation: view.rotation }); } else { resetZoom(); } } }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} className={`relative min-h-0 flex-1 overflow-hidden bg-slate-900 ${view.scale > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}>
+          <div
+            data-document-preview
+            onWheel={handlePreviewWheel}
+            onDoubleClick={event => {
+              if (previewType !== 'image') return;
+              if ((event.target as HTMLElement).closest('button, a, [role="button"]')) return;
+              event.preventDefault();
+              if (view.scale === 1) {
+                const bounds = event.currentTarget.getBoundingClientRect();
+                const centerX = bounds.width / 2;
+                const centerY = bounds.height / 2;
+                const pointerX = event.clientX - bounds.left;
+                const pointerY = event.clientY - bounds.top;
+                setView(current => ({
+                  ...current,
+                  scale: 2,
+                  x: -(pointerX - centerX),
+                  y: -(pointerY - centerY),
+                }));
+              } else {
+                resetZoom();
+              }
+            }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            className={`relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-slate-900 ${view.scale > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+          >
             {previewType === 'image' ? (
               <>
-                <Image src={href} alt={title} width={1600} height={1200} unoptimized className="absolute inset-3 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)] object-contain sm:inset-5 sm:h-[calc(100%-2.5rem)] sm:w-[calc(100%-2.5rem)]" style={{ transform: `translate3d(${view.x}px, ${view.y}px, 0) rotate(${view.rotation}deg) scale(${view.scale})`, transformOrigin: 'center center', transition: dragging ? 'none' : 'transform 160ms ease-out' }} draggable={false} />
-                <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-xl border border-white/10 bg-slate-950/85 p-1 shadow-xl backdrop-blur sm:bottom-5">
+                <Image
+                  src={href}
+                  alt={title}
+                  width={1600}
+                  height={1200}
+                  unoptimized
+                  className="pointer-events-none max-h-full max-w-full select-none object-contain p-4 sm:p-6"
+                  style={{
+                    transform: `translate3d(${view.x}px, ${view.y}px, 0) rotate(${view.rotation}deg) scale(${view.scale})`,
+                    transformOrigin: 'center center',
+                    transition: dragging ? 'none' : 'transform 160ms ease-out',
+                  }}
+                  draggable={false}
+                />
+                <div
+                  onDoubleClick={event => event.stopPropagation()}
+                  onPointerDown={event => event.stopPropagation()}
+                  className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-xl border border-white/10 bg-slate-950/85 p-1 shadow-xl backdrop-blur sm:bottom-5"
+                >
                   <button type="button" aria-label="Perkecil" disabled={view.scale <= 0.5} onClick={() => changeZoom(-1)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-35"><Minus aria-hidden="true" className="size-4" /></button>
                   <span aria-live="polite" className="min-w-14 text-center text-xs font-semibold tabular-nums text-white">{Math.round(view.scale * 100)}%</span>
                   <button type="button" aria-label="Perbesar" disabled={view.scale >= 4} onClick={() => changeZoom(1)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-35"><Plus aria-hidden="true" className="size-4" /></button>
                   <span aria-hidden="true" className="mx-0.5 h-5 w-px bg-white/15" />
-                  <button type="button" aria-label="Putar ke kiri" onClick={() => setView(current => ({ ...current, rotation: current.rotation - 90 }))} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 transition-colors hover:bg-white/10 hover:text-white"><RotateCcw aria-hidden="true" className="size-4" /></button>
-                  <button type="button" aria-label="Putar ke kanan" onClick={() => setView(current => ({ ...current, rotation: current.rotation + 90 }))} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 transition-colors hover:bg-white/10 hover:text-white"><RotateCw aria-hidden="true" className="size-4" /></button>
+                  <button type="button" aria-label="Putar ke kiri" onClick={() => handleRotate(-1)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 transition-colors hover:bg-white/10 hover:text-white"><RotateCcw aria-hidden="true" className="size-4" /></button>
+                  <button type="button" aria-label="Putar ke kanan" onClick={() => handleRotate(1)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 transition-colors hover:bg-white/10 hover:text-white"><RotateCw aria-hidden="true" className="size-4" /></button>
                   <button type="button" aria-label="Atur ulang tampilan" disabled={view.scale === 1 && view.rotation === 0 && view.x === 0 && view.y === 0} onClick={resetZoom} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-200 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-35"><span className="text-[10px] font-bold">1:1</span></button>
                 </div>
               </>
             ) : (
-              <PdfDocumentPreview href={href} />
+              <PdfDocumentPreview href={href} title={title} />
             )}
           </div>
         </Dialog.Popup>
