@@ -11,7 +11,7 @@ import {
   finalizeRegistrationAction,
   prepareRegistrationAction,
 } from '../actions';
-import { DOCUMENT_DEFINITIONS } from '../contracts';
+import { DOCUMENT_DEFINITIONS, type RegistrationProof } from '../contracts';
 import { CLASS_OPTIONS, type ClassOption } from '../classCapacity';
 import {
   acquireSubmissionLock,
@@ -23,6 +23,7 @@ import {
 import { uploadSignedDocuments } from '../signedUploadClient';
 import { DocumentUploadCard } from './DocumentUploadCard';
 import { ConfirmationModal } from './ConfirmationModal';
+import { DownloadProofButton } from './DownloadProofButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -72,6 +73,7 @@ export default function RegistrationForm({ fullClasses = [] }: RegistrationFormP
   const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
   const [uploadStatusMessage, setUploadStatusMessage] = useState<string>('');
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [proof, setProof] = useState<RegistrationProof | null>(null);
 
   const {
     provinces,
@@ -358,6 +360,7 @@ export default function RegistrationForm({ fullClasses = [] }: RegistrationFormP
         return;
       }
 
+      setProof(result.proof);
       setIsConfirmModalOpen(false);
       setCurrentStep(3);
     } catch {
@@ -1627,6 +1630,21 @@ export default function RegistrationForm({ fullClasses = [] }: RegistrationFormP
                 <CheckCircle2 size={48} />
               </div>
               <h3 className="text-3xl font-bold text-gray-800 mb-4">Pendaftaran Berhasil!</h3>
+              {proof ? (
+                <div className="mx-auto mb-6 max-w-sm rounded-2xl border border-emerald-200 bg-emerald-50/70 px-6 py-5">
+                  <p className="text-sm font-medium text-emerald-900/80">Nomor Pendaftaran</p>
+                  <p className="mt-1 text-3xl font-black tracking-wide text-[#007A10]">{proof.nomorPendaftaran}</p>
+                  <DownloadProofButton
+                    proof={proof}
+                    className="mt-4 rounded-full bg-[#00AA13] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 transition-colors hover:bg-[#008f10] cursor-pointer"
+                  />
+                  <p className="mt-3 text-xs leading-5 text-emerald-900/70">Simpan bukti ini dan tunjukkan saat datang OKB.</p>
+                </div>
+              ) : (
+                <p className="mx-auto mb-6 max-w-md rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  Bukti pendaftaran belum dapat ditampilkan. Pendaftaran Anda tetap tersimpan; hubungi panitia untuk meminta bukti pendaftaran.
+                </p>
+              )}
               <p className="text-gray-600 max-w-md mx-auto mb-8">
                 Data pendaftaran calon murid telah tersimpan di sistem. Silakan periksa WhatsApp Anda secara berkala untuk informasi jadwal observasi.
               </p>

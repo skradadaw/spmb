@@ -32,7 +32,7 @@ function getSidebarPreference() {
 
 export function AdminShell({ active, children }: { active?: AdminSection; children: React.ReactNode }) {
   const pathname = usePathname();
-  const activeSection: AdminSection = active ?? (pathname.startsWith('/admin/pendaftar') ? 'participants' : pathname.startsWith('/admin/kuota') ? 'capacity' : 'summary');
+  const activeSection: AdminSection = active ?? (pathname.startsWith('/admin/pendaftar') ? 'participants' : pathname.startsWith('/admin/kuota') ? 'capacity' : pathname.startsWith('/admin/scan') ? 'attendance' : 'summary');
   const sidebarCollapsed = useSyncExternalStore(subscribeToSidebarPreference, getSidebarPreference, () => false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

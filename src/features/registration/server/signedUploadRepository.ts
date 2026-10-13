@@ -1,7 +1,7 @@
 import 'server-only';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { RegistrationDocumentId } from '../contracts';
+import type { RegistrationDocumentId, RegistrationProof } from '../contracts';
 import type { FormData as RegistrationData } from '../schema';
 import { fetchClassCapacities } from './classCapacityRepository';
 import { DuplicateRegistrationError } from './submissionService';
@@ -56,6 +56,24 @@ export function createSignedUploadRepository(client: SupabaseClient) {
     },
 
     getClassCapacities: () => fetchClassCapacities(client),
+
+    async getProof(submissionId: string): Promise<RegistrationProof | null> {
+      const { data, error } = await client
+        .from('pendaftar')
+        .select('nomor_pendaftaran,nama_lengkap,jenis_pendaftaran,pilihan_kelas,kelas_tujuan')
+        .eq('submission_id', submissionId)
+        .neq('status', 'Menunggu Unggahan')
+        .maybeSingle();
+      if (error) fail();
+      if (!data || typeof data.nomor_pendaftaran !== 'string') return null;
+      return {
+        nomorPendaftaran: data.nomor_pendaftaran,
+        namaLengkap: String(data.nama_lengkap ?? ''),
+        jenisPendaftaran: String(data.jenis_pendaftaran ?? ''),
+        pilihanKelas: String(data.pilihan_kelas ?? ''),
+        kelasTujuan: typeof data.kelas_tujuan === 'string' ? data.kelas_tujuan : null,
+      };
+    },
 
     getPending,
 

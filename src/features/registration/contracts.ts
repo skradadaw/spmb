@@ -13,6 +13,20 @@ export type RegistrationActionResult =
   | { success: true }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
+/** Data yang dicetak pada Bukti Pendaftaran. */
+export type RegistrationProof = {
+  nomorPendaftaran: string;
+  namaLengkap: string;
+  jenisPendaftaran: string;
+  pilihanKelas: string;
+  kelasTujuan: string | null;
+};
+
+/** `proof` dapat kosong bila data bukti gagal dibaca; pendaftaran tetap tersimpan. */
+export type FinalizeRegistrationResult =
+  | { success: true; proof: RegistrationProof | null }
+  | Extract<RegistrationActionResult, { success: false }>;
+
 export type RegistrationFileMetadata = {
   id: RegistrationDocumentId;
   size: number;

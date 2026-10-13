@@ -1,0 +1,159 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import jsQR from 'jsqr';
+import { Camera, CameraOff, CheckCircle2, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { scanAttendanceAction, type ScanAttendanceResult } from '../actions/scanAttendanceAction';
+
+const SCAN_INTERVAL_MS = 250;
+/** QR yang sama diabaikan selama jeda ini agar satu kartu tidak tercatat berulang. */
+const SAME_CODE_COOLDOWN_MS = 4000;
+
+type HistoryItem = ScanAttendanceResult & { code: string; at: string };
+
+export function AttendanceScanner() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const busyRef = useRef(false);
+  const lastCodeRef = useRef<{ code: string; at: number } | null>(null);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [latest, setLatest] = useState<HistoryItem | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [manual, setManual] = useState('');
+
+  const submit = useCallback(async (code: string) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    try {
+      const result = await scanAttendanceAction(code);
+      const item = { ...result, code, at: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
+      setLatest(item);
+      setHistory((current) => [item, ...current].slice(0, 10));
+      if (result.outcome === 'present') navigator.vibrate?.(150);
+    } finally {
+      busyRef.current = false;
+    }
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setCameraOn(false);
+  }, []);
+
+  async function startCamera() {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setCameraOn(true);
+    } catch {
+      setCameraError('Kamera tidak dapat dibuka. Izinkan akses kamera di browser, atau ketik nomor secara manual.');
+    }
+  }
+
+  useEffect(() => {
+    if (!cameraOn) return;
+    const timer = window.setInterval(() => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas || video.readyState < video.HAVE_ENOUGH_DATA) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) return;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const image = context.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(image.data, image.width, image.height, { inversionAttempts: 'dontInvert' })?.data.trim();
+      if (!code) return;
+      const now = Date.now();
+      if (lastCodeRef.current?.code === code && now - lastCodeRef.current.at < SAME_CODE_COOLDOWN_MS) return;
+      lastCodeRef.current = { code, at: now };
+      void submit(code);
+    }, SCAN_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [cameraOn, submit]);
+
+  useEffect(() => stopCamera, [stopCamera]);
+
+  function handleManual(event: FormEvent) {
+    event.preventDefault();
+    if (!manual.trim()) return;
+    void submit(manual.trim());
+    setManual('');
+  }
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)]">
+      <div className="space-y-3">
+        <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-900">
+          <video ref={videoRef} muted playsInline className="h-full w-full object-cover" />
+          {!cameraOn && <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-white/80">Kamera belum aktif</div>}
+          {cameraOn && <div aria-hidden="true" className="pointer-events-none absolute inset-[18%] rounded-2xl border-2 border-white/80" />}
+        </div>
+        <canvas ref={canvasRef} className="hidden" />
+        {cameraOn ? (
+          <Button type="button" variant="outline" onClick={stopCamera} className="w-full gap-2"><CameraOff aria-hidden="true" className="size-4" />Matikan kamera</Button>
+        ) : (
+          <Button type="button" onClick={startCamera} className="w-full gap-2 bg-emerald-700 text-white hover:bg-emerald-800"><Camera aria-hidden="true" className="size-4" />Mulai scan</Button>
+        )}
+        {cameraError && <p role="alert" className="text-sm text-rose-700">{cameraError}</p>}
+        <form onSubmit={handleManual} className="flex gap-2">
+          <label htmlFor="manual-nomor" className="sr-only">Nomor Pendaftaran</label>
+          <Input id="manual-nomor" value={manual} onChange={(event) => setManual(event.target.value)} placeholder="Ketik OB-2027-001" className="h-10" />
+          <Button type="submit" variant="outline" className="h-10 shrink-0">Catat</Button>
+        </form>
+      </div>
+
+      <div className="space-y-3">
+        <div aria-live="polite">
+          {latest ? <ResultCard item={latest} /> : (
+            <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-[var(--admin-muted)]">Arahkan kamera ke QR pada Bukti Pendaftaran. Kehadiran langsung tercatat bila hari ini sesuai Jadwal OKB.</div>
+          )}
+        </div>
+        {history.length > 1 && (
+          <div className="rounded-2xl border border-[var(--admin-border)] bg-white p-4">
+            <p className="text-sm font-semibold">Riwayat scan</p>
+            <ul className="mt-2 divide-y divide-slate-100 text-sm">
+              {history.slice(1).map((item, index) => (
+                <li key={`${item.code}-${item.at}-${index}`} className="flex items-center justify-between gap-3 py-2">
+                  <span className="min-w-0 truncate">{item.applicant?.namaLengkap || item.code}</span>
+                  <span className={item.outcome === 'present' ? 'shrink-0 text-emerald-700' : 'shrink-0 text-rose-700'}>{item.outcome === 'present' ? 'Hadir' : 'Ditolak'} · {item.at}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResultCard({ item }: { item: HistoryItem }) {
+  const present = item.outcome === 'present';
+  return (
+    <div className={present ? 'rounded-2xl border border-emerald-300 bg-emerald-50 p-5' : 'rounded-2xl border border-rose-300 bg-rose-50 p-5'}>
+      <div className="flex items-start gap-3">
+        {present ? <CheckCircle2 aria-hidden="true" className="size-8 shrink-0 text-emerald-700" /> : <XCircle aria-hidden="true" className="size-8 shrink-0 text-rose-700" />}
+        <div className="min-w-0">
+          <p className={present ? 'text-lg font-bold text-emerald-900' : 'text-lg font-bold text-rose-900'}>{item.message}</p>
+          {item.applicant && (
+            <>
+              <p className="mt-1 break-words text-base font-semibold text-slate-900">{item.applicant.namaLengkap}</p>
+              <p className="mt-0.5 text-sm text-slate-600">{item.applicant.nomorPendaftaran}{item.applicant.jadwalSesi ? ` · ${item.applicant.jadwalSesi}` : ''}</p>
+            </>
+          )}
+          <p className="mt-2 text-xs text-slate-500">{item.at}</p>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -36,6 +36,14 @@ _Avoid_: rujukan, referral (untuk orangnya)
 
 ## Data Pendaftar
 
+**Nomor Pendaftaran** (*Registration Number*):
+Nomor pengenal pendek seorang Pendaftar berformat `OB-<tahun ajaran>-<urut>`, misalnya `OB-2027-001`, yang diberikan saat pendaftaran berhasil (Berkas selesai terunggah).
+_Avoid_: ID, kode pendaftaran
+
+**Bukti Pendaftaran** (*Registration Proof*):
+Dokumen PDF yang diterima orang tua saat pendaftaran berhasil, memuat Nomor Pendaftaran, QR berisi Nomor Pendaftaran, nama anak, Jenis Pendaftaran, Pilihan Kelas, dan Kelas Tujuan (Pindahan). Ditunjukkan saat datang OKB; tidak memuat Jadwal OKB. Bila hilang, admin mengunduhkannya kembali.
+_Avoid_: kartu peserta, tiket
+
 **Jenis Pendaftaran** (*Registration Type*):
 Pembeda antara **Siswa Baru** (masuk kelas 1, dihitung dalam Kuota) dan **Pindahan** (pindah dari sekolah lain ke kelas yang lebih tinggi, tidak dihitung dalam Kuota dan tidak dibatasi jumlahnya oleh sistem).
 
@@ -78,6 +86,9 @@ _Avoid_: Ditolak (untuk kasus ini)
 
 **Keputusan Penerimaan** (*Admission Decision*):
 Penetapan Panitia bahwa seorang Pendaftar Diterima atau Ditolak, beserta Kelas Penempatannya, yang hanya diambil setelah Pendaftar mengikuti OKB.
+
+**Scan Kehadiran** (*Attendance Scan*):
+Pemindaian QR pada Bukti Pendaftaran oleh admin di hari OKB, yang langsung mencatat Pendaftar hadir (Terjadwal OKB → Sudah OKB). Hanya berlaku bagi Pendaftar Terjadwal OKB pada tanggal Jadwal OKB-nya; selain itu tidak ada yang dicatat dan admin menjadwalkan ulang bila perlu.
 
 **Perlu Tindak Lanjut** (*Follow-up Required*):
 Penanda admin pada satu Berkas yang belum dapat diterima; penyelesaiannya (menghubungi orang tua, mendapatkan berkas pengganti) terjadi di luar sistem, lalu admin menandainya terverifikasi.

@@ -1,11 +1,12 @@
-import { Armchair, LayoutDashboard, UsersRound } from 'lucide-react';
+import { Armchair, LayoutDashboard, ScanLine, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-export type AdminSection = 'summary' | 'participants' | 'capacity';
+export type AdminSection = 'summary' | 'participants' | 'attendance' | 'capacity';
 export function AdminNavigation({ active, mobile = false, collapsed = false, onNavigate }: { active: AdminSection; mobile?: boolean; collapsed?: boolean; onNavigate?: () => void }) {
   const items = [
     { key: 'summary', href: '/admin', label: 'Ringkasan', icon: LayoutDashboard },
     { key: 'participants', href: '/admin/pendaftar', label: 'Data Peserta', icon: UsersRound },
+    { key: 'attendance', href: '/admin/scan', label: 'Scan Kehadiran', icon: ScanLine },
     { key: 'capacity', href: '/admin/kuota', label: 'Kuota Kelas', icon: Armchair },
   ];
   return <nav aria-label={mobile ? 'Navigasi admin mobile' : 'Navigasi admin'} className={mobile ? 'grid gap-1' : 'mt-3 space-y-1'}>

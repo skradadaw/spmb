@@ -17,10 +17,12 @@ type Query = {
 type Client = { from: (table: 'pendaftar' | 'verifikasi_dokumen') => { select: (columns: string, options?: { count?: 'exact'; head?: boolean }) => Query } };
 const text = (value: unknown): string | null => typeof value === 'string' && value.trim() ? value : null;
 const failure = () => new Error('Data peserta tidak dapat dimuat.');
+/** Pencarian yang diawali "OB-" dicocokkan ke Nomor Pendaftaran, selain itu ke nama. */
+const searchColumn = (search: string) => /^OB-/i.test(search.trim()) ? 'nomor_pendaftaran' : 'nama_lengkap';
 
 function mapList(row: Record<string, unknown>): ParticipantListItem {
   return {
-    id: String(row.id), namaLengkap: text(row.nama_lengkap) ?? 'Nama belum diisi', asalSekolah: text(row.asal_sekolah),
+    id: String(row.id), nomorPendaftaran: text(row.nomor_pendaftaran), namaLengkap: text(row.nama_lengkap) ?? 'Nama belum diisi', asalSekolah: text(row.asal_sekolah),
     pilihanKelas: text(row.pilihan_kelas) ?? 'Belum diisi', jenisPendaftaran: text(row.jenis_pendaftaran) ?? 'Belum diisi',
     status: text(row.status) ?? 'Belum diisi', createdAt: text(row.created_at),
   };
@@ -34,7 +36,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
   const client = supabase as unknown as Client;
   function filtered(query: ParticipantListQuery) {
     let request = client.from('pendaftar').select(PARTICIPANT_LIST_COLUMNS, { count: 'exact' });
-    if (query.search) request = request.ilike('nama_lengkap', `%${escapeSearch(query.search)}%`);
+    if (query.search) request = request.ilike(searchColumn(query.search), `%${escapeSearch(query.search.trim())}%`);
     if (query.classFilter) request = request.eq('pilihan_kelas', query.classFilter);
     if (query.typeFilter) request = request.eq('jenis_pendaftaran', query.typeFilter);
     if (query.statusFilter) request = request.eq('status', query.statusFilter);
@@ -66,7 +68,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
       const records: ParticipantExportRecord[] = [];
       for (let offset = 0; ; offset += 1000) {
         let request = client.from('pendaftar').select(PARTICIPANT_EXPORT_COLUMNS);
-        if (query.search) request = request.ilike('nama_lengkap', `%${escapeSearch(query.search)}%`);
+        if (query.search) request = request.ilike(searchColumn(query.search), `%${escapeSearch(query.search.trim())}%`);
         if (query.classFilter) request = request.eq('pilihan_kelas', query.classFilter);
         if (query.typeFilter) request = request.eq('jenis_pendaftaran', query.typeFilter);
         if (query.statusFilter) request = request.eq('status', query.statusFilter);

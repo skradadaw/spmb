@@ -2,6 +2,7 @@ import 'server-only';
 
 import {
   DOCUMENT_DEFINITIONS,
+  type FinalizeRegistrationResult,
   type PrepareRegistrationResult,
   type RegistrationActionResult,
   type RegistrationDocumentId,
@@ -81,6 +82,15 @@ function safeError(error: unknown): Extract<RegistrationActionResult, { success:
     success: false,
     error: error instanceof DuplicateRegistrationError ? DUPLICATE_NIK_ERROR : GENERIC_ERROR,
   };
+}
+
+async function loadProof(repository: SignedUploadRepository, submissionId: string) {
+  try {
+    return await repository.getProof(submissionId);
+  } catch {
+    console.error(`[registration:${submissionId}] proof lookup failed`);
+    return null;
+  }
 }
 
 async function cleanupPending(
@@ -176,7 +186,7 @@ export async function prepareSignedRegistration(
 export async function finalizeSignedRegistration(
   input: globalThis.FormData,
   repository: SignedUploadRepository,
-): Promise<RegistrationActionResult> {
+): Promise<FinalizeRegistrationResult> {
   const credentials = parseCredentials(input);
   if (!credentials) return { success: false, error: INVALID_ERROR };
   const { submissionId, submissionSecret } = credentials;
@@ -185,7 +195,7 @@ export async function finalizeSignedRegistration(
     if (!pending || !matchesSubmissionSecret(submissionSecret, pending.submission_secret_hash)) {
       return { success: false, error: INVALID_ERROR };
     }
-    if (pending.status === 'Menunggu Verifikasi') return { success: true };
+    if (pending.status === 'Menunggu Verifikasi') return { success: true, proof: await loadProof(repository, submissionId) };
     const paths = repository.pathsFromRow(pending);
     if (pending.status !== 'Menunggu Unggahan' || new Date(pending.upload_expires_at) <= new Date()) {
       await cleanupPending(repository, submissionId, Object.values(paths));
@@ -204,7 +214,7 @@ export async function finalizeSignedRegistration(
       await cleanupPending(repository, submissionId, Object.values(paths));
       return { success: false, error: CAPACITY_ERROR };
     }
-    return { success: true };
+    return { success: true, proof: await loadProof(repository, submissionId) };
   } catch (error) {
     if (error instanceof DuplicateRegistrationError) {
       const pending = await repository.getPending(submissionId).catch(() => null);

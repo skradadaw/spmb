@@ -6,7 +6,7 @@ import { AdminShell } from '../../components/AdminShell';
 import { parseParticipantListQuery } from '../query';
 vi.mock('@/features/auth/logout-action', () => ({ logoutAdminAction: vi.fn() }));
 const query = parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler&page=2'));
-const row = { id: 'abc', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z' };
+const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z' };
 
 describe('Data Peserta UI', () => {
   it('renders desktop and mobile detail links preserving list query', () => {
@@ -31,11 +31,11 @@ describe('Data Peserta UI', () => {
   });
   it('provides labeled shadcn filters with real status options and no page input', () => {
     render(<ParticipantFilters query={query} statuses={['Menunggu Unggahan', 'Menunggu Verifikasi']} />);
-    expect(screen.getByRole('searchbox', { name: 'Cari nama' })).toBeDefined();
+    expect(screen.getByRole('searchbox', { name: 'Cari nama / nomor' })).toBeDefined();
     expect(screen.getAllByRole('combobox')).toHaveLength(3);
     expect(document.querySelector('input[name="page"]')).toBeNull();
     expect(screen.getByRole('button', { name: /Terapkan/ })).toBeDefined();
-    expect(screen.getByRole('searchbox', { name: 'Cari nama' }).getAttribute('maxlength')).toBe('100');
+    expect(screen.getByRole('searchbox', { name: 'Cari nama / nomor' }).getAttribute('maxlength')).toBe('100');
   });
   it('provides matching desktop/mobile navigation with Data Peserta active', () => {
     render(<AdminShell active="participants"><h1>Content</h1></AdminShell>);

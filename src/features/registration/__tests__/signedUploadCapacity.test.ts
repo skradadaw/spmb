@@ -101,6 +101,14 @@ function validDocuments() {
   ];
 }
 
+const proof = {
+  nomorPendaftaran: 'OB-2027-001',
+  namaLengkap: 'Siti Aminah',
+  jenisPendaftaran: 'Siswa Baru',
+  pilihanKelas: 'Bilingual',
+  kelasTujuan: null,
+};
+
 function repositoryWithCapacity(available: boolean) {
   const documents = validDocuments();
   const repository = {
@@ -117,6 +125,7 @@ function repositoryWithCapacity(available: boolean) {
     pathsFromRow: vi.fn().mockReturnValue(paths),
     download: vi.fn().mockImplementation(() => Promise.resolve(documents.shift())),
     finalize: vi.fn().mockResolvedValue(available),
+    getProof: vi.fn().mockResolvedValue(proof),
     removePending: vi.fn().mockResolvedValue(undefined),
   };
   return repository as unknown as SignedUploadRepository & {
@@ -158,7 +167,7 @@ describe('signed upload capacity', () => {
   it('finalizes through the atomic class capacity check', async () => {
     const repository = repositoryWithCapacity(true);
 
-    await expect(finalizeSignedRegistration(credentials(), repository)).resolves.toEqual({ success: true });
+    await expect(finalizeSignedRegistration(credentials(), repository)).resolves.toEqual({ success: true, proof });
     expect(repository.finalize).toHaveBeenCalledWith(submissionId);
     expect(repository.removePending).not.toHaveBeenCalled();
   });
@@ -171,6 +180,34 @@ describe('signed upload capacity', () => {
       error: CAPACITY_ERROR,
     });
     expect(repository.removePending).toHaveBeenCalledWith(submissionId, Object.values(paths));
+  });
+
+  it('still reports success without a proof when the proof lookup fails after finalizing', async () => {
+    const repository = repositoryWithCapacity(true);
+    (repository.getProof as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('read failed'));
+
+    await expect(finalizeSignedRegistration(credentials(), repository)).resolves.toEqual({ success: true, proof: null });
+    expect(repository.removePending).not.toHaveBeenCalled();
+  });
+
+  it('reads the proof of a finalized registration by submission', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: { nomor_pendaftaran: 'OB-2027-012', nama_lengkap: 'Rani', jenis_pendaftaran: 'Pindahan', pilihan_kelas: 'Reguler', kelas_tujuan: '3' },
+      error: null,
+    });
+    const neq = vi.fn().mockReturnValue({ maybeSingle });
+    const eq = vi.fn().mockReturnValue({ neq });
+    const select = vi.fn().mockReturnValue({ eq });
+    const repository = createSignedUploadRepository({ from: vi.fn().mockReturnValue({ select }) } as never);
+
+    await expect(repository.getProof(submissionId)).resolves.toEqual({
+      nomorPendaftaran: 'OB-2027-012',
+      namaLengkap: 'Rani',
+      jenisPendaftaran: 'Pindahan',
+      pilihanKelas: 'Reguler',
+      kelasTujuan: '3',
+    });
+    expect(neq).toHaveBeenCalledWith('status', 'Menunggu Unggahan');
   });
 
   it('maps repository finalization to the atomic capacity RPC', async () => {

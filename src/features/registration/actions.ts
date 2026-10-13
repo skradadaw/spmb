@@ -1,7 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
-import type { PrepareRegistrationResult, RegistrationActionResult } from './contracts';
+import type { FinalizeRegistrationResult, PrepareRegistrationResult, RegistrationActionResult } from './contracts';
 import {
   getSourceAddress,
   getSupabaseAdmin,
@@ -42,7 +42,7 @@ export async function prepareRegistrationAction(input: globalThis.FormData): Pro
   }
 }
 
-export async function finalizeRegistrationAction(input: globalThis.FormData): Promise<RegistrationActionResult> {
+export async function finalizeRegistrationAction(input: globalThis.FormData): Promise<FinalizeRegistrationResult> {
   try {
     return await finalizeSignedRegistration(input, createSignedUploadRepository(getSupabaseAdmin()));
   } catch (error) {

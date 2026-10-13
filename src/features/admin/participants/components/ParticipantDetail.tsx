@@ -1,11 +1,12 @@
-import Link from 'next/link';
 import { ArrowLeft, Check, ClipboardCheck, MessageSquareText } from 'lucide-react';
 import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminNoteAction';
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
 import { DocumentPreviewButton } from './DocumentPreviewButton';
 import { ParticipantStatusPanel } from './ParticipantStatusPanel';
+import { DownloadProofButton } from '@/features/registration/components/DownloadProofButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DocumentReviewStatus, ParticipantDetail as ParticipantDetailData } from '../contracts';
 import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
@@ -54,17 +55,31 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
 
   return (
     <div>
-      <Button render={<Link href={backHref} />} variant="ghost" className="mb-4 -ml-2">
+      <ButtonLink href={backHref} variant="ghost" className="mb-4 -ml-2">
         <ArrowLeft aria-hidden="true" />Kembali ke Data Peserta
-      </Button>
+      </ButtonLink>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Detail peserta</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Detail peserta{participant.registration.nomorPendaftaran ? ` · ${participant.registration.nomorPendaftaran}` : ''}</p>
           <h1 className="mt-2 break-words text-2xl font-bold tracking-[-0.04em] sm:text-3xl">
             {participant.identity.namaLengkap ? formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap) : 'Peserta'}
           </h1>
         </div>
-        <Badge>{participant.status}</Badge>
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          {participant.registration.nomorPendaftaran && (
+            <DownloadProofButton
+              proof={{
+                nomorPendaftaran: participant.registration.nomorPendaftaran,
+                namaLengkap: formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap ?? null),
+                jenisPendaftaran: participant.registration.jenisPendaftaran ?? '',
+                pilihanKelas: participant.registration.pilihanKelas ?? '',
+                kelasTujuan: participant.registration.kelasTujuan ?? null,
+              }}
+              className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+            />
+          )}
+          <Badge>{participant.status}</Badge>
+        </div>
       </div>
       <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_33rem]">
         <Card className="min-w-0 rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">

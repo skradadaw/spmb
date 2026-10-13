@@ -100,6 +100,9 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS status_sebelum_dibatalkan 
 -- Keputusan Penerimaan
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kelas_penempatan VARCHAR(50);
 
+-- Nomor Pendaftaran (OB-<tahun ajaran>-<urut>), diberikan saat pendaftaran berhasil
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_pendaftaran VARCHAR(20);
+
 -- 4. Indeks
 CREATE INDEX IF NOT EXISTS idx_pendaftar_nik ON public.pendaftar (nik);
 CREATE INDEX IF NOT EXISTS idx_pendaftar_created_at ON public.pendaftar (created_at DESC);
@@ -123,6 +126,38 @@ WHERE nik IS NOT NULL AND status <> 'Menunggu Unggahan';
 CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_submission_id
 ON public.pendaftar (submission_id)
 WHERE submission_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_pendaftaran
+ON public.pendaftar (nomor_pendaftaran)
+WHERE nomor_pendaftaran IS NOT NULL;
+
+-- Nomor urut berikutnya untuk Open Booking 2027/2028. Ganti prefiks untuk tahun ajaran berikutnya.
+CREATE OR REPLACE FUNCTION public.next_registration_number()
+RETURNS TEXT
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT 'OB-2027-' || lpad((COALESCE(max(substring(nomor_pendaftaran FROM 9)::INTEGER), 0) + 1)::TEXT, 3, '0')
+  FROM public.pendaftar
+  WHERE nomor_pendaftaran LIKE 'OB-2027-%';
+$$;
+
+REVOKE ALL ON FUNCTION public.next_registration_number() FROM PUBLIC, anon, authenticated;
+
+-- Beri nomor kepada Pendaftar lama, berurutan sesuai waktu daftar.
+DO $$
+DECLARE v_id UUID;
+BEGIN
+  LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
+  FOR v_id IN
+    SELECT id FROM public.pendaftar
+    WHERE nomor_pendaftaran IS NULL AND status <> 'Menunggu Unggahan'
+    ORDER BY created_at, id
+  LOOP
+    UPDATE public.pendaftar SET nomor_pendaftaran = public.next_registration_number() WHERE id = v_id;
+  END LOOP;
+END $$;
 
 -- 5. Trigger Otomatis updated_at
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
@@ -508,7 +543,8 @@ BEGIN
   END IF;
 
   UPDATE public.pendaftar
-  SET status = 'Menunggu Verifikasi'
+  SET status = 'Menunggu Verifikasi',
+      nomor_pendaftaran = COALESCE(nomor_pendaftaran, public.next_registration_number())
   WHERE submission_id = p_submission_id
     AND status = 'Menunggu Unggahan';
 

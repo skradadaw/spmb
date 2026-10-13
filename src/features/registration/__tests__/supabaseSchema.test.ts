@@ -271,4 +271,20 @@ describe('Supabase registration security schema', () => {
     expect(functionSql).toContain("kelas_penempatan = CASE WHEN p_keputusan = 'Diterima' THEN p_kelas_penempatan ELSE NULL END");
     expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) TO service_role;');
   });
+
+  it('assigns sequential registration numbers on finalization and backfills earlier applicants', () => {
+    const finalizeSql = compactSql(schema.match(
+      /CREATE OR REPLACE FUNCTION public\.finalize_registration_with_capacity\([\s\S]*?\$\$;/,
+    )?.[0] ?? '');
+    const nextSql = compactSql(schema.match(
+      /CREATE OR REPLACE FUNCTION public\.next_registration_number\([\s\S]*?\$\$;/,
+    )?.[0] ?? '');
+
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_pendaftaran VARCHAR(20);');
+    expect(compactSchema).toContain('CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_pendaftaran ON public.pendaftar (nomor_pendaftaran) WHERE nomor_pendaftaran IS NOT NULL;');
+    expect(nextSql).toContain("SELECT 'OB-2027-' || lpad((COALESCE(max(substring(nomor_pendaftaran FROM 9)::INTEGER), 0) + 1)::TEXT, 3, '0')");
+    expect(finalizeSql).toContain('nomor_pendaftaran = COALESCE(nomor_pendaftaran, public.next_registration_number())');
+    expect(compactSchema).toContain("WHERE nomor_pendaftaran IS NULL AND status <> 'Menunggu Unggahan' ORDER BY created_at, id");
+    expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.next_registration_number() FROM PUBLIC, anon, authenticated;');
+  });
 });
