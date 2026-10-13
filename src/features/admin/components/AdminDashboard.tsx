@@ -1,6 +1,7 @@
 import { BookOpenCheck, ClipboardCheck, FileWarning, RefreshCw, UserRoundCheck, UsersRound } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import type { AdminDashboardSummary } from '../contracts';
+import { AttentionCard } from './AttentionCard';
 import { DistributionCard } from './DistributionCard';
 import { MetricCard } from './MetricCard';
 import { RecentApplicants } from './RecentApplicants';
@@ -23,6 +24,7 @@ export function AdminDashboard({ summary }: { summary: AdminDashboardSummary }) 
             <MetricCard label="Pendaftaran selesai" value={summary.completedRegistrations} helper="Data berhasil dikirim" icon={UserRoundCheck} tone="blue" />
             <MetricCard label="Berkas belum lengkap" value={summary.incompleteUploads} helper="Unggahan belum diselesaikan" icon={FileWarning} tone="slate" />
           </section>
+          <section aria-label="Perlu perhatian" className="mt-4"><AttentionCard attention={summary.attention} /></section>
           <section className="mt-4 grid gap-4 xl:grid-cols-2">
             <DistributionCard title="Distribusi pilihan kelas" description="Sebaran pendaftar berdasarkan program kelas." items={summary.classDistribution} icon={BookOpenCheck} />
             <DistributionCard title="Jenis pendaftaran" description="Perbandingan siswa baru dan siswa pindahan." items={summary.typeDistribution} icon={UsersRound} />

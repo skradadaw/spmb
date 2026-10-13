@@ -6,9 +6,23 @@ import { AdminShell } from '../../components/AdminShell';
 import { parseParticipantListQuery } from '../query';
 vi.mock('@/features/auth/logout-action', () => ({ logoutAdminAction: vi.fn() }));
 const query = parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler&page=2'));
-const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z' };
+const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z', attention: { nisnMismatch: false, followUpDocuments: 0, missingDocuments: 0 } };
 
 describe('Data Peserta UI', () => {
+  it('shows Perlu Perhatian under the status only when something needs handling', () => {
+    const attention = { nisnMismatch: true, followUpDocuments: 1, missingDocuments: 2 };
+    render(<ParticipantList query={query} result={{ items: [{ ...row, status: 'Terjadwal OKB', attention }, { ...row, id: 'b', status: 'Diterima' }], total: 2, page: 1, pageSize: 20, totalPages: 1 }} />);
+    const notes = screen.getAllByText('NISN tidak sesuai · 1 berkas perlu tindak lanjut · 2 berkas belum tersedia');
+    expect(notes).toHaveLength(2);
+    expect(notes[0].className).toContain('text-amber-700');
+    expect(document.querySelectorAll('[data-attention]')).toHaveLength(2);
+  });
+
+  it('offers the Perlu Perhatian filter', () => {
+    render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('perhatian=nisn'))} statuses={['Diterima']} />);
+    expect(screen.getByLabelText('Perlu perhatian').textContent).toContain('NISN tidak sesuai');
+  });
+
   it('shows the registration number under the name and status as colored text, not a badge', () => {
     render(<ParticipantList query={query} result={{ items: [{ ...row, status: 'Diterima' }], total: 1, page: 1, pageSize: 20, totalPages: 1 }} />);
     expect(screen.queryByRole('columnheader', { name: /pendaftaran/i })).toBeNull();
@@ -42,7 +56,7 @@ describe('Data Peserta UI', () => {
   it('provides labeled shadcn filters with real status options and no page input', () => {
     render(<ParticipantFilters query={query} statuses={['Menunggu Unggahan', 'Menunggu Verifikasi']} />);
     expect(screen.getByRole('searchbox', { name: 'Cari nama / nomor' })).toBeDefined();
-    expect(screen.getAllByRole('combobox')).toHaveLength(3);
+    expect(screen.getAllByRole('combobox')).toHaveLength(4);
     expect(document.querySelector('input[name="page"]')).toBeNull();
     expect(screen.getByRole('button', { name: /Terapkan/ })).toBeDefined();
     expect(screen.getByRole('searchbox', { name: 'Cari nama / nomor' }).getAttribute('maxlength')).toBe('100');

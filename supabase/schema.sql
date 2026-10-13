@@ -219,6 +219,80 @@ ALTER TABLE public.verifikasi_dokumen ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.verifikasi_dokumen FROM PUBLIC, anon, authenticated;
 GRANT ALL ON TABLE public.verifikasi_dokumen TO service_role;
 
+-- 6a-2. Perlu Perhatian: NISN Tidak Sesuai dan ringkasan Berkas per Pendaftar
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nisn_tidak_sesuai BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS berkas_tindak_lanjut SMALLINT NOT NULL DEFAULT 0;
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS berkas_belum_tersedia SMALLINT GENERATED ALWAYS AS (
+  ((NULLIF(btrim(dokumen_akta_kelahiran), '') IS NULL)::INTEGER
+  + (NULLIF(btrim(dokumen_kartu_keluarga), '') IS NULL)::INTEGER
+  + (NULLIF(btrim(dokumen_pas_foto), '') IS NULL)::INTEGER
+  + (NULLIF(btrim(dokumen_bukti_pembayaran), '') IS NULL)::INTEGER)::SMALLINT
+) STORED;
+
+-- Mengganti NISN menghapus penanda NISN Tidak Sesuai, kecuali penandanya ikut diubah dalam update yang sama.
+CREATE OR REPLACE FUNCTION public.clear_nisn_flag_on_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.nisn IS DISTINCT FROM OLD.nisn AND NEW.nisn_tidak_sesuai IS NOT DISTINCT FROM OLD.nisn_tidak_sesuai THEN
+    NEW.nisn_tidak_sesuai := false;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_clear_nisn_flag ON public.pendaftar;
+CREATE TRIGGER trg_clear_nisn_flag
+BEFORE UPDATE OF nisn ON public.pendaftar
+FOR EACH ROW EXECUTE FUNCTION public.clear_nisn_flag_on_change();
+
+-- Jumlah Berkas Perlu Tindak Lanjut disimpan di pendaftar agar tabel peserta bisa memfilternya tanpa join.
+CREATE OR REPLACE FUNCTION public.sync_berkas_tindak_lanjut()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_ids UUID[] := ARRAY[]::UUID[];
+  v_id UUID;
+BEGIN
+  IF TG_OP IN ('UPDATE', 'DELETE') THEN v_ids := v_ids || OLD.pendaftar_id; END IF;
+  IF TG_OP IN ('INSERT', 'UPDATE') THEN v_ids := v_ids || NEW.pendaftar_id; END IF;
+  FOREACH v_id IN ARRAY v_ids LOOP
+    UPDATE public.pendaftar AS peserta
+    SET berkas_tindak_lanjut = jumlah.total
+    FROM (
+      SELECT count(*)::SMALLINT AS total
+      FROM public.verifikasi_dokumen
+      WHERE pendaftar_id = v_id AND status = 'follow_up'
+    ) AS jumlah
+    WHERE peserta.id = v_id AND peserta.berkas_tindak_lanjut IS DISTINCT FROM jumlah.total;
+  END LOOP;
+  RETURN NULL;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.sync_berkas_tindak_lanjut() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS trg_sync_berkas_tindak_lanjut ON public.verifikasi_dokumen;
+CREATE TRIGGER trg_sync_berkas_tindak_lanjut
+AFTER INSERT OR UPDATE OR DELETE ON public.verifikasi_dokumen
+FOR EACH ROW EXECUTE FUNCTION public.sync_berkas_tindak_lanjut();
+
+UPDATE public.pendaftar AS peserta
+SET berkas_tindak_lanjut = COALESCE(jumlah.total, 0)
+FROM public.pendaftar AS sumber
+LEFT JOIN (
+  SELECT pendaftar_id, count(*)::SMALLINT AS total
+  FROM public.verifikasi_dokumen
+  WHERE status = 'follow_up'
+  GROUP BY pendaftar_id
+) AS jumlah ON jumlah.pendaftar_id = sumber.id
+WHERE peserta.id = sumber.id
+  AND peserta.berkas_tindak_lanjut IS DISTINCT FROM COALESCE(jumlah.total, 0);
+
 -- 6b. Kuota per Pilihan Kelas (lihat docs/adr/0001-kuota-per-pilihan-kelas.md)
 CREATE TABLE IF NOT EXISTS public.kuota_kelas (
   pilihan_kelas TEXT PRIMARY KEY CHECK (pilihan_kelas IN ('Reguler', 'Bilingual', 'Tahfizh')),
@@ -488,6 +562,16 @@ AS $$
     'total', (SELECT count(*) FROM public.pendaftar),
     'awaiting', (SELECT count(*) FROM public.pendaftar WHERE status = 'Menunggu Verifikasi'),
     'incomplete', (SELECT count(*) FROM public.pendaftar WHERE status = 'Menunggu Unggahan'),
+    -- Perlu Perhatian tidak pernah menghitung Pendaftar Dibatalkan atau Ditolak.
+    'attention', (
+      SELECT jsonb_build_object(
+        'any', count(*) FILTER (WHERE nisn_tidak_sesuai OR berkas_tindak_lanjut > 0 OR berkas_belum_tersedia > 0),
+        'nisn', count(*) FILTER (WHERE nisn_tidak_sesuai),
+        'followUp', count(*) FILTER (WHERE berkas_tindak_lanjut > 0)
+      )
+      FROM public.pendaftar
+      WHERE status NOT IN ('Dibatalkan', 'Ditolak')
+    ),
     'classes', COALESCE((
       SELECT jsonb_agg(jsonb_build_object('label', pilihan_kelas, 'count', jumlah))
       FROM (SELECT pilihan_kelas, count(*) AS jumlah FROM public.pendaftar GROUP BY pilihan_kelas) AS kelas

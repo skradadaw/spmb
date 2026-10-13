@@ -1,7 +1,7 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ParticipantDetail, ParticipantDocumentReviews, ParticipantExportRecord, ParticipantListItem, ParticipantListQuery, ParticipantListResult } from '../contracts';
-import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS, PARTICIPANT_PAGE_SIZE } from '../contracts';
+import type { ParticipantAttention, ParticipantDetail, ParticipantDocumentReviews, ParticipantExportRecord, ParticipantListItem, ParticipantListQuery, ParticipantListResult } from '../contracts';
+import { ATTENTION_EXCLUDED_STATUSES, PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS, PARTICIPANT_PAGE_SIZE } from '../contracts';
 import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
 import { escapeSearch } from '../query';
 import { fromPendaftarRow } from '../editing';
@@ -10,7 +10,10 @@ import { DOCUMENT_DEFINITIONS } from '@/features/registration/contracts';
 type Result<T> = PromiseLike<{ data: T | null; error: unknown; count?: number | null }>;
 type Query = {
   ilike: (column: string, value: string) => Query;
-  eq: (column: string, value: string) => Query;
+  eq: (column: string, value: string | boolean) => Query;
+  gt: (column: string, value: number) => Query;
+  not: (column: string, operator: string, value: string) => Query;
+  or: (filters: string) => Query;
   order: (column: string, options?: { ascending?: boolean }) => Query;
   range: (from: number, to: number) => Result<unknown[]>;
   maybeSingle: () => Result<Record<string, unknown>>;
@@ -21,23 +24,41 @@ const failure = () => new Error('Data peserta tidak dapat dimuat.');
 /** Pencarian yang diawali "OB-" dicocokkan ke Nomor Pendaftaran, selain itu ke nama. */
 const searchColumn = (search: string) => /^OB-/i.test(search.trim()) ? 'nomor_pendaftaran' : 'nama_lengkap';
 
+const count = (value: unknown) => Math.max(0, Number(value) || 0);
+const EXCLUDED_STATUS_LIST = `(${ATTENTION_EXCLUDED_STATUSES.map(status => `"${status}"`).join(',')})`;
+
+function mapAttention(row: Record<string, unknown>, status: string): ParticipantAttention {
+  if ((ATTENTION_EXCLUDED_STATUSES as readonly string[]).includes(status)) return { nisnMismatch: false, followUpDocuments: 0, missingDocuments: 0 };
+  return { nisnMismatch: row.nisn_tidak_sesuai === true, followUpDocuments: count(row.berkas_tindak_lanjut), missingDocuments: count(row.berkas_belum_tersedia) };
+}
+
+function applyFilters(request: Query, query: ParticipantListQuery) {
+  if (query.search) request = request.ilike(searchColumn(query.search), `%${escapeSearch(query.search.trim())}%`);
+  if (query.classFilter) request = request.eq('pilihan_kelas', query.classFilter);
+  if (query.typeFilter) request = request.eq('jenis_pendaftaran', query.typeFilter);
+  if (query.statusFilter) request = request.eq('status', query.statusFilter);
+  if (query.attentionFilter) {
+    request = request.not('status', 'in', EXCLUDED_STATUS_LIST);
+    if (query.attentionFilter === 'nisn') request = request.eq('nisn_tidak_sesuai', true);
+    else if (query.attentionFilter === 'tindak-lanjut') request = request.gt('berkas_tindak_lanjut', 0);
+    else request = request.or('nisn_tidak_sesuai.is.true,berkas_tindak_lanjut.gt.0,berkas_belum_tersedia.gt.0');
+  }
+  return request;
+}
+
 function mapList(row: Record<string, unknown>): ParticipantListItem {
+  const status = text(row.status) ?? 'Belum diisi';
   return {
     id: String(row.id), nomorPendaftaran: text(row.nomor_pendaftaran), namaLengkap: text(row.nama_lengkap) ?? 'Nama belum diisi', asalSekolah: text(row.asal_sekolah),
     pilihanKelas: text(row.pilihan_kelas) ?? 'Belum diisi', jenisPendaftaran: text(row.jenis_pendaftaran) ?? 'Belum diisi',
-    status: text(row.status) ?? 'Belum diisi', createdAt: text(row.created_at),
+    status, createdAt: text(row.created_at), attention: mapAttention(row, status),
   };
 }
 
 export function createParticipantsRepository(supabase: SupabaseClient) {
   const client = supabase as unknown as Client;
   function filtered(query: ParticipantListQuery) {
-    let request = client.from('pendaftar').select(PARTICIPANT_LIST_COLUMNS, { count: 'exact' });
-    if (query.search) request = request.ilike(searchColumn(query.search), `%${escapeSearch(query.search.trim())}%`);
-    if (query.classFilter) request = request.eq('pilihan_kelas', query.classFilter);
-    if (query.typeFilter) request = request.eq('jenis_pendaftaran', query.typeFilter);
-    if (query.statusFilter) request = request.eq('status', query.statusFilter);
-    return request;
+    return applyFilters(client.from('pendaftar').select(PARTICIPANT_LIST_COLUMNS, { count: 'exact' }), query);
   }
   return {
     async list(query: ParticipantListQuery): Promise<ParticipantListResult> {
@@ -76,12 +97,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
     async exportDetails(query: ParticipantListQuery): Promise<ParticipantExportRecord[]> {
       const records: ParticipantExportRecord[] = [];
       for (let offset = 0; ; offset += 1000) {
-        let request = client.from('pendaftar').select(PARTICIPANT_EXPORT_COLUMNS);
-        if (query.search) request = request.ilike(searchColumn(query.search), `%${escapeSearch(query.search.trim())}%`);
-        if (query.classFilter) request = request.eq('pilihan_kelas', query.classFilter);
-        if (query.typeFilter) request = request.eq('jenis_pendaftaran', query.typeFilter);
-        if (query.statusFilter) request = request.eq('status', query.statusFilter);
-        const result = await request.order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 999);
+        const result = await applyFilters(client.from('pendaftar').select(PARTICIPANT_EXPORT_COLUMNS), query).order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 999);
         if (result.error || !result.data) throw failure();
         for (const raw of result.data) {
           const row = raw as Record<string, unknown>;
@@ -89,7 +105,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
           for (const [group, definitions] of Object.entries(PARTICIPANT_FIELDS)) {
             for (const [key, column] of definitions) fields[group === 'father' ? `father${key[0].toUpperCase()}${key.slice(1)}` : group === 'mother' ? `mother${key[0].toUpperCase()}${key.slice(1)}` : key] = text(row[column]);
           }
-          records.push({ id: String(row.id), createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi', adminNote: text(row.catatan_admin), fields });
+          records.push({ id: String(row.id), createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi', adminNote: text(row.catatan_admin), nisnMismatch: row.nisn_tidak_sesuai === true, fields });
         }
         if (result.data.length < 1000) return records;
       }
@@ -119,7 +135,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         identity: group('identity'), registration: group('registration'), school: group('school'), affiliation: group('affiliation'),
         referral: group('referral'), okb: group('okb'), decision: group('decision'), formValues: fromPendaftarRow(row), previousStatus: text(row.status_sebelum_dibatalkan),
         address: group('address'), father: group('father'), mother: group('mother'),
-        documents: DOCUMENT_DEFINITIONS.map(doc => ({ id: doc.id, title: doc.title, path: text(row[doc.dbColumn]) })), documentReviews, adminNote: text(row.catatan_admin),
+        documents: DOCUMENT_DEFINITIONS.map(doc => ({ id: doc.id, title: doc.title, path: text(row[doc.dbColumn]) })), documentReviews, adminNote: text(row.catatan_admin), nisnMismatch: row.nisn_tidak_sesuai === true,
       };
     },
   };

@@ -26,6 +26,7 @@ const participant: ParticipantDetailData = {
     kartuKeluarga: { status: 'follow_up', reviewedAt: '2026-10-10T02:00:00Z', reviewedBy: 'Admin' },
   },
   adminNote: null,
+  nisnMismatch: false,
   documents: [
     { id: 'aktaKelahiran', title: 'Akta Kelahiran', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/aktaKelahiran.pdf' },
     { id: 'kartuKeluarga', title: 'Kartu Keluarga', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/kartuKeluarga.jpg' },
@@ -35,6 +36,21 @@ const participant: ParticipantDetailData = {
 };
 
 describe('ParticipantDetail', () => {
+  it('lets the admin mark an unverified NISN and shows it in amber with a notice', () => {
+    const { unmount } = render(<ParticipantDetail participant={participant} />);
+    expect(screen.queryByText(/Hubungi orang tua agar meminta NISN/)).toBeNull();
+    const mark = screen.getByRole('button', { name: 'Tandai NISN tidak sesuai' });
+    expect((mark.closest('form')?.querySelector('input[name="flagged"]') as HTMLInputElement).value).toBe('true');
+    unmount();
+
+    render(<ParticipantDetail participant={{ ...participant, nisnMismatch: true }} />);
+    expect(screen.getByText(/Hubungi orang tua agar meminta NISN/)).toBeDefined();
+    expect(document.querySelector('[data-field="nisn"]')?.getAttribute('data-warning')).toBe('true');
+    expect(screen.getByText('Ditandai tidak sesuai')).toBeDefined();
+    const clear = screen.getByRole('button', { name: 'NISN sudah benar' });
+    expect((clear.closest('form')?.querySelector('input[name="flagged"]') as HTMLInputElement).value).toBe('false');
+  });
+
   it('renders all student categories in one card and documents in a separate card', () => {
     render(<ParticipantDetail participant={participant} />);
     const identityHeading = screen.getByRole('heading', { name: 'Identitas anak' });

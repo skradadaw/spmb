@@ -97,3 +97,10 @@ _Avoid_: follow_up, ditolak (untuk berkas)
 **Berkas Pengganti** (*Replacement Document*):
 File yang diunggah admin untuk menggantikan salah satu Berkas Pendaftar, kapan pun dan pada status apa pun. File lama dihapus, Berkas kembali berstatus belum diperiksa, dan status Pendaftar tidak berubah.
 _Avoid_: upload ulang, revisi berkas
+
+**NISN Tidak Sesuai** (*Unverified NISN*):
+Penanda admin pada Pendaftar yang NISN-nya diduga salah atau asal diisi orang tua. Bukan Status Pendaftar dan tidak menghalangi langkah apa pun; admin menghubungi orang tua untuk meminta NISN yang benar dari TK asal. Penanda hilang ketika admin mengganti NISN, atau dihapus admin bila NISN ternyata benar.
+_Avoid_: NISN salah, NISN invalid, status NISN
+
+**Perlu Perhatian** (*Needs Attention*):
+Ringkasan masalah yang masih harus ditangani admin pada seorang Pendaftar: NISN Tidak Sesuai, Berkas Perlu Tindak Lanjut, atau Berkas yang belum tersedia. Berkas yang sekadar belum diperiksa tidak termasuk. Pendaftar Dibatalkan dan Ditolak tidak pernah Perlu Perhatian.

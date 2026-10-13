@@ -298,6 +298,23 @@ describe('Supabase registration security schema', () => {
     expect(functionSql).toContain('ORDER BY created_at DESC, id DESC LIMIT 8');
     expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.get_admin_dashboard_summary() FROM PUBLIC, anon, authenticated;');
     expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.get_admin_dashboard_summary() TO service_role;');
+    // Perlu Perhatian never counts withdrawn or rejected applicants.
+    expect(functionSql).toContain("'nisn', count(*) FILTER (WHERE nisn_tidak_sesuai)");
+    expect(functionSql).toContain("'followUp', count(*) FILTER (WHERE berkas_tindak_lanjut > 0)");
+    expect(functionSql).toContain("WHERE status NOT IN ('Dibatalkan', 'Ditolak')");
+  });
+
+  it('stores NISN Tidak Sesuai and per-applicant document counts for the participant list', () => {
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nisn_tidak_sesuai BOOLEAN NOT NULL DEFAULT false;');
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS berkas_tindak_lanjut SMALLINT NOT NULL DEFAULT 0;');
+    expect(compactSchema).toContain('ADD COLUMN IF NOT EXISTS berkas_belum_tersedia SMALLINT GENERATED ALWAYS AS');
+    // Changing the NISN clears the mark unless the same update sets it explicitly.
+    expect(compactSchema).toContain('IF NEW.nisn IS DISTINCT FROM OLD.nisn AND NEW.nisn_tidak_sesuai IS NOT DISTINCT FROM OLD.nisn_tidak_sesuai THEN NEW.nisn_tidak_sesuai := false;');
+    expect(compactSchema).toContain('BEFORE UPDATE OF nisn ON public.pendaftar FOR EACH ROW EXECUTE FUNCTION public.clear_nisn_flag_on_change();');
+    // Follow-up counts follow every review change, including the reset done by a replacement upload.
+    expect(compactSchema).toContain('AFTER INSERT OR UPDATE OR DELETE ON public.verifikasi_dokumen FOR EACH ROW EXECUTE FUNCTION public.sync_berkas_tindak_lanjut();');
+    expect(compactSchema).toContain("WHERE pendaftar_id = v_id AND status = 'follow_up'");
+    expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.sync_berkas_tindak_lanjut() FROM PUBLIC, anon, authenticated;');
   });
 
   it('lets admins change class choice only when the destination class has a free seat', () => {

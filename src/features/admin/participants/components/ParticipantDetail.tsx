@@ -1,7 +1,8 @@
-import { ArrowLeft, Check, ClipboardCheck } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, ClipboardCheck, Flag } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminNoteAction';
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
+import { setNisnFlagAction } from '../actions/setNisnFlagAction';
 import { DocumentPreviewButton } from './DocumentPreviewButton';
 import { ParticipantStatusPanel } from './ParticipantStatusPanel';
 import { ParticipantStatusBadge } from './ParticipantStatus';
@@ -67,11 +68,25 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
           <ParticipantStatusBadge status={participant.status} />
         </div>
       </div>
+      {participant.nisnMismatch && (
+        <div role="status" className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-amber-600" />
+          <p><span className="font-semibold">NISN tidak sesuai.</span> Hubungi orang tua agar meminta NISN yang benar dari TK asal, lalu perbarui di Identitas anak.</p>
+        </div>
+      )}
       <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_33rem]">
         <Card className="min-w-0 rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
           <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Informasi siswa</CardTitle></CardHeader>
           <CardContent className="space-y-3 px-4 pb-5 pt-0 sm:px-5" data-detail-groups>
-            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Identitas anak" name="identity" values={participant.identity} />
+            <ParticipantEditableGroup
+              participantId={participant.id}
+              formValues={participant.formValues}
+              title="Identitas anak"
+              name="identity"
+              values={participant.identity}
+              warningFields={participant.nisnMismatch ? ['nisn'] : []}
+              fieldAddons={{ nisn: <NisnFlagForm participantId={participant.id} flagged={participant.nisnMismatch} /> }}
+            />
             <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Pendaftaran" name="registration" values={participant.registration} hiddenFields={participant.registration.jenisPendaftaran === 'Pindahan' ? [] : ['kelasTujuan']} />
             <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Sekolah dan prestasi" name="school" values={participant.school} />
             <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Informasi alamat" name="address" values={participant.address} hiddenFields={['provinsi', 'alamatRumah']} />
@@ -209,5 +224,32 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
         </div>
       </div>
     </div>
+  );
+}
+
+/** NISN Tidak Sesuai toggle under the NISN value; editing the NISN clears it automatically. */
+function NisnFlagForm({ participantId, flagged }: { participantId: string; flagged: boolean }) {
+  return (
+    <form action={setNisnFlagAction} className="space-y-1.5">
+      <input type="hidden" name="participantId" value={participantId} />
+      <input type="hidden" name="flagged" value={flagged ? 'false' : 'true'} />
+      {flagged ? (
+        <>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex h-7 items-center gap-1 rounded-full border border-amber-200 bg-amber-100 px-2.5 text-xs font-semibold text-amber-800">
+              <AlertTriangle aria-hidden="true" className="size-3.5" />Ditandai tidak sesuai
+            </span>
+            <Button type="submit" className={`${ADMIN_SECONDARY_BUTTON} h-7 px-2.5`}>
+              <Check aria-hidden="true" className="size-3.5" />NISN sudah benar
+            </Button>
+          </div>
+          <p className="text-[11px] leading-4 text-amber-800/80">Tanda hilang otomatis setelah NISN diperbarui lewat Edit.</p>
+        </>
+      ) : (
+        <Button type="submit" className={`${ADMIN_SECONDARY_BUTTON} h-7 px-2.5 text-amber-800 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-900`}>
+          <Flag aria-hidden="true" className="size-3.5" />Tandai NISN tidak sesuai
+        </Button>
+      )}
+    </form>
   );
 }

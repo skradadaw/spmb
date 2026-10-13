@@ -104,5 +104,7 @@ export async function commitDocumentReplacementAction(
   }
 
   revalidatePath(`/admin/pendaftar/${participantId}`);
+  // The review reset can change the list's Perlu Perhatian line.
+  revalidatePath('/admin/pendaftar');
   return { success: true };
 }

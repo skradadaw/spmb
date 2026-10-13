@@ -5,7 +5,7 @@ import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contrac
 import { parseParticipantListQuery } from '../query';
 
 function fixture() {
-  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
+  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), gt: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
   return { q, repo: createParticipantsRepository({ from: vi.fn(() => q) } as unknown as SupabaseClient) };
 }
 describe('participants repository', () => {
@@ -38,6 +38,35 @@ describe('participants repository', () => {
     expect(PARTICIPANT_LIST_COLUMNS).toContain('asal_sekolah');
     expect(PARTICIPANT_LIST_COLUMNS).not.toContain('nik');
   });
+  it('filters Perlu Perhatian and never includes withdrawn or rejected applicants', async () => {
+    for (const [value, check] of [
+      ['nisn', (q: ReturnType<typeof fixture>['q']) => expect(q.eq).toHaveBeenCalledWith('nisn_tidak_sesuai', true)],
+      ['tindak-lanjut', (q: ReturnType<typeof fixture>['q']) => expect(q.gt).toHaveBeenCalledWith('berkas_tindak_lanjut', 0)],
+      ['semua', (q: ReturnType<typeof fixture>['q']) => expect(q.or).toHaveBeenCalledWith('nisn_tidak_sesuai.is.true,berkas_tindak_lanjut.gt.0,berkas_belum_tersedia.gt.0')],
+    ] as const) {
+      const { q, repo } = fixture();
+      q.range.mockResolvedValueOnce({ data: [], count: 0, error: null });
+      await repo.list(parseParticipantListQuery(new URLSearchParams(`perhatian=${value}`)));
+      expect(q.not).toHaveBeenCalledWith('status', 'in', '("Dibatalkan","Ditolak")');
+      check(q);
+    }
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: [], count: 0, error: null });
+    await repo.list(parseParticipantListQuery(new URLSearchParams('perhatian=lainnya')));
+    expect(q.not).not.toHaveBeenCalled();
+  });
+
+  it('maps Perlu Perhatian per row and hides it for withdrawn or rejected applicants', async () => {
+    const { q, repo } = fixture();
+    const flagged = { nisn_tidak_sesuai: true, berkas_tindak_lanjut: 1, berkas_belum_tersedia: 2 };
+    q.range.mockResolvedValueOnce({ data: [{ id: 'a', status: 'Terjadwal OKB', ...flagged }, { id: 'b', status: 'Dibatalkan', ...flagged }], count: 2, error: null });
+    const result = await repo.list(parseParticipantListQuery(new URLSearchParams()));
+    expect(result.items[0].attention).toEqual({ nisnMismatch: true, followUpDocuments: 1, missingDocuments: 2 });
+    expect(result.items[1].attention).toEqual({ nisnMismatch: false, followUpDocuments: 0, missingDocuments: 0 });
+    expect(PARTICIPANT_LIST_COLUMNS).toContain('nisn_tidak_sesuai');
+    expect(PARTICIPANT_DETAIL_COLUMNS).toContain('nisn_tidak_sesuai');
+  });
+
   it('loads a normal page with its count in a single round trip', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [{ id: 'a', nama_lengkap: 'Ani' }], count: 25, error: null });

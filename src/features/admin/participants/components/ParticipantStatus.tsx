@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import type { ParticipantAttention } from '../contracts';
 
 export function participantDate(value: string | null) {
   return value && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(value)) : 'Tanggal belum tersedia';
@@ -37,4 +38,19 @@ export function ParticipantStatusBadge({ status, className }: { status: string; 
 
 export function ParticipantStatus({ status }: { status: string }) {
   return <span data-status={status} className={cn('break-words text-xs font-semibold leading-4', statusColor(status))}>{status}</span>;
+}
+
+export function attentionItems(attention: ParticipantAttention) {
+  return [
+    attention.nisnMismatch && 'NISN tidak sesuai',
+    attention.followUpDocuments > 0 && `${attention.followUpDocuments} berkas perlu tindak lanjut`,
+    attention.missingDocuments > 0 && `${attention.missingDocuments} berkas belum tersedia`,
+  ].filter((item): item is string => Boolean(item));
+}
+
+/** Perlu Perhatian as small amber text under the status; nothing when there is nothing to handle. */
+export function ParticipantAttentionNote({ attention, className }: { attention: ParticipantAttention; className?: string }) {
+  const items = attentionItems(attention);
+  if (items.length === 0) return null;
+  return <p data-attention className={cn('mt-1 break-words text-[11px] font-medium leading-4 text-amber-700', className)}>{items.join(' · ')}</p>;
 }
