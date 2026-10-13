@@ -19,7 +19,7 @@ vi.mock('next/navigation', () => ({
 
 import { AdminLoginForm } from '../AdminLoginForm';
 
-const getPinInput = () => screen.getByLabelText('PIN Admin') as HTMLInputElement;
+const getPinInput = () => screen.getByLabelText('Masukkan PIN') as HTMLInputElement;
 
 describe('AdminLoginForm Component', () => {
   beforeEach(() => {
@@ -40,13 +40,13 @@ describe('AdminLoginForm Component', () => {
 
   it('shows six PIN boxes that fill as digits are typed', () => {
     render(<AdminLoginForm />);
-    const boxes = screen.getByTestId('pin-boxes').querySelectorAll('[aria-hidden="true"]');
+    const boxes = screen.getByTestId('pin-boxes').querySelectorAll('[data-slot="input-otp-slot"]');
     expect(boxes).toHaveLength(6);
 
     fireEvent.change(getPinInput(), { target: { value: '12' } });
-    expect(boxes[0].childElementCount).toBe(1);
-    expect(boxes[1].childElementCount).toBe(1);
-    expect(boxes[2].childElementCount).toBe(0);
+    expect(boxes[0].querySelector('[data-slot="input-otp-mask"]')).not.toBeNull();
+    expect(boxes[1].querySelector('[data-slot="input-otp-mask"]')).not.toBeNull();
+    expect(boxes[2].querySelector('[data-slot="input-otp-mask"]')).toBeNull();
   });
 
   it('keeps only digits and at most 6 of them', () => {
@@ -94,7 +94,7 @@ describe('AdminLoginForm Component', () => {
   it('only enables the submit button for a complete 6 digit PIN', () => {
     mockVerifyAction.mockReturnValue(new Promise(() => {}));
     render(<AdminLoginForm />);
-    const submitBtn = screen.getByRole('button', { name: /masuk ke panel admin/i });
+    const submitBtn = screen.getByRole('button', { name: /^masuk$/i });
 
     fireEvent.change(getPinInput(), { target: { value: '12345' } });
     expect(submitBtn.getAttribute('disabled')).not.toBeNull();
@@ -105,9 +105,10 @@ describe('AdminLoginForm Component', () => {
     expect(document.activeElement).not.toBe(getPinInput());
   });
 
-  it('warns not to share the Admin PIN', () => {
+  it('offers a forgot PIN link to the school WhatsApp', () => {
     render(<AdminLoginForm />);
-    expect(screen.getByText(/jangan bagikan pin admin/i)).toBeDefined();
+    const forgotLink = screen.getByRole('link', { name: /lupa pin/i });
+    expect(forgotLink.getAttribute('href')).toContain('https://wa.me/6287723487776');
   });
 
   it('has a link back to home page', () => {

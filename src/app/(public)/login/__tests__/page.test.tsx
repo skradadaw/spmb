@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -17,22 +17,25 @@ describe('LoginPage (/login)', () => {
     render(<LoginPage />);
 
     expect(screen.getByText('Panel Administrasi SPMB')).toBeDefined();
-    expect(screen.getByRole('heading', { level: 1, name: 'Masuk Panel Admin' })).toBeDefined();
-    expect(screen.getByLabelText('PIN Admin')).toBeDefined();
+    expect(screen.getByRole('heading', { level: 2, name: 'Masuk Panel Admin' })).toBeDefined();
+    expect(screen.getByLabelText('Masukkan PIN')).toBeDefined();
   });
 
-  it('gives mobile a green header with a back arrow above the form sheet', () => {
+  it('gives mobile a green header band with a back arrow, logo, and school name above the form', () => {
     render(<LoginPage />);
 
     const header = screen.getByTestId('mobile-login-header');
     expect(header.className).toContain('lg:hidden');
-    expect(header.className).toContain('bg-[#064A18]');
+    expect(header.className).toContain('bg-brand-green');
     expect(screen.getByRole('link', { name: 'Kembali ke beranda SPMB' }).getAttribute('href')).toBe('/');
+    expect(within(header).getByAltText('Logo SD Plus 3 Al-Muhajirin')).toBeDefined();
+    expect(within(header).getByRole('heading', { level: 1, name: 'SD Plus 3 Al-Muhajirin' })).toBeDefined();
+    expect(within(header).queryByText('Akses Admin')).toBeNull();
+    expect(within(header).queryByText('Panel Admin SPMB')).toBeNull();
 
-    const sheet = screen.getByLabelText('PIN Admin').closest('[data-login-card]');
-    expect(sheet?.className).toContain('-mt-6');
-    expect(sheet?.className).toContain('rounded-t-[1.75rem]');
-    expect(sheet?.className).not.toContain('min-h-[80dvh]');
+    const sheet = screen.getByLabelText('Masukkan PIN').closest('[data-login-card]');
+    expect(sheet?.className).toContain('-mt-14');
+    expect(sheet?.className).toContain('rounded-3xl');
   });
 
   it('lets mobile scroll while keeping the desktop panel fixed', () => {

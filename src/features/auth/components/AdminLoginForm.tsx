@@ -3,18 +3,22 @@
 import React, { useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Loader2, AlertCircle, HelpCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { cn } from '@/lib/utils';
 import { verifyAdminPinAction } from '@/features/auth/actions';
+import { LoginSupportLink } from './LoginSupportLink';
 
 const PIN_LENGTH = 6;
+const FORGOT_PIN_URL = `https://wa.me/6287723487776?text=${encodeURIComponent('Assalamualaikum, saya lupa PIN Admin SPMB.')}`;
+const onlyDigits = (value: string) => value.replace(/\D/g, '').slice(0, PIN_LENGTH);
 
 export function AdminLoginForm() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pin, setPin] = useState('');
   const [showPin, setShowPin] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -45,9 +49,9 @@ export function AdminLoginForm() {
     });
   };
 
-  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Hanya angka, maksimal 6 digit; tempelan seperti "12 34 56" ikut dirapikan.
-    const value = e.target.value.replace(/\D/g, '').slice(0, PIN_LENGTH);
+  const handlePinChange = (raw: string) => {
+    // Hanya angka, maksimal 6 digit.
+    const value = onlyDigits(raw);
     setPin(value);
     if (errorMessage) setErrorMessage(null);
     if (value.length === PIN_LENGTH && pin.length !== PIN_LENGTH) submitPin(value);
@@ -58,78 +62,60 @@ export function AdminLoginForm() {
     if (pin.length === PIN_LENGTH && !isPending) submitPin(pin);
   };
 
-  const keepCaretAtEnd = (e: React.SyntheticEvent<HTMLInputElement>) => {
-    const input = e.currentTarget;
-    input.setSelectionRange(input.value.length, input.value.length);
-  };
-
   return (
     <div data-testid="admin-login-form" className="flex w-full flex-col">
-      <div className="hidden pb-6 lg:block xl:pb-7">
-        <h2 className="text-[2rem] font-bold leading-tight tracking-[-0.035em] text-slate-950">Masuk Panel Admin</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-500">Masukkan PIN Admin untuk melanjutkan.</p>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between">
-            <label htmlFor="admin-pin-input" className="text-sm font-semibold text-slate-800">
-              PIN Admin
-            </label>
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <label htmlFor="admin-pin-input" className="block text-lg font-extrabold tracking-tight text-slate-900">
+                Masukkan PIN
+              </label>
+              <p className="mt-0.5 text-sm text-slate-500">6 digit PIN admin Anda</p>
+            </div>
             <button
               type="button"
               aria-label={showPin ? 'Sembunyikan PIN' : 'Tampilkan PIN'}
+              aria-pressed={showPin}
               onClick={() => setShowPin((prev) => !prev)}
-              className="-mr-2 flex h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-emerald-50 hover:text-[#087A20] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#087A20] cursor-pointer"
+              className="tap-press flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-public-tint text-slate-700 transition-colors hover:bg-public-mint hover:text-public-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-green cursor-pointer"
             >
-              {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              <span aria-hidden="true">{showPin ? 'Sembunyikan' : 'Tampilkan'}</span>
+              {showPin ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
 
-          <div data-testid="pin-boxes" className="relative grid grid-cols-6 gap-2 sm:gap-2.5">
-            {Array.from({ length: PIN_LENGTH }, (_, index) => {
-              const digit = pin[index];
-              const isActive = isFocused && !isPending && index === Math.min(pin.length, PIN_LENGTH - 1);
-              return (
-                <div
+          <InputOTP
+            ref={inputRef}
+            id="admin-pin-input"
+            name="pin"
+            type={showPin ? 'text' : 'password'}
+            inputMode="numeric"
+            autoComplete="current-password"
+            maxLength={PIN_LENGTH}
+            pasteTransformer={onlyDigits}
+            aria-invalid={errorMessage ? true : undefined}
+            aria-describedby={errorMessage ? 'admin-pin-error' : undefined}
+            value={pin}
+            onChange={handlePinChange}
+            disabled={isPending}
+            containerClassName="w-full has-disabled:opacity-100"
+          >
+            <InputOTPGroup data-testid="pin-boxes" className="grid w-full grid-cols-6 gap-2 sm:gap-2.5">
+              {Array.from({ length: PIN_LENGTH }, (_, index) => (
+                <InputOTPSlot
                   key={index}
-                  aria-hidden="true"
-                  className={`flex h-14 items-center justify-center rounded-xl border bg-white text-xl font-bold text-slate-950 transition-colors duration-150 ${
-                    errorMessage
-                      ? 'border-rose-300 bg-rose-50/60'
-                      : isActive
-                        ? 'border-[#087A20] ring-4 ring-[#00AA13]/10'
-                        : digit
-                          ? 'border-emerald-300'
-                          : 'border-slate-200'
-                  }`}
-                >
-                  {digit && (showPin ? digit : <span className="h-2.5 w-2.5 rounded-full bg-slate-900" />)}
-                </div>
-              );
-            })}
-
-            <input
-              ref={inputRef}
-              id="admin-pin-input"
-              name="pin"
-              type={showPin ? 'text' : 'password'}
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={PIN_LENGTH}
-              autoComplete="current-password"
-              aria-invalid={errorMessage ? true : undefined}
-              aria-describedby={errorMessage ? 'admin-pin-error' : undefined}
-              value={pin}
-              onChange={handlePinChange}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onSelect={keepCaretAtEnd}
-              disabled={isPending}
-              className="absolute inset-0 h-full w-full cursor-text bg-transparent text-base text-transparent caret-transparent opacity-0 focus:outline-none"
-            />
-          </div>
+                  index={index}
+                  masked={!showPin}
+                  className={cn(
+                    'size-auto h-14 rounded-xl border border-slate-200 bg-slate-50 text-xl font-bold text-slate-950 first:rounded-xl last:rounded-xl',
+                    'data-[active=true]:border-public-green data-[active=true]:bg-white data-[active=true]:ring-4 data-[active=true]:ring-public-green/15',
+                    pin[index] && 'border-public-line bg-public-tint/60',
+                    errorMessage && 'border-rose-300 bg-rose-50/60'
+                  )}
+                />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
 
           {errorMessage && (
             <div id="admin-pin-error" role="alert" className="flex items-start gap-2 pt-0.5 text-sm font-medium text-rose-700">
@@ -142,9 +128,7 @@ export function AdminLoginForm() {
         <Button
           type="submit"
           disabled={isPending || pin.length !== PIN_LENGTH}
-          className={`h-12 w-full rounded-xl bg-[#087A20] text-sm font-bold text-white transition-colors hover:bg-[#066A1B] active:bg-[#064A18] disabled:opacity-100 cursor-pointer ${
-            isPending ? '' : 'disabled:bg-slate-100 disabled:text-slate-400'
-          }`}
+          className="tap-press h-[3.25rem] w-full rounded-full bg-gradient-to-b from-public-green to-[#006B0E] text-base font-bold text-white shadow-lg shadow-public-green/25 transition-[filter,opacity] hover:brightness-110 disabled:opacity-85 disabled:shadow-md cursor-pointer"
         >
           {isPending ? (
             <span className="flex items-center justify-center gap-2">
@@ -152,38 +136,34 @@ export function AdminLoginForm() {
               Memverifikasi…
             </span>
           ) : (
-            'Masuk ke Panel Admin'
+            'Masuk'
           )}
         </Button>
 
-        <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500 lg:hidden">
-          <ShieldCheck className="h-4 w-4 shrink-0 text-[#087A20]" />
-          Jangan bagikan PIN Admin kepada siapa pun.
-        </p>
+        <div className="flex justify-center">
+          <a
+            href={FORGOT_PIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg px-2 py-1.5 text-sm font-semibold text-public-green transition-colors hover:text-public-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-green"
+          >
+            Lupa PIN?
+          </a>
+        </div>
       </form>
 
       <div
         data-testid="login-support"
-        className="mt-8 flex items-center justify-center border-t border-slate-100 pt-4 lg:mt-7 lg:justify-between"
+        className="mt-7 hidden items-center justify-between border-t border-slate-100 pt-4 lg:flex"
       >
         <Link
           href="/"
-          className="hidden items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium text-slate-500 transition-colors hover:text-[#064A18] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#087A20] lg:-ml-2 lg:inline-flex"
+          className="-ml-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium text-slate-500 transition-colors hover:text-public-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-green"
         >
           <ArrowLeft className="h-4 w-4" />
           Kembali ke beranda
         </Link>
-        <a
-          href="https://wa.me/6287723487776"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium text-slate-500 transition-colors hover:text-[#00880F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00AA13] lg:-mr-2"
-        >
-          <HelpCircle className="h-4 w-4 text-[#00AA13]" />
-          <span>
-            Butuh bantuan? <strong className="font-semibold text-[#087A20]">Hubungi Support</strong>
-          </span>
-        </a>
+        <LoginSupportLink className="-mr-2" />
       </div>
     </div>
   );

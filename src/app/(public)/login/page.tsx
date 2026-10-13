@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
-import { LoginHero, MobileLoginHeader, AdminLoginForm } from '@/features/auth';
+import { ShieldCheck } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
+import { LoginHero, MobileLoginHeader, AdminLoginForm, LoginSupportLink } from '@/features/auth';
 
 export const metadata: Metadata = {
   title: 'Masuk Panel Admin | SPMB SD Plus 3 Al-Muhajirin',
@@ -8,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="relative flex min-h-dvh w-full bg-white lg:h-dvh lg:flex-row lg:overflow-hidden lg:bg-[#F5F9F6]">
+    <main className="relative flex min-h-dvh w-full bg-public-canvas lg:h-dvh lg:flex-row lg:overflow-hidden">
       <LoginHero />
 
       <section aria-label="Form masuk administrator" className="relative flex min-h-dvh w-full flex-col lg:min-h-0 lg:w-1/2 lg:items-center lg:justify-center lg:px-12 lg:py-6 xl:px-20 xl:py-8">
@@ -17,14 +19,28 @@ export default function LoginPage() {
 
         <MobileLoginHeader />
 
-        <div
+        <Card
           data-login-card
-          className="relative z-10 -mt-6 flex-1 rounded-t-[1.75rem] bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8 shadow-[0_-16px_32px_-24px_rgba(2,44,13,0.6)] sm:px-10 lg:mt-0 lg:w-full lg:max-w-[31rem] lg:flex-none lg:rounded-3xl lg:border lg:border-emerald-950/[0.08] lg:p-7 lg:shadow-[0_24px_60px_-34px_rgba(6,74,24,0.38)] xl:p-8"
+          className="relative z-10 mx-4 -mt-14 rounded-[1.75rem] border-public-deep/10 shadow-xl shadow-public-deep/10 sm:mx-auto sm:w-full sm:max-w-[28rem] lg:mt-0 lg:max-w-[31rem] lg:rounded-3xl"
         >
-          <div className="mx-auto w-full max-w-[26rem] lg:max-w-none">
+          <CardHeader className="hidden space-y-1.5 px-7 pb-5 pt-7 lg:flex xl:px-8 xl:pt-8">
+            <h2 className="text-[2rem] font-extrabold leading-tight tracking-[-0.035em] text-public-deep">Masuk Panel Admin</h2>
+            <CardDescription className="leading-6 text-slate-600">
+              Masukkan 6 digit PIN Admin untuk mengelola pendaftaran SPMB.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-5 pb-5 pt-6 sm:px-7 sm:pb-7 lg:pt-0 xl:px-8 xl:pb-8">
             <AdminLoginForm />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+
+        <footer className="mt-auto flex flex-col items-center gap-3 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-10 lg:hidden">
+          <p className="inline-flex items-center gap-2 rounded-full bg-public-tint px-4 py-2 text-sm font-semibold text-public-deep">
+            <ShieldCheck aria-hidden="true" className="h-4 w-4 text-public-green" />
+            Khusus panitia &amp; admin SPMB
+          </p>
+          <LoginSupportLink />
+        </footer>
       </section>
     </main>
   );
