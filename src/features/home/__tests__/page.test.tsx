@@ -65,6 +65,7 @@ describe('Open Booking landing page', () => {
       ['Kelas', '#kelas'],
       ['Biaya', '#biaya'],
       ['Berkas', '#berkas'],
+      ['FAQ', '#faq'],
     ]);
   });
 
@@ -110,7 +111,7 @@ describe('Open Booking landing page', () => {
     expect(mobileNavigation.className).toContain('bg-gradient-to-b');
     expect(within(mobileNavigation).getByText('Menu Utama')).toBeDefined();
     expect(within(mobileNavigation).getByText('Informasi Open Booking')).toBeDefined();
-    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(7);
+    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(8);
     expect(within(mobileNavigation).getByRole('link', { name: 'Daftar Sekarang' })).toBeDefined();
 
     fireEvent.click(within(mobileNavigation).getByRole('link', { name: 'Jadwal' }));
@@ -259,6 +260,29 @@ describe('Open Booking landing page', () => {
     expect(container.textContent?.match(/NISN/g)).toHaveLength(1);
     expect(container.textContent).not.toMatch(/fotokopi/i);
     expect(screen.queryByText('Mengapa Al-Muhajirin?')).toBeNull();
+  });
+
+  it('answers the six frequent questions and offers the panitia WhatsApp', () => {
+    renderHome();
+
+    const section = screen.getByRole('region', { name: 'Pertanyaan yang Sering Diajukan' });
+    expect(section.getAttribute('id')).toBe('faq');
+    const questions = within(section)
+      .getAllByText((_, element) => element?.tagName === 'SUMMARY')
+      .map((summary) => summary.textContent);
+    expect(questions).toEqual([
+      'Berapa biaya OKB dan ke mana membayarnya?',
+      'Kelas apa saja yang bisa dipilih, dan bagaimana kalau kelasnya penuh?',
+      'Apakah kelas yang ditempatkan pasti sama dengan pilihan?',
+      'Bagaimana jika Berkas yang diunggah salah?',
+      'Bukti Pendaftaran hilang, bagaimana?',
+      'Berhalangan hadir OKB, bagaimana?',
+    ]);
+    expect(within(section).getByText('Masih ada pertanyaan?')).toBeDefined();
+    expect(within(section).getByText(/07\.00–17\.00/)).toBeDefined();
+    const whatsapp = within(section).getByRole('link', { name: /whatsapp panitia/i });
+    expect(whatsapp.getAttribute('href')).toBe('https://wa.me/6281998311470');
+    expect(whatsapp.getAttribute('target')).toBe('_blank');
   });
 
   it('never uses the word seleksi', () => {

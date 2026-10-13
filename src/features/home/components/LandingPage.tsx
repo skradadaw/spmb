@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, FileCheck2 } from 'lucide-react';
 import ClassOptions from './ClassOptions';
+import FrequentQuestions from './FrequentQuestions';
 import HomeHero, { HomeHeader } from './HomeHero';
 import PaymentInformation from './PaymentInformation';
 import RegistrationPreparation from './RegistrationPreparation';
@@ -30,6 +31,7 @@ export default function LandingPage({
         <ClassOptions classCapacities={classCapacities} />
         <PaymentInformation />
         <RegistrationPreparation />
+        <FrequentQuestions />
         <section className="bg-white px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
           <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-public-deep px-6 py-12 text-white shadow-[0_24px_60px_-28px_rgba(0,75,18,0.7)] sm:px-10 sm:py-16 lg:px-16">
             <div aria-hidden="true" className="absolute -right-16 -top-20 h-64 w-64 rounded-full border-[44px] border-white/5" />

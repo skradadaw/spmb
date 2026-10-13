@@ -62,3 +62,44 @@ export const classPrograms = [
       'Menghafal Al-Qur’an sejak dini dengan bimbingan guru, termasuk kegiatan Tahfizh Camp.',
   },
 ] as const;
+
+export const contactInfo = {
+  whatsappLabel: '0819-9831-1470',
+  whatsappUrl: 'https://wa.me/6281998311470',
+  serviceHours: '07.00–17.00',
+  address: 'Jl. Ipik Gandamanah No. 33, Ciseureuh, Purwakarta, Jawa Barat',
+  mapsUrl:
+    'https://www.google.com/maps/place/SD+Plus+3+Al-Muhajirin+Purwakarta/@-6.5214189,107.4600823,17z',
+} as const;
+
+export const faqs = [
+  {
+    question: 'Berapa biaya OKB dan ke mana membayarnya?',
+    answer: `Biaya OKB ${registrationInfo.okb.fee}, ditransfer ke rekening ${registrationInfo.okb.bank} ${registrationInfo.okb.accountNumber}. Simpan bukti pembayarannya untuk diunggah sebagai Berkas.`,
+  },
+  {
+    question: 'Kelas apa saja yang bisa dipilih, dan bagaimana kalau kelasnya penuh?',
+    answer:
+      'Tersedia Pilihan Kelas Reguler, Bilingual, dan Tahfizh. Pilihan Kelas yang kuotanya penuh tidak dapat dipilih di formulir, tetapi bisa terbuka kembali bila ada kursi yang dilepas.',
+  },
+  {
+    question: 'Apakah kelas yang ditempatkan pasti sama dengan pilihan?',
+    answer:
+      'Tidak selalu. Panitia menetapkan Kelas Penempatan setelah OKB, sehingga dapat berbeda dari Pilihan Kelas.',
+  },
+  {
+    question: 'Bagaimana jika Berkas yang diunggah salah?',
+    answer:
+      'Hubungi panitia melalui WhatsApp. Admin akan mengganti Berkas tersebut dengan file yang benar, tanpa perlu mendaftar ulang.',
+  },
+  {
+    question: 'Bukti Pendaftaran hilang, bagaimana?',
+    answer:
+      'Hubungi panitia dengan menyebutkan nama anak atau Nomor Pendaftaran. Panitia akan mengunduhkan Bukti Pendaftaran kembali.',
+  },
+  {
+    question: 'Berhalangan hadir OKB, bagaimana?',
+    answer:
+      'Segera kabari panitia melalui WhatsApp. OKB dapat dijadwalkan ulang ke tanggal lain.',
+  },
+] as const;

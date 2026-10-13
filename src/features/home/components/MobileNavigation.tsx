@@ -10,6 +10,7 @@ import {
   LockKeyhole,
   School,
   Menu,
+  MessageCircleQuestion,
   Sparkles,
   WalletCards,
   X,
@@ -30,6 +31,7 @@ const navigationIcons: Record<
   Kelas: School,
   Biaya: WalletCards,
   Berkas: ClipboardCheck,
+  FAQ: MessageCircleQuestion,
 };
 
 export default function MobileNavigation({ items }: MobileNavigationProps) {

@@ -21,6 +21,7 @@ const navigationItems = [
   ['Kelas', '#kelas'],
   ['Biaya', '#biaya'],
   ['Berkas', '#berkas'],
+  ['FAQ', '#faq'],
 ] as const;
 
 const primaryActionClass =
