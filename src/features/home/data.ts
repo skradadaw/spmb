@@ -28,12 +28,12 @@ export const registrationFlow = [
   {
     title: 'Verifikasi Berkas',
     description:
-      'Panitia memeriksa setiap Berkas dan menghubungi Ayah/Bunda bila ada yang perlu diganti.',
+      'Admin memeriksa setiap Berkas dan menghubungi Ayah/Bunda bila ada yang perlu diganti.',
   },
   {
     title: 'Ikuti OKB',
     description:
-      'Datang sesuai Jadwal OKB dari panitia dengan membawa Bukti Pendaftaran.',
+      'Datang sesuai Jadwal OKB yang ditetapkan Admin dengan membawa Bukti Pendaftaran.',
   },
   {
     title: 'Keputusan Penerimaan',
@@ -80,7 +80,7 @@ export const faqs = [
   {
     question: 'Kelas apa saja yang bisa dipilih, dan bagaimana kalau kelasnya penuh?',
     answer:
-      'Tersedia Pilihan Kelas Reguler, Bilingual, dan Tahfizh. Pilihan Kelas yang kuotanya penuh tidak dapat dipilih di formulir, tetapi bisa terbuka kembali bila ada kursi yang dilepas.',
+      'Tersedia Pilihan Kelas Reguler, Bilingual, dan Tahfizh. Pilihan Kelas yang kuotanya penuh tidak dapat dipilih di formulir; lihat statusnya di bagian Pilihan Kelas.',
   },
   {
     question: 'Apakah kelas yang ditempatkan pasti sama dengan pilihan?',
@@ -90,12 +90,12 @@ export const faqs = [
   {
     question: 'Bagaimana jika Berkas yang diunggah salah?',
     answer:
-      'Hubungi panitia melalui WhatsApp. Admin akan mengganti Berkas tersebut dengan file yang benar, tanpa perlu mendaftar ulang.',
+      'Hubungi panitia melalui WhatsApp. Admin akan mengunggah Berkas Pengganti yang benar.',
   },
   {
     question: 'Bukti Pendaftaran hilang, bagaimana?',
     answer:
-      'Hubungi panitia dengan menyebutkan nama anak atau Nomor Pendaftaran. Panitia akan mengunduhkan Bukti Pendaftaran kembali.',
+      'Hubungi panitia dengan menyebutkan nama anak atau Nomor Pendaftaran. Admin akan mengunduhkan Bukti Pendaftaran kembali.',
   },
   {
     question: 'Berhalangan hadir OKB, bagaimana?',

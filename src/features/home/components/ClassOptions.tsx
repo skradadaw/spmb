@@ -84,7 +84,7 @@ export default function ClassOptions({
                 <p className="mt-2 text-[0.95rem] leading-7 text-slate-600">{description}</p>
                 {status === 'Penuh' && (
                   <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600">
-                    Pilihan kelas ini sudah penuh
+                    Pilihan Kelas ini sudah penuh
                   </p>
                 )}
               </article>

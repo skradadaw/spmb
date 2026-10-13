@@ -150,7 +150,7 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
         />
       </div>
       <p className="mt-2.5 text-xs font-medium leading-relaxed text-emerald-950/80">
-        Kuota terbatas! Segera daftarkan putra-putri Ayah & Bunda dan lengkapi berkas sebelum kuota penuh.
+        Kuota terbatas! Segera daftarkan putra-putri Ayah & Bunda dan lengkapi Berkas sebelum kuota penuh.
       </p>
     </section>
   );
@@ -217,7 +217,7 @@ export default function HomeHero({ completedCount }: { completedCount: number | 
 
           <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-emerald-50/90 sm:mt-6 sm:text-lg sm:leading-8 lg:mx-0">
             Temukan seluruh informasi pendaftaran dalam satu halaman, mulai dari jadwal, biaya OKB,
-            hingga dokumen yang perlu Ayah dan Bunda siapkan.
+            hingga Berkas yang perlu Ayah dan Bunda siapkan.
           </p>
 
           <div className="mt-7 flex flex-col justify-center gap-3 sm:mt-8 sm:flex-row lg:justify-start">

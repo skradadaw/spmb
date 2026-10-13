@@ -20,11 +20,11 @@ export default function RegistrationPreparation() {
           <div className="mt-6 space-y-3">
             <p className="flex items-start gap-3 rounded-2xl bg-public-tint p-4 text-[0.95rem] leading-7 text-emerald-950">
               <Camera aria-hidden="true" className="mt-1 shrink-0 text-public-green" size={18} />
-              Berupa foto atau scan yang jelas dan terbaca, bukan salinan kertas.
+              Berupa foto atau scan yang jelas dan terbaca.
             </p>
             <p className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4 text-[0.95rem] leading-7 text-slate-700">
               <Hash aria-hidden="true" className="mt-1 shrink-0 text-amber-600" size={18} />
-              NISN anak cukup diisi sebagai nomor di formulir.
+              NISN diisi langsung di formulir, tidak perlu diunggah.
             </p>
           </div>
         </div>

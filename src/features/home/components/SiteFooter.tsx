@@ -14,7 +14,7 @@ export default function SiteFooter() {
             </span>
             <div>
               <p className="text-base font-bold text-white">SD Plus 3 Al-Muhajirin</p>
-              <p className="mt-0.5">Open Booking Pendaftaran · {registrationInfo.academicYear}</p>
+              <p className="mt-0.5">Open Booking · Tahun Pelajaran {registrationInfo.academicYear}</p>
             </div>
           </div>
           <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 font-bold text-white ring-1 ring-inset ring-white/15">

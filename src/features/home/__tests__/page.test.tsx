@@ -230,8 +230,8 @@ describe('Open Booking landing page', () => {
     expect(within(card('Reguler')).getByText('Hampir penuh')).toBeDefined();
     expect(within(card('Bilingual')).getByText('Tersedia')).toBeDefined();
     expect(within(card('Tahfizh')).getByText('Penuh')).toBeDefined();
-    expect(within(card('Tahfizh')).getByText('Pilihan kelas ini sudah penuh')).toBeDefined();
-    expect(within(card('Reguler')).queryByText('Pilihan kelas ini sudah penuh')).toBeNull();
+    expect(within(card('Tahfizh')).getByText('Pilihan Kelas ini sudah penuh')).toBeDefined();
+    expect(within(card('Reguler')).queryByText('Pilihan Kelas ini sudah penuh')).toBeNull();
   });
 
   it('hides class quota status when capacity data is unavailable', () => {
@@ -324,7 +324,7 @@ describe('Open Booking landing page', () => {
       within(footer).getByText('Jl. Ipik Gandamanah No. 33, Ciseureuh, Purwakarta, Jawa Barat'),
     ).toBeDefined();
     expect(within(footer).getByText(/07\.00–17\.00/)).toBeDefined();
-    expect(within(footer).getByText(/2027\/2028/)).toBeDefined();
+    expect(within(footer).getByText(/Tahun Pelajaran 2027\/2028/)).toBeDefined();
     const whatsapp = within(footer).getByRole('link', { name: /0819-9831-1470/ });
     expect(whatsapp.getAttribute('href')).toBe('https://wa.me/6281998311470');
     const maps = within(footer).getByRole('link', { name: /buka di google maps/i });
@@ -337,6 +337,16 @@ describe('Open Booking landing page', () => {
     const { container } = renderHome();
 
     expect(container.textContent).not.toMatch(/seleksi/i);
+  });
+
+  it('speaks the glossary: Berkas instead of dokumen or file, and no promises on full classes', () => {
+    const { container } = renderHome();
+    const text = container.textContent ?? '';
+
+    expect(text).not.toMatch(/(dokumen|file)/i);
+    expect(text).not.toMatch(/berkas/);
+    expect(text).not.toMatch(/terbuka kembali|tanpa perlu mendaftar ulang/i);
+    expect(screen.getByText(/Admin akan mengunggah Berkas Pengganti/)).toBeDefined();
   });
 
   it('connects the generated Plus Jakarta font variable to Tailwind tokens', () => {

@@ -24,7 +24,7 @@ export default function PaymentInformation() {
           tone="dark"
           eyebrow="Biaya dan rekening"
           title="Pembayaran OKB"
-          description="Pembayaran OKB dilakukan melalui rekening resmi sekolah. Rincian biaya pendidikan tersedia pada dokumen PDF resmi."
+          description="Pembayaran OKB dilakukan melalui rekening resmi sekolah. Rincian biaya pendidikan tersedia dalam PDF resmi."
         />
 
         <div className="mt-10 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
@@ -54,12 +54,12 @@ export default function PaymentInformation() {
               </span>
               <h3 className="mt-5 text-xl font-bold">Rincian biaya resmi</h3>
               <p className="mt-2 text-[0.95rem] leading-7 text-slate-600">
-                Unduh dokumen registrasi Tahun Pelajaran {registrationInfo.academicYear} untuk
+                Unduh PDF registrasi Tahun Pelajaran {registrationInfo.academicYear} untuk
                 melihat rincian biaya secara lengkap.
               </p>
               <p className="mt-4 flex items-start gap-2 text-sm font-semibold text-public-green">
                 <ShieldCheck aria-hidden="true" className="mt-0.5 shrink-0" size={18} />
-                Dokumen PDF resmi dari SD Plus 3 Al-Muhajirin.
+                PDF resmi dari SD Plus 3 Al-Muhajirin.
               </p>
             </div>
             <a

@@ -125,7 +125,7 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
                     <span>Informasi Open Booking</span>
                   </div>
                   <p className="mt-1.5 leading-relaxed text-slate-600">
-                    Kuota penerimaan murid baru terbatas. Segera lengkapi formulir pendaftaran dan unggah berkas sebelum kuota terpenuhi.
+                    Kuota setiap Pilihan Kelas terbatas. Segera lengkapi formulir pendaftaran dan unggah Berkas sebelum kuota terpenuhi.
                   </p>
                 </div>
               </div>
