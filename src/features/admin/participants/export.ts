@@ -3,7 +3,7 @@ import type { ParticipantExportRecord } from './contracts';
 import { PARTICIPANT_FIELDS } from './fields';
 
 type ZipEntry = { name: string; data: Buffer; crc: number; offset: number; size: number };
-const groups: [keyof typeof PARTICIPANT_FIELDS | 'admin', string][] = [['identity', 'Identitas siswa'], ['registration', 'Pendaftaran'], ['school', 'Sekolah'], ['affiliation', 'Afiliasi'], ['referral', 'Rujukan murid'], ['address', 'Alamat'], ['father', 'Data ayah'], ['mother', 'Data ibu'], ['admin', 'Administrasi']];
+const groups: [keyof typeof PARTICIPANT_FIELDS | 'admin', string][] = [['identity', 'Identitas siswa'], ['registration', 'Pendaftaran'], ['school', 'Sekolah'], ['affiliation', 'Afiliasi'], ['referral', 'Rujukan murid'], ['okb', 'OKB'], ['decision', 'Keputusan'], ['address', 'Alamat'], ['father', 'Data ayah'], ['mother', 'Data ibu'], ['admin', 'Administrasi']];
 const fields = groups.flatMap(([group, label]) => group === 'admin' ? [['status', 'Status'], ['adminNote', 'Catatan admin'], ['createdAt', 'Tanggal daftar'], ['updatedAt', 'Terakhir diperbarui']].map(([key, title]) => ({ key, title: `${label} - ${title}` })) : PARTICIPANT_FIELDS[group].map(([key, , title]) => ({ key: group === 'father' ? `father${key[0].toUpperCase()}${key.slice(1)}` : group === 'mother' ? `mother${key[0].toUpperCase()}${key.slice(1)}` : key, title: `${label} - ${title}` })));
 const headers = fields.map(field => field.title);
 const widths = fields.map(field => Math.min(36, Math.max(18, field.title.length + 3)));

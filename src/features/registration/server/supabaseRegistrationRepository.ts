@@ -64,6 +64,7 @@ export function toPendaftarRow(
   return {
     jenis_pendaftaran: data.jenisPendaftaran,
     pilihan_kelas: data.pilihanKelas,
+    kelas_tujuan: data.jenisPendaftaran === 'Pindahan' ? data.kelasTujuan || null : null,
     nama_lengkap: data.namaLengkap,
     jenis_kelamin: data.jenisKelamin,
     tempat_lahir: data.tempatLahir,

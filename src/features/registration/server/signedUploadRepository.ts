@@ -3,6 +3,7 @@ import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { RegistrationDocumentId } from '../contracts';
 import type { FormData as RegistrationData } from '../schema';
+import { fetchClassCapacities } from './classCapacityRepository';
 import { DuplicateRegistrationError } from './submissionService';
 import { toPendaftarRow } from './supabaseRegistrationRepository';
 
@@ -54,14 +55,7 @@ export function createSignedUploadRepository(client: SupabaseClient) {
       return data === true;
     },
 
-    async hasCapacity(capacity: number) {
-      const { count, error } = await client
-        .from('pendaftar')
-        .select('id', { count: 'exact', head: true })
-        .neq('status', 'Menunggu Unggahan');
-      if (error) fail();
-      return (count ?? 0) < capacity;
-    },
+    getClassCapacities: () => fetchClassCapacities(client),
 
     getPending,
 
@@ -99,10 +93,9 @@ export function createSignedUploadRepository(client: SupabaseClient) {
       return data;
     },
 
-    async finalize(submissionId: string, capacity: number) {
+    async finalize(submissionId: string) {
       const { data, error } = await client.rpc('finalize_registration_with_capacity', {
         p_submission_id: submissionId,
-        p_capacity: capacity,
       });
       if (error?.code === '23505' && error.message?.includes('uq_pendaftar_nik')) {
         throw new DuplicateRegistrationError();

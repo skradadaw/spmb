@@ -272,6 +272,7 @@ describe('createSupabaseRegistrationRepository', () => {
       {
         jenis_pendaftaran: 'Siswa Baru',
         pilihan_kelas: 'Reguler',
+        kelas_tujuan: null,
         nama_lengkap: 'Siti Aminah',
         jenis_kelamin: 'Perempuan',
         tempat_lahir: 'Purwakarta',
@@ -323,6 +324,15 @@ describe('createSupabaseRegistrationRepository', () => {
         dokumen_bukti_pembayaran: documentPaths.buktiPembayaran,
       },
     ]);
+  });
+
+  it('stores the target grade only for Pindahan applicants', async () => {
+    const { client, spies } = makeClient();
+    const repository = createSupabaseRegistrationRepository(client);
+
+    await repository.insertRegistration({ ...registrationData, jenisPendaftaran: 'Pindahan', kelasTujuan: '3' }, documentPaths);
+
+    expect(spies.insert).toHaveBeenCalledWith([expect.objectContaining({ jenis_pendaftaran: 'Pindahan', kelas_tujuan: '3' })]);
   });
 
   it('maps database code 23505 to DuplicateRegistrationError', async () => {

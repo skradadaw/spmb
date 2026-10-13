@@ -23,8 +23,9 @@ describe('participant Excel export', () => {
     expect(sheet).toContain('Data ayah - Nama ayah');
     expect(sheet).toContain('Administrasi - Catatan admin');
     expect(sheet).toContain('Rujukan murid - Kategori pengusul');
+    expect(sheet).toContain('OKB - Tanggal OKB');
     expect(sheet).toContain('Budi');
-    expect(sheet).toContain('A1:AX2');
+    expect(sheet).toContain('A1:BB2');
     expect(sheet).toContain('11 Oktober 2026');
     expect(sheet).toContain('HYPERLINK');
     expect(sheet).not.toContain('<f>');

@@ -37,11 +37,12 @@ function sentenceCase(value: string) {
 
 export function formatParticipantFieldValue(name: ParticipantFieldGroupName, key: string, value: string | null) {
   if (!value) return 'Belum diisi';
+  if (name === 'registration' && key === 'kelasTujuan') return `Kelas ${value}`;
 
   if (PROPER_NAME_FIELDS[name]?.has(key)) return titleCase(value);
   if (SENTENCE_CASE_FIELDS[name]?.has(key)) return sentenceCase(value);
 
-  if (name === 'identity' && key === 'tanggalLahir') {
+  if ((name === 'identity' && key === 'tanggalLahir') || (name === 'okb' && key === 'jadwalTanggal')) {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
     if (!match) return value;
     const [, year, month, day] = match;

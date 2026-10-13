@@ -189,7 +189,7 @@ describe('Supabase registration security schema', () => {
     );
   });
 
-  it('finalizes registrations under one table lock and enforces the completed capacity atomically', () => {
+  it('finalizes registrations under one table lock and enforces the class capacity atomically', () => {
     const functionMatch = schema.match(
       /CREATE OR REPLACE FUNCTION public\.finalize_registration_with_capacity\([\s\S]*?\$\$;/,
     );
@@ -200,15 +200,75 @@ describe('Supabase registration security schema', () => {
     expect(functionSql).toContain(
       "IF EXISTS ( SELECT 1 FROM public.pendaftar WHERE submission_id = p_submission_id AND status <> 'Menunggu Unggahan' ) THEN RETURN TRUE;",
     );
-    expect(functionSql).toContain("WHERE status <> 'Menunggu Unggahan'");
-    expect(functionSql).toContain('IF v_completed >= p_capacity THEN RETURN FALSE;');
+    expect(functionSql).toContain("IF v_jenis IS DISTINCT FROM 'Pindahan' THEN");
+    expect(functionSql).toContain('FROM public.get_class_capacity_usage() AS usage WHERE usage.pilihan_kelas = v_kelas;');
+    expect(functionSql).toContain('IF NOT FOUND OR v_terpakai >= v_kuota THEN RETURN FALSE;');
     expect(functionSql).toContain("SET status = 'Menunggu Verifikasi'");
     expect(functionSql).toContain("AND status = 'Menunggu Unggahan'");
+    expect(compactSchema).toContain('DROP FUNCTION IF EXISTS public.finalize_registration_with_capacity(UUID, INTEGER);');
     expect(compactSchema).toContain(
-      'GRANT EXECUTE ON FUNCTION public.finalize_registration_with_capacity(UUID, INTEGER) TO service_role;',
+      'GRANT EXECUTE ON FUNCTION public.finalize_registration_with_capacity(UUID) TO service_role;',
     );
     expect(schema).not.toMatch(
-      /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.finalize_registration_with_capacity\([\s\S]*?\)\s+TO\s+(?:PUBLIC|anon|authenticated)\b/i,
+      /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.finalize_registration_with_capacity\([\s\S]*?\)\s+TO\s+(?:PUBLIC|anon|authenticated)/i,
     );
+  });
+
+  it('counts used seats only for active Siswa Baru registrations per class', () => {
+    const functionMatch = schema.match(
+      /CREATE OR REPLACE FUNCTION public\.get_class_capacity_usage\([\s\S]*?\$\$;/,
+    );
+
+    expect(functionMatch).not.toBeNull();
+    const functionSql = compactSql(functionMatch?.[0] ?? '');
+    expect(functionSql).toContain("AND p.jenis_pendaftaran = 'Siswa Baru'");
+    expect(functionSql).toContain("AND p.status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')");
+    expect(compactSchema).toContain("('Bilingual', 56), ('Reguler', 28), ('Tahfizh', 28) ON CONFLICT (pilihan_kelas) DO NOTHING;");
+    expect(compactSchema).toContain('REVOKE ALL ON TABLE public.kuota_kelas FROM PUBLIC, anon, authenticated;');
+    expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.get_class_capacity_usage() TO service_role;');
+  });
+
+  it('lets admins rebalance class capacity only when the total is unchanged and no class drops below used seats', () => {
+    const functionMatch = schema.match(
+      /CREATE OR REPLACE FUNCTION public\.update_class_capacities\([\s\S]*?\$\$;/,
+    );
+
+    expect(functionMatch).not.toBeNull();
+    const functionSql = compactSql(functionMatch?.[0] ?? '');
+    expect(functionSql).toContain("IF p_reguler + p_bilingual + p_tahfizh <> p_total THEN RETURN 'total_mismatch';");
+    expect(functionSql).toContain('LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;');
+    expect(functionSql).toContain("RETURN 'below_used:' || v_kelas;");
+    expect(compactSchema).toContain(
+      'GRANT EXECUTE ON FUNCTION public.update_class_capacities(INTEGER, INTEGER, INTEGER, INTEGER) TO service_role;',
+    );
+  });
+
+  it('restores cancelled applicants only when their class still has a free seat', () => {
+    const functionMatch = schema.match(
+      /CREATE OR REPLACE FUNCTION public\.restore_cancelled_applicant\([\s\S]*?\$\$;/,
+    );
+
+    expect(functionMatch).not.toBeNull();
+    const functionSql = compactSql(functionMatch?.[0] ?? '');
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS status_sebelum_dibatalkan VARCHAR(50);');
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jadwal_okb_tanggal DATE;');
+    expect(functionSql).toContain('LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;');
+    expect(functionSql).toContain("IF NOT FOUND OR v_terpakai >= v_kuota THEN RETURN 'full';");
+    expect(functionSql).toContain("SET status = COALESCE(v_sebelum, 'Menunggu Verifikasi'), status_sebelum_dibatalkan = NULL");
+    expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.restore_cancelled_applicant(UUID) TO service_role;');
+  });
+
+  it('records admission decisions only after OKB and re-checks capacity when overturning a rejection', () => {
+    const functionMatch = schema.match(
+      /CREATE OR REPLACE FUNCTION public\.decide_admission\([\s\S]*?\$\$;/,
+    );
+
+    expect(functionMatch).not.toBeNull();
+    const functionSql = compactSql(functionMatch?.[0] ?? '');
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kelas_penempatan VARCHAR(50);');
+    expect(functionSql).toContain("IF NOT FOUND OR v_status NOT IN ('Sudah OKB', 'Diterima', 'Ditolak') THEN RETURN 'invalid';");
+    expect(functionSql).toContain("IF p_keputusan = 'Diterima' AND v_status = 'Ditolak' AND v_jenis IS DISTINCT FROM 'Pindahan' THEN");
+    expect(functionSql).toContain("kelas_penempatan = CASE WHEN p_keputusan = 'Diterima' THEN p_kelas_penempatan ELSE NULL END");
+    expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) TO service_role;');
   });
 });

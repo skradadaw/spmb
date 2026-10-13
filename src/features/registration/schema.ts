@@ -17,6 +17,9 @@ export const DIRECTORATE_2_UNITS = [
   'SMA Fullday Al-Muhajirin',
 ] as const;
 
+/** Tingkat kelas yang dapat dituju Pendaftar Pindahan. */
+export const KELAS_TUJUAN_OPTIONS = ['2', '3', '4', '5', '6'] as const;
+
 export const REFERRAL_TYPES = [
   'Guru/Karyawan SD Plus 3',
   'Kepala TK',
@@ -33,6 +36,7 @@ export const step1BaseSchema = z.object({
   // Data Murid
   jenisPendaftaran: oneOf('Jenis pendaftaran wajib dipilih', ['Siswa Baru', 'Pindahan']),
   pilihanKelas: oneOf('Pilihan kelas wajib dipilih', ['Reguler', 'Bilingual', 'Tahfizh']),
+  kelasTujuan: z.string().trim().optional(),
   namaLengkap: reqStr('Nama lengkap wajib diisi', 3),
   jenisKelamin: oneOf('Jenis kelamin wajib dipilih', ['Laki-laki', 'Perempuan']),
   tempatLahir: reqStr('Tempat lahir wajib diisi', 3, 100),
@@ -109,6 +113,20 @@ function validateDirectorate2Details(
   }
 }
 
+function validateTransferGrade(
+  data: z.infer<typeof step1BaseSchema>,
+  ctx: z.RefinementCtx,
+) {
+  if (data.jenisPendaftaran === 'Pindahan'
+    && !KELAS_TUJUAN_OPTIONS.includes(data.kelasTujuan as (typeof KELAS_TUJUAN_OPTIONS)[number])) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Kelas tujuan wajib dipilih',
+      path: ['kelasTujuan'],
+    });
+  }
+}
+
 function validateReferralDetails(
   data: z.infer<typeof step1BaseSchema>,
   ctx: z.RefinementCtx,
@@ -147,6 +165,7 @@ function validateReferralDetails(
 
 export const step1Schema = step1BaseSchema
   .superRefine(validateDirectorate2Details)
+  .superRefine(validateTransferGrade)
   .superRefine(validateReferralDetails);
 
 export const step2Schema = z.object({
@@ -178,6 +197,7 @@ export const formSchema = z.object({
   ...step2Schema.shape,
 })
   .superRefine(validateDirectorate2Details)
+  .superRefine(validateTransferGrade)
   .superRefine(validateReferralDetails);
 
 export type FormData = z.infer<typeof formSchema>;

@@ -127,7 +127,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
       return {
         id, createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi',
         identity: group('identity'), registration: group('registration'), school: group('school'), affiliation: group('affiliation'),
-        referral: group('referral'),
+        referral: group('referral'), okb: group('okb'), decision: group('decision'), previousStatus: text(row.status_sebelum_dibatalkan),
         address: group('address'), father: group('father'), mother: group('mother'),
         documents: DOCUMENT_DEFINITIONS.map(doc => ({ id: doc.id, title: doc.title, path: text(row[doc.dbColumn]) })), documentReviews, adminNote: text(row.catatan_admin),
       };

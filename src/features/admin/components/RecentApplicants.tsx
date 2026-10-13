@@ -6,7 +6,7 @@ import type { RecentApplicant } from '../contracts';
 
 function statusVariant(status: string): BadgeVariant {
   if (status === 'Terverifikasi' || status === 'Diterima') return 'success';
-  if (status === 'Menunggu Verifikasi') return 'warning';
+  if (status === 'Menunggu Verifikasi' || status === 'Terjadwal OKB' || status === 'Sudah OKB') return 'warning';
   if (status === 'Ditolak') return 'destructive';
   return 'secondary';
 }

@@ -1,7 +1,5 @@
 import 'server-only';
 
-import { REGISTRATION_CAPACITY } from '@/lib/registrationConfig';
-
 import {
   DOCUMENT_DEFINITIONS,
   type PrepareRegistrationResult,
@@ -10,6 +8,7 @@ import {
   type RegistrationFileMetadata,
   type TrustedDocumentMimeType,
 } from '../contracts';
+import { isClassFull } from '../classCapacity';
 import { formSchema } from '../schema';
 import { getTrustedDocumentType, validateStoredDocument } from './documentValidation';
 import { DuplicateRegistrationError } from './submissionService';
@@ -25,7 +24,7 @@ const DUPLICATE_NIK_ERROR = 'Data dengan NIK ini sudah pernah terdaftar. Hubungi
 const GENERIC_ERROR = 'Terjadi kesalahan saat menyimpan data pendaftaran.';
 
 const INVALID_ERROR = 'Data pendaftaran atau dokumen tidak valid.';
-const CAPACITY_ERROR = `Kuota pendaftaran sudah penuh (${REGISTRATION_CAPACITY} peserta). Silakan hubungi panitia untuk informasi lebih lanjut.`;
+const CAPACITY_ERROR = 'Kuota Pilihan Kelas yang dipilih sudah penuh. Silakan pilih kelas lain atau hubungi panitia untuk informasi lebih lanjut.';
 
 type Credentials = { submissionId: string; submissionSecret: string };
 
@@ -107,7 +106,6 @@ export async function prepareSignedRegistration(
     if (!await repository.consumeRateLimit(rateLimitKey, RATE_LIMIT, RATE_LIMIT_WINDOW_SECONDS)) {
       return { success: false, error: RATE_LIMIT_ERROR };
     }
-    if (!await repository.hasCapacity(REGISTRATION_CAPACITY)) return { success: false, error: CAPACITY_ERROR };
 
     const honeypot = input.get('website');
     if (honeypot && (typeof honeypot !== 'string' || honeypot.trim() !== '')) {
@@ -124,6 +122,11 @@ export async function prepareSignedRegistration(
     try { decoded = JSON.parse(payload); } catch { return { success: false, error: INVALID_ERROR }; }
     const registration = formSchema.safeParse(decoded);
     if (!registration.success) return { success: false, error: INVALID_ERROR };
+    if (registration.data.jenisPendaftaran === 'Siswa Baru') {
+      const capacities = await repository.getClassCapacities();
+      const chosen = capacities.find(({ pilihanKelas }) => pilihanKelas === registration.data.pilihanKelas);
+      if (!chosen || isClassFull(chosen)) return { success: false, error: CAPACITY_ERROR };
+    }
 
     const { submissionId, submissionSecret } = credentials;
     const expectedHash = secretHash(submissionSecret);
@@ -196,7 +199,7 @@ export async function finalizeSignedRegistration(
         return { success: false, error: `Dokumen ${DOCUMENT_DEFINITIONS.find((item) => item.id === id)?.title} tidak valid.` };
       }
     }
-    const hasCapacity = await repository.finalize(submissionId, REGISTRATION_CAPACITY);
+    const hasCapacity = await repository.finalize(submissionId);
     if (!hasCapacity) {
       await cleanupPending(repository, submissionId, Object.values(paths));
       return { success: false, error: CAPACITY_ERROR };

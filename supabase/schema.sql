@@ -36,6 +36,7 @@ END $$;
 -- Data Murid
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jenis_pendaftaran VARCHAR(50);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS pilihan_kelas VARCHAR(50);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kelas_tujuan VARCHAR(10);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nama_lengkap VARCHAR(255);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jenis_kelamin VARCHAR(20);
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS tempat_lahir VARCHAR(100);
@@ -90,6 +91,14 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS dokumen_akta_kelahiran TEX
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS dokumen_kartu_keluarga TEXT;
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS dokumen_pas_foto TEXT;
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS dokumen_bukti_pembayaran TEXT;
+
+-- OKB dan pembatalan
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jadwal_okb_tanggal DATE;
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jadwal_okb_sesi VARCHAR(100);
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS status_sebelum_dibatalkan VARCHAR(50);
+
+-- Keputusan Penerimaan
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kelas_penempatan VARCHAR(50);
 
 -- 4. Indeks
 CREATE INDEX IF NOT EXISTS idx_pendaftar_nik ON public.pendaftar (nik);
@@ -174,6 +183,203 @@ WHERE peserta.id = catatan_terlama.pendaftar_id
 ALTER TABLE public.verifikasi_dokumen ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.verifikasi_dokumen FROM PUBLIC, anon, authenticated;
 GRANT ALL ON TABLE public.verifikasi_dokumen TO service_role;
+
+-- 6b. Kuota per Pilihan Kelas (lihat docs/adr/0001-kuota-per-pilihan-kelas.md)
+CREATE TABLE IF NOT EXISTS public.kuota_kelas (
+  pilihan_kelas TEXT PRIMARY KEY CHECK (pilihan_kelas IN ('Reguler', 'Bilingual', 'Tahfizh')),
+  kuota INTEGER NOT NULL CHECK (kuota >= 0),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO public.kuota_kelas (pilihan_kelas, kuota) VALUES
+  ('Bilingual', 56),
+  ('Reguler', 28),
+  ('Tahfizh', 28)
+ON CONFLICT (pilihan_kelas) DO NOTHING;
+
+ALTER TABLE public.kuota_kelas ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.kuota_kelas FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.kuota_kelas TO service_role;
+
+-- Kursi terpakai: Siswa Baru yang masih berproses atau Diterima.
+CREATE OR REPLACE FUNCTION public.get_class_capacity_usage()
+RETURNS TABLE(pilihan_kelas TEXT, kuota INTEGER, terpakai INTEGER)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT k.pilihan_kelas, k.kuota, count(p.id)::INTEGER AS terpakai
+  FROM public.kuota_kelas AS k
+  LEFT JOIN public.pendaftar AS p
+    ON p.pilihan_kelas = k.pilihan_kelas
+   AND p.jenis_pendaftaran = 'Siswa Baru'
+   AND p.status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')
+  GROUP BY k.pilihan_kelas, k.kuota
+  ORDER BY k.pilihan_kelas;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_class_capacity_usage() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_class_capacity_usage() TO service_role;
+
+-- Pembagian kuota diubah admin; total harus tetap dan tidak boleh di bawah kursi terpakai.
+CREATE OR REPLACE FUNCTION public.update_class_capacities(
+  p_reguler INTEGER,
+  p_bilingual INTEGER,
+  p_tahfizh INTEGER,
+  p_total INTEGER
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_kelas TEXT;
+BEGIN
+  IF p_reguler IS NULL OR p_bilingual IS NULL OR p_tahfizh IS NULL
+    OR p_reguler < 0 OR p_bilingual < 0 OR p_tahfizh < 0 THEN
+    RETURN 'invalid';
+  END IF;
+  IF p_reguler + p_bilingual + p_tahfizh <> p_total THEN
+    RETURN 'total_mismatch';
+  END IF;
+
+  LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
+
+  SELECT usage.pilihan_kelas INTO v_kelas
+  FROM public.get_class_capacity_usage() AS usage
+  WHERE usage.terpakai > CASE usage.pilihan_kelas
+    WHEN 'Reguler' THEN p_reguler
+    WHEN 'Bilingual' THEN p_bilingual
+    ELSE p_tahfizh
+  END
+  LIMIT 1;
+
+  IF v_kelas IS NOT NULL THEN
+    RETURN 'below_used:' || v_kelas;
+  END IF;
+
+  INSERT INTO public.kuota_kelas (pilihan_kelas, kuota, updated_at) VALUES
+    ('Reguler', p_reguler, now()),
+    ('Bilingual', p_bilingual, now()),
+    ('Tahfizh', p_tahfizh, now())
+  ON CONFLICT (pilihan_kelas) DO UPDATE
+  SET kuota = EXCLUDED.kuota, updated_at = EXCLUDED.updated_at;
+
+  RETURN 'ok';
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.update_class_capacities(INTEGER, INTEGER, INTEGER, INTEGER)
+FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.update_class_capacities(INTEGER, INTEGER, INTEGER, INTEGER)
+TO service_role;
+
+-- Pemulihan Pendaftar Dibatalkan ke status sebelumnya, hanya jika kursi Pilihan Kelasnya masih ada.
+CREATE OR REPLACE FUNCTION public.restore_cancelled_applicant(p_pendaftar_id UUID)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_status TEXT;
+  v_sebelum TEXT;
+  v_jenis TEXT;
+  v_kelas TEXT;
+  v_kuota INTEGER;
+  v_terpakai INTEGER;
+BEGIN
+  LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
+
+  SELECT status, status_sebelum_dibatalkan, jenis_pendaftaran, pilihan_kelas
+  INTO v_status, v_sebelum, v_jenis, v_kelas
+  FROM public.pendaftar
+  WHERE id = p_pendaftar_id;
+
+  IF NOT FOUND OR v_status <> 'Dibatalkan' THEN
+    RETURN 'invalid';
+  END IF;
+
+  IF v_jenis IS DISTINCT FROM 'Pindahan' THEN
+    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage
+    WHERE usage.pilihan_kelas = v_kelas;
+
+    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+      RETURN 'full';
+    END IF;
+  END IF;
+
+  UPDATE public.pendaftar
+  SET status = COALESCE(v_sebelum, 'Menunggu Verifikasi'),
+      status_sebelum_dibatalkan = NULL
+  WHERE id = p_pendaftar_id;
+
+  RETURN 'ok';
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.restore_cancelled_applicant(UUID) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.restore_cancelled_applicant(UUID) TO service_role;
+
+-- Keputusan Penerimaan oleh Panitia, dicatat admin setelah OKB. Revisi Ditolak -> Diterima harus mendapat kursi lagi.
+CREATE OR REPLACE FUNCTION public.decide_admission(
+  p_pendaftar_id UUID,
+  p_keputusan TEXT,
+  p_kelas_penempatan TEXT
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_status TEXT;
+  v_jenis TEXT;
+  v_kelas TEXT;
+  v_kuota INTEGER;
+  v_terpakai INTEGER;
+BEGIN
+  IF p_keputusan NOT IN ('Diterima', 'Ditolak')
+    OR (p_keputusan = 'Diterima' AND p_kelas_penempatan NOT IN ('Reguler', 'Bilingual', 'Tahfizh'))
+    OR (p_keputusan = 'Diterima' AND p_kelas_penempatan IS NULL) THEN
+    RETURN 'invalid';
+  END IF;
+
+  LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
+
+  SELECT status, jenis_pendaftaran, pilihan_kelas INTO v_status, v_jenis, v_kelas
+  FROM public.pendaftar
+  WHERE id = p_pendaftar_id;
+
+  IF NOT FOUND OR v_status NOT IN ('Sudah OKB', 'Diterima', 'Ditolak') THEN
+    RETURN 'invalid';
+  END IF;
+
+  IF p_keputusan = 'Diterima' AND v_status = 'Ditolak' AND v_jenis IS DISTINCT FROM 'Pindahan' THEN
+    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage
+    WHERE usage.pilihan_kelas = v_kelas;
+
+    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+      RETURN 'full';
+    END IF;
+  END IF;
+
+  UPDATE public.pendaftar
+  SET status = p_keputusan,
+      kelas_penempatan = CASE WHEN p_keputusan = 'Diterima' THEN p_kelas_penempatan ELSE NULL END
+  WHERE id = p_pendaftar_id;
+
+  RETURN 'ok';
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) TO service_role;
+
 -- 7. Setup Storage Bucket (Supabase Storage)
 INSERT INTO storage.buckets (
   id, name, public, file_size_limit, allowed_mime_types
@@ -248,10 +454,11 @@ FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.consume_registration_rate_limit(TEXT, INTEGER, INTEGER)
 TO service_role;
 
--- Finalisasi pendaftaran dan reservasi kuota dilakukan dalam satu transaksi.
+-- Finalisasi pendaftaran dan reservasi kuota Pilihan Kelas dilakukan dalam satu transaksi.
+DROP FUNCTION IF EXISTS public.finalize_registration_with_capacity(UUID, INTEGER);
+
 CREATE OR REPLACE FUNCTION public.finalize_registration_with_capacity(
-  p_submission_id UUID,
-  p_capacity INTEGER
+  p_submission_id UUID
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -259,10 +466,13 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_completed INTEGER;
+  v_jenis TEXT;
+  v_kelas TEXT;
+  v_kuota INTEGER;
+  v_terpakai INTEGER;
   v_updated INTEGER;
 BEGIN
-  IF p_submission_id IS NULL OR p_capacity <= 0 THEN
+  IF p_submission_id IS NULL THEN
     RAISE EXCEPTION 'Invalid registration capacity parameters';
   END IF;
 
@@ -277,12 +487,24 @@ BEGIN
     RETURN TRUE;
   END IF;
 
-  SELECT count(*) INTO v_completed
+  SELECT jenis_pendaftaran, pilihan_kelas INTO v_jenis, v_kelas
   FROM public.pendaftar
-  WHERE status <> 'Menunggu Unggahan';
+  WHERE submission_id = p_submission_id
+    AND status = 'Menunggu Unggahan';
 
-  IF v_completed >= p_capacity THEN
+  IF NOT FOUND THEN
     RETURN FALSE;
+  END IF;
+
+  -- Pindahan tidak memakai Kuota.
+  IF v_jenis IS DISTINCT FROM 'Pindahan' THEN
+    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage
+    WHERE usage.pilihan_kelas = v_kelas;
+
+    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+      RETURN FALSE;
+    END IF;
   END IF;
 
   UPDATE public.pendaftar
@@ -295,9 +517,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.finalize_registration_with_capacity(UUID, INTEGER)
+REVOKE ALL ON FUNCTION public.finalize_registration_with_capacity(UUID)
 FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.finalize_registration_with_capacity(UUID, INTEGER)
+GRANT EXECUTE ON FUNCTION public.finalize_registration_with_capacity(UUID)
 TO service_role;
 
 -- Jalankan berkala dari SQL Editor/cron untuk membuang sesi dan rate-limit kedaluwarsa.

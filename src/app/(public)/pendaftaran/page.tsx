@@ -11,10 +11,10 @@ import {
   Smile, 
   Heart 
 } from 'lucide-react';
-import { REGISTRATION_CAPACITY } from '@/lib/registrationConfig';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
-import { createSignedUploadRepository } from '@/features/registration/server/signedUploadRepository';
-import { RegistrationCapacityGate, RegistrationForm } from '@/features/registration';
+import { fetchClassCapacities } from '@/features/registration/server/classCapacityRepository';
+import { fullClasses, type ClassOption } from '@/features/registration/classCapacity';
+import { RegistrationForm } from '@/features/registration';
 
 export const metadata: Metadata = {
   title: 'Formulir Pendaftaran | SD Plus 3 Al-Muhajirin',
@@ -23,19 +23,17 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-async function checkIsCapacityFull(): Promise<boolean> {
+async function getFullClasses(): Promise<ClassOption[]> {
   try {
-    const repository = createSignedUploadRepository(getSupabaseAdmin());
-    const hasCapacity = await repository.hasCapacity(REGISTRATION_CAPACITY);
-    return !hasCapacity;
+    return fullClasses(await fetchClassCapacities(getSupabaseAdmin()));
   } catch (error) {
-    console.error('Gagal memeriksa kapasitas pendaftaran:', error);
-    return false;
+    console.error('Gagal memeriksa kuota kelas:', error);
+    return [];
   }
 }
 
 export default async function PendaftaranPage() {
-  const isFull = await checkIsCapacityFull();
+  const unavailableClasses = await getFullClasses();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F3FAF4] via-[#F8FAF8] to-gray-50 py-10 sm:py-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -107,19 +105,17 @@ export default async function PendaftaranPage() {
           </p>
         </div>
 
-        {/* Form Container with Capacity Gate */}
-        <RegistrationCapacityGate isFull={isFull}>
-          <Suspense
-            fallback={
-              <div className="w-full max-w-6xl mx-auto bg-white/95 backdrop-blur-xl rounded-3xl p-16 text-center shadow-xl border border-gray-100 min-h-[420px] flex flex-col items-center justify-center">
-                <div className="w-12 h-12 border-4 border-[#00AA13] border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-gray-600 font-semibold text-sm">Memuat Formulir Pendaftaran...</p>
-              </div>
-            }
-          >
-            <RegistrationForm />
-          </Suspense>
-        </RegistrationCapacityGate>
+        {/* Form Container */}
+        <Suspense
+          fallback={
+            <div className="w-full max-w-6xl mx-auto bg-white/95 backdrop-blur-xl rounded-3xl p-16 text-center shadow-xl border border-gray-100 min-h-[420px] flex flex-col items-center justify-center">
+              <div className="w-12 h-12 border-4 border-[#00AA13] border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-gray-600 font-semibold text-sm">Memuat Formulir Pendaftaran...</p>
+            </div>
+          }
+        >
+          <RegistrationForm fullClasses={unavailableClasses} />
+        </Suspense>
       </div>
     </div>
   );

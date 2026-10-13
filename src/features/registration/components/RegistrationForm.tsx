@@ -5,13 +5,14 @@ import { useForm, Controller, useWatch, type FieldErrors } from 'react-hook-form
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { CheckCircle2, ChevronRight, ChevronLeft, Loader2, CalendarIcon, User, Users, MapPin, FileText, GraduationCap, Info, Check, UserCheck } from 'lucide-react';
-import { DIRECTORATE_2_UNITS, REFERRAL_TYPES, formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
+import { DIRECTORATE_2_UNITS, KELAS_TUJUAN_OPTIONS, REFERRAL_TYPES, formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
 import {
   cancelRegistrationAction,
   finalizeRegistrationAction,
   prepareRegistrationAction,
 } from '../actions';
 import { DOCUMENT_DEFINITIONS } from '../contracts';
+import { CLASS_OPTIONS, type ClassOption } from '../classCapacity';
 import {
   acquireSubmissionLock,
   buildRegistrationPreparation,
@@ -53,7 +54,11 @@ const parseDateString = (str?: string): Date | undefined => {
   return new Date(year, month, day);
 };
 
-export default function RegistrationForm() {
+type RegistrationFormProps = {
+  fullClasses?: readonly ClassOption[];
+};
+
+export default function RegistrationForm({ fullClasses = [] }: RegistrationFormProps = {}) {
   const submissionLockRef = useRef(false);
   const honeypotRef = useRef<HTMLInputElement>(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -87,6 +92,7 @@ export default function RegistrationForm() {
     defaultValues: {
       jenisPendaftaran: '',
       pilihanKelas: '',
+      kelasTujuan: '',
       namaLengkap: '',
       jenisKelamin: '',
       tempatLahir: '',
@@ -140,6 +146,9 @@ export default function RegistrationForm() {
   const [tipeAfiliasiDirektorat2, setTipeAfiliasiDirektorat2] = useState<'Orang Tua' | 'Saudara' | ''>('');
   const [afiliasiDirektorat2Error, setAfiliasiDirektorat2Error] = useState<string | null>(null);
 
+  const jenisPendaftaran = useWatch({ control, name: 'jenisPendaftaran' });
+  const isFullForSiswaBaru = (kelas: string) => jenisPendaftaran === 'Siswa Baru' && fullClasses.includes(kelas as ClassOption);
+  const siswaBaruClosed = CLASS_OPTIONS.every((kelas) => fullClasses.includes(kelas));
   const adaPengusul = useWatch({ control, name: 'adaPengusul' });
   const tipePengusul = useWatch({ control, name: 'tipePengusul' });
   const tanggalLahir = useWatch({ control, name: 'tanggalLahir' });
@@ -484,12 +493,19 @@ export default function RegistrationForm() {
                           control={control}
                           name="jenisPendaftaran"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('jenisPendaftaran'); }} value={field.value || ''}>
+                            <Select onValueChange={(val) => {
+                              field.onChange(val);
+                              clearErrors('jenisPendaftaran');
+                              if (val === 'Siswa Baru' && fullClasses.includes(getValues('pilihanKelas') as ClassOption)) setValue('pilihanKelas', '');
+                              if (val !== 'Pindahan') { setValue('kelasTujuan', ''); clearErrors('kelasTujuan'); }
+                            }} value={field.value || ''}>
                               <SelectTrigger className={errors.jenisPendaftaran ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Pilih Jenis Pendaftaran" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Siswa Baru">Siswa Baru</SelectItem>
+                                <SelectItem value="Siswa Baru" disabled={siswaBaruClosed}>
+                                  {siswaBaruClosed ? 'Siswa Baru (Kuota penuh)' : 'Siswa Baru'}
+                                </SelectItem>
                                 <SelectItem value="Pindahan">Pindahan</SelectItem>
                               </SelectContent>
                             </Select>
@@ -508,15 +524,39 @@ export default function RegistrationForm() {
                                 <SelectValue placeholder="Pilih Kelas" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Reguler">Reguler</SelectItem>
-                                <SelectItem value="Bilingual">Bilingual</SelectItem>
-                                <SelectItem value="Tahfizh">Tahfizh</SelectItem>
+                                {CLASS_OPTIONS.map((kelas) => (
+                                  <SelectItem key={kelas} value={kelas} disabled={isFullForSiswaBaru(kelas)}>
+                                    {isFullForSiswaBaru(kelas) ? `${kelas} (Kuota penuh)` : kelas}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           )}
                         />
                         {errors.pilihanKelas && <p className="text-red-500 text-xs mt-1">{errors.pilihanKelas.message}</p>}
                       </div>
+                      {jenisPendaftaran === 'Pindahan' && (
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Kelas Tujuan *</label>
+                          <Controller
+                            control={control}
+                            name="kelasTujuan"
+                            render={({ field }) => (
+                              <Select onValueChange={(val) => { field.onChange(val); clearErrors('kelasTujuan'); }} value={field.value || ''}>
+                                <SelectTrigger className={errors.kelasTujuan ? "border-red-500" : ""}>
+                                  <SelectValue placeholder="Pilih Kelas Tujuan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {KELAS_TUJUAN_OPTIONS.map((kelas) => (
+                                    <SelectItem key={kelas} value={kelas}>Kelas {kelas}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.kelasTujuan && <p className="text-red-500 text-xs mt-1">{errors.kelasTujuan.message}</p>}
+                        </div>
+                      )}
                     </div>
                   </div>
 

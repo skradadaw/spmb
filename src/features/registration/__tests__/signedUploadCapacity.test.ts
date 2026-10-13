@@ -16,6 +16,75 @@ const paths = {
   buktiPembayaran: `registrations/${submissionId}/buktiPembayaran.webp`,
 };
 
+const CAPACITY_ERROR = 'Kuota Pilihan Kelas yang dipilih sudah penuh. Silakan pilih kelas lain atau hubungi panitia untuk informasi lebih lanjut.';
+
+const registrationData = (overrides: Record<string, string> = {}) => ({
+  jenisPendaftaran: 'Siswa Baru',
+  pilihanKelas: 'Bilingual',
+  namaLengkap: 'Siti Aminah',
+  jenisKelamin: 'Perempuan',
+  tempatLahir: 'Purwakarta',
+  tanggalLahir: '2018-01-01',
+  nik: '1234567890123456',
+  nisn: '1234567890',
+  bekerjaDiDirektorat2: 'Tidak',
+  saudaraDiDirektorat2: 'Tidak',
+  adaPengusul: 'Tidak',
+  asalSekolah: 'TK Melati',
+  jarakKeSekolah: '2 km',
+  alamatJalan: 'Jalan Melati',
+  rt: '01',
+  rw: '02',
+  kelurahan: 'Ciseureuh',
+  kecamatan: 'Purwakarta',
+  kota: 'Purwakarta',
+  provinsi: 'Jawa Barat',
+  namaAyah: 'Budi Santoso',
+  nikAyah: '2345678901234567',
+  pendidikanAyah: 'SMA',
+  pekerjaanAyah: 'Wiraswasta',
+  penghasilanAyah: '5-10 Juta',
+  teleponAyah: '081234567890',
+  alamatAyah: 'Jalan Melati Nomor 1',
+  namaIbu: 'Ani Santoso',
+  nikIbu: '3456789012345678',
+  pendidikanIbu: 'SMA',
+  pekerjaanIbu: 'Ibu Rumah Tangga',
+  penghasilanIbu: '5-10 Juta',
+  teleponIbu: '081234567891',
+  alamatIbu: 'Jalan Melati Nomor 1',
+  ...overrides,
+});
+
+function preparationInput(overrides: Record<string, string> = {}) {
+  const input = credentials();
+  input.set('payload', JSON.stringify(registrationData(overrides)));
+  input.set('metadata', JSON.stringify([
+    { id: 'aktaKelahiran', size: 100, type: 'application/pdf' },
+    { id: 'kartuKeluarga', size: 100, type: 'image/jpeg' },
+    { id: 'pasFoto', size: 100, type: 'image/png' },
+    { id: 'buktiPembayaran', size: 100, type: 'image/webp' },
+  ]));
+  return input;
+}
+
+function preparationRepository(bilingualUsed: number) {
+  return {
+    consumeRateLimit: vi.fn().mockResolvedValue(true),
+    getClassCapacities: vi.fn().mockResolvedValue([
+      { pilihanKelas: 'Reguler', kuota: 28, terpakai: 0 },
+      { pilihanKelas: 'Bilingual', kuota: 56, terpakai: bilingualUsed },
+      { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: 0 },
+    ]),
+    getPending: vi.fn().mockResolvedValue(null),
+    createPending: vi.fn().mockResolvedValue(undefined),
+    createUploadToken: vi.fn().mockResolvedValue('token'),
+  } as unknown as SignedUploadRepository & {
+    getClassCapacities: ReturnType<typeof vi.fn>;
+    createPending: ReturnType<typeof vi.fn>;
+  };
+}
+
 function credentials() {
   const input = new FormData();
   input.set('submissionId', submissionId);
@@ -57,47 +126,49 @@ function repositoryWithCapacity(available: boolean) {
 }
 
 describe('signed upload capacity', () => {
-  it('keeps registration open regardless of date while capacity remains', async () => {
-    vi.stubEnv('REGISTRATION_OVERRIDE', 'closed');
-    vi.stubEnv('REGISTRATION_OPENS_AT', '2099-01-01T00:00:00+07:00');
-    const repository = {
-      consumeRateLimit: vi.fn().mockResolvedValue(true),
-      hasCapacity: vi.fn().mockResolvedValue(true),
-    } as unknown as SignedUploadRepository;
+  it('accepts a Siswa Baru while the chosen class still has seats', async () => {
+    const repository = preparationRepository(55);
 
-    await expect(prepareSignedRegistration(new FormData(), 'source', repository, vi.fn()))
-      .resolves.toEqual({ success: false, error: 'Data pendaftaran atau dokumen tidak valid.' });
-    expect(repository.hasCapacity).toHaveBeenCalledWith(112);
-    vi.unstubAllEnvs();
+    const result = await prepareSignedRegistration(preparationInput(), 'source', repository, () => 'hash');
+    expect(result.success).toBe(true);
+    expect(repository.createPending).toHaveBeenCalledOnce();
   });
 
-  it('closes registration preparation as soon as 112 completed participants are reached', async () => {
-    const repository = {
-      consumeRateLimit: vi.fn().mockResolvedValue(true),
-      hasCapacity: vi.fn().mockResolvedValue(false),
-    } as unknown as SignedUploadRepository;
+  it('rejects a Siswa Baru when the chosen class is full without creating a pending row', async () => {
+    const repository = preparationRepository(56);
 
-    await expect(prepareSignedRegistration(new FormData(), 'source', repository, vi.fn()))
-      .resolves.toEqual({
-        success: false,
-        error: 'Kuota pendaftaran sudah penuh (112 peserta). Silakan hubungi panitia untuk informasi lebih lanjut.',
-      });
+    await expect(prepareSignedRegistration(preparationInput(), 'source', repository, () => 'hash'))
+      .resolves.toEqual({ success: false, error: CAPACITY_ERROR });
+    expect(repository.createPending).not.toHaveBeenCalled();
   });
 
-  it('finalizes through the atomic 112-participant capacity check', async () => {
+  it('lets a Pindahan register even when the chosen class is full', async () => {
+    const repository = preparationRepository(56);
+
+    const result = await prepareSignedRegistration(
+      preparationInput({ jenisPendaftaran: 'Pindahan', kelasTujuan: '3' }),
+      'source',
+      repository,
+      () => 'hash',
+    );
+    expect(result.success).toBe(true);
+    expect(repository.getClassCapacities).not.toHaveBeenCalled();
+  });
+
+  it('finalizes through the atomic class capacity check', async () => {
     const repository = repositoryWithCapacity(true);
 
     await expect(finalizeSignedRegistration(credentials(), repository)).resolves.toEqual({ success: true });
-    expect(repository.finalize).toHaveBeenCalledWith(submissionId, 112);
+    expect(repository.finalize).toHaveBeenCalledWith(submissionId);
     expect(repository.removePending).not.toHaveBeenCalled();
   });
 
-  it('rejects participant 113 and cleans up the pending row and documents', async () => {
+  it('rejects finalization when the class filled up meanwhile and cleans up the pending row and documents', async () => {
     const repository = repositoryWithCapacity(false);
 
     await expect(finalizeSignedRegistration(credentials(), repository)).resolves.toEqual({
       success: false,
-      error: 'Kuota pendaftaran sudah penuh (112 peserta). Silakan hubungi panitia untuk informasi lebih lanjut.',
+      error: CAPACITY_ERROR,
     });
     expect(repository.removePending).toHaveBeenCalledWith(submissionId, Object.values(paths));
   });
@@ -106,21 +177,27 @@ describe('signed upload capacity', () => {
     const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
     const repository = createSignedUploadRepository({ rpc } as never);
 
-    await expect(repository.finalize(submissionId, 112)).resolves.toBe(true);
+    await expect(repository.finalize(submissionId)).resolves.toBe(true);
     expect(rpc).toHaveBeenCalledWith('finalize_registration_with_capacity', {
       p_submission_id: submissionId,
-      p_capacity: 112,
     });
   });
 
-  it('checks preparation capacity from completed database registrations', async () => {
-    const neq = vi.fn().mockResolvedValue({ count: 111, error: null });
-    const select = vi.fn().mockReturnValue({ neq });
-    const from = vi.fn().mockReturnValue({ select });
-    const repository = createSignedUploadRepository({ from } as never);
+  it('reads class capacity from the usage RPC in a fixed class order', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        { pilihan_kelas: 'Tahfizh', kuota: 28, terpakai: 3 },
+        { pilihan_kelas: 'Bilingual', kuota: 56, terpakai: 40 },
+      ],
+      error: null,
+    });
+    const repository = createSignedUploadRepository({ rpc } as never);
 
-    await expect(repository.hasCapacity(112)).resolves.toBe(true);
-    expect(select).toHaveBeenCalledWith('id', { count: 'exact', head: true });
-    expect(neq).toHaveBeenCalledWith('status', 'Menunggu Unggahan');
+    await expect(repository.getClassCapacities()).resolves.toEqual([
+      { pilihanKelas: 'Reguler', kuota: 0, terpakai: 0 },
+      { pilihanKelas: 'Bilingual', kuota: 56, terpakai: 40 },
+      { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: 3 },
+    ]);
+    expect(rpc).toHaveBeenCalledWith('get_class_capacity_usage');
   });
 });

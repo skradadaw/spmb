@@ -14,6 +14,9 @@ const participant: ParticipantDetailData = {
   school: { asalSekolah: 'TK PLUS ROUDHOH PURWAKARTA', prestasiAnak: 'JUARA 3 LOMBA FASHION SHOW', tingkatPrestasi: null, jarakKeSekolah: '5' },
   affiliation: { bekerjaDiDirektorat2: null },
   referral: { adaPengusul: 'Tidak' },
+  okb: { jadwalTanggal: null, jadwalSesi: null },
+  decision: { kelasPenempatan: null },
+  previousStatus: null,
   address: { alamatJalan: 'KP KRAJAN maracang', rt: '8', rw: '001', kelurahan: 'Mawar', kecamatan: 'Purwakarta', kota: 'Purwakarta', provinsi: 'Jawa Barat', alamatRumah: null },
   father: { nama: 'BUDI SANTOSO', nik: '123', pendidikan: 'SMA', pekerjaan: 'KARYAWAN SWASTA', penghasilan: null, telepon: '081234', alamat: null },
   mother: { nama: 'Siti', nik: '456', pendidikan: 'SMP', pekerjaan: 'Ibu rumah tangga', penghasilan: null, telepon: '085678', alamat: null },
@@ -68,7 +71,7 @@ describe('ParticipantDetail', () => {
     expect(documentsCard?.contains(screen.getByText('Bukti Pembayaran OKB'))).toBe(true);
     expect(documentsCard).not.toBe(detailsCard);
     expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_33rem]');
-    expect(documentsCard?.className).toContain('xl:sticky');
+    expect(documentsCard?.parentElement?.className).toContain('xl:sticky');
     expect(detailsCard?.querySelector('[data-detail-groups]')?.className).not.toContain('xl:grid-cols-3');
     expect(detailsCard?.querySelector('[data-detail-group]')?.className).not.toContain('lg:grid-cols-[10rem_minmax(0,1fr)]');
     expect(detailsCard?.querySelector('[data-detail-group]')?.firstElementChild?.tagName).toBe('H3');
@@ -105,5 +108,47 @@ describe('ParticipantDetail', () => {
     expect(verified?.className).toContain('bg-emerald-100');
     expect(pending?.getAttribute('data-review-state')).toBe('pending');
     expect(pending?.className).toContain('bg-blue-50');
+  });
+
+  it('offers only a cancel action while documents still await verification', () => {
+    render(<ParticipantDetail participant={participant} />);
+    expect(screen.getByText('Verifikasi keempat berkas agar OKB dapat dijadwalkan.')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Simpan jadwal' })).toBeNull();
+    expect(screen.getByRole('button', { name: /ya, batalkan pendaftar/i })).toBeDefined();
+  });
+
+  it('shows the OKB schedule with attendance and reschedule actions once scheduled', () => {
+    render(<ParticipantDetail participant={{
+      ...participant,
+      status: 'Terjadwal OKB',
+      okb: { jadwalTanggal: '2026-11-07', jadwalSesi: 'Sesi 1 (08.00–10.00)' },
+    }} />);
+    expect(screen.getByText('7 November 2026')).toBeDefined();
+    expect(screen.getByRole('button', { name: /tandai hadir okb/i })).toBeDefined();
+    expect(screen.getByText('Jadwalkan ulang OKB')).toBeDefined();
+  });
+
+  it('offers restoring a cancelled applicant to the status it was cancelled from', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Dibatalkan', previousStatus: 'Sudah OKB' }} />);
+    expect(screen.getByRole('button', { name: /pulihkan ke sudah okb/i })).toBeDefined();
+    expect(screen.queryByRole('button', { name: /ya, batalkan pendaftar/i })).toBeNull();
+  });
+
+  it('records the admission decision after OKB with the chosen class preselected as placement', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Sudah OKB', registration: { jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Tahfizh' } }} />);
+    expect(screen.getByText('Keputusan Penerimaan')).toBeDefined();
+    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('Tahfizh');
+    expect(screen.getByRole('button', { name: 'Simpan keputusan' })).toBeDefined();
+  });
+
+  it('shows the placement when it differs from the chosen class', () => {
+    render(<ParticipantDetail participant={{
+      ...participant,
+      status: 'Diterima',
+      registration: { jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Tahfizh' },
+      decision: { kelasPenempatan: 'Reguler' },
+    }} />);
+    expect(screen.getByText('(Pilihan Kelas: Tahfizh)', { exact: false })).toBeDefined();
+    expect(screen.getByText('Ubah Keputusan Penerimaan')).toBeDefined();
   });
 });

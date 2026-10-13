@@ -151,6 +151,23 @@ describe('Registration Form Validation Schema', () => {
     });
   });
 
+  describe('step1Schema Kelas Tujuan validation', () => {
+    it('requires a target grade for Pindahan applicants', () => {
+      const result = step1Schema.safeParse({ ...baseValidStep1, jenisPendaftaran: 'Pindahan' });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((issue) => issue.path[0] === 'kelasTujuan')).toBe(true);
+    });
+
+    it('accepts grades 2 through 6 for Pindahan applicants', () => {
+      expect(step1Schema.safeParse({ ...baseValidStep1, jenisPendaftaran: 'Pindahan', kelasTujuan: '4' }).success).toBe(true);
+      expect(step1Schema.safeParse({ ...baseValidStep1, jenisPendaftaran: 'Pindahan', kelasTujuan: '1' }).success).toBe(false);
+    });
+
+    it('does not ask Siswa Baru applicants for a target grade', () => {
+      expect(step1Schema.safeParse(baseValidStep1).success).toBe(true);
+    });
+  });
+
   describe('step1Schema Direktorat 2 Affiliation validation', () => {
     it('validates parent working at Direktorat 2', () => {
       const data = {

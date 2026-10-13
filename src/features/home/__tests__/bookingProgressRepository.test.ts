@@ -1,31 +1,27 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   BookingProgressLoadError,
   createBookingProgressRepository,
 } from '../server/bookingProgressRepository';
 
-function makeClient(count: number | null, error: unknown = null) {
-  const neq = vi.fn().mockResolvedValue({ count, error });
-  const select = vi.fn().mockReturnValue({ neq });
-  const from = vi.fn().mockReturnValue({ select });
-  return {
-    client: { from } as unknown as SupabaseClient,
-    spies: { from, select, neq },
-  };
+function makeClient(data: unknown, error: unknown = null) {
+  const rpc = vi.fn().mockResolvedValue({ data, error });
+  return { client: { rpc } as never, rpc };
 }
 
 describe('booking progress repository', () => {
-  it('counts only registrations that completed document uploads', async () => {
-    const { client, spies } = makeClient(86);
+  it('sums used seats across every class from the capacity usage RPC', async () => {
+    const { client, rpc } = makeClient([
+      { pilihan_kelas: 'Bilingual', kuota: 56, terpakai: 50 },
+      { pilihan_kelas: 'Reguler', kuota: 28, terpakai: 20 },
+      { pilihan_kelas: 'Tahfizh', kuota: 28, terpakai: 16 },
+    ]);
 
     await expect(createBookingProgressRepository(client).getCompletedCount()).resolves.toBe(86);
-    expect(spies.from).toHaveBeenCalledWith('pendaftar');
-    expect(spies.select).toHaveBeenCalledWith('id', { count: 'exact', head: true });
-    expect(spies.neq).toHaveBeenCalledWith('status', 'Menunggu Unggahan');
+    expect(rpc).toHaveBeenCalledWith('get_class_capacity_usage');
   });
 
-  it('treats a null count as unavailable data', async () => {
+  it('treats a missing result as unavailable data', async () => {
     const { client } = makeClient(null);
 
     await expect(createBookingProgressRepository(client).getCompletedCount()).rejects.toEqual(
