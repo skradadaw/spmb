@@ -1,60 +1,63 @@
 import { Download, FileText, Landmark, ShieldCheck } from 'lucide-react';
 import { registrationInfo } from '@/features/home/data';
 import CopyAccountButton from './CopyAccountButton';
+import SectionHeading from './SectionHeading';
 
 export default function PaymentInformation() {
   return (
     <section
       id="biaya"
       aria-labelledby="payment-title"
-      className="scroll-mt-24 bg-public-canvas px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
+      className="relative isolate scroll-mt-24 overflow-hidden bg-public-deep px-4 py-16 text-white sm:px-6 sm:py-24 lg:px-8"
     >
-      <div className="mx-auto max-w-7xl">
-        <div className="grid items-end gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
-            <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-public-green">
-              Biaya dan rekening
-            </p>
-            <h2 id="payment-title" className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-              Informasi pembayaran yang perlu disiapkan
-            </h2>
-          </div>
-          <p className="max-w-2xl text-base leading-8 text-slate-700 lg:justify-self-end">
-            Pembayaran OKB dilakukan melalui rekening resmi sekolah. Rincian biaya pendidikan
-            tersedia pada dokumen PDF resmi.
-          </p>
-        </div>
+      <div aria-hidden="true" className="hero-grid absolute inset-0 -z-10 opacity-20" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 opacity-20 [background-image:radial-gradient(circle_at_center,rgba(255,255,255,0.35)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]"
+      />
+      <div aria-hidden="true" className="absolute -right-24 -top-24 -z-10 h-80 w-80 rounded-full bg-lime-300/15 blur-3xl" />
+      <div aria-hidden="true" className="absolute -bottom-32 -left-24 -z-10 h-80 w-80 rounded-full bg-amber-300/10 blur-3xl" />
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-          <article className="overflow-hidden rounded-[2rem] bg-public-deep p-6 text-white shadow-xl shadow-emerald-950/15 sm:p-8">
-            <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
-              <div>
-                <p className="flex items-center gap-2 text-sm font-bold text-emerald-100">
-                  <Landmark aria-hidden="true" size={18} /> Rekening pembayaran OKB
-                </p>
-                <p className="mt-4 text-base text-emerald-100">{registrationInfo.okb.bank}</p>
-                <p className="mt-1 select-all font-mono text-3xl font-black tracking-wider sm:text-4xl">
+      <div className="mx-auto max-w-7xl">
+        <SectionHeading
+          id="payment-title"
+          tone="dark"
+          eyebrow="Biaya dan rekening"
+          title="Pembayaran OKB"
+          description="Pembayaran OKB dilakukan melalui rekening resmi sekolah. Rincian biaya pendidikan tersedia pada dokumen PDF resmi."
+        />
+
+        <div className="mt-10 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+          <article className="rounded-3xl border border-white/15 bg-white/10 p-6 shadow-2xl shadow-emerald-950/30 backdrop-blur-md sm:p-8">
+            <p className="flex items-center gap-2 text-sm font-bold text-emerald-100">
+              <Landmark aria-hidden="true" size={18} className="text-amber-300" /> Rekening pembayaran OKB
+            </p>
+            <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-base text-emerald-100">{registrationInfo.okb.bank}</p>
+                <p className="mt-1 select-all break-all font-mono text-3xl font-black tracking-wider sm:text-4xl">
                   {registrationInfo.okb.accountNumber}
-                </p>
-                <p className="mt-4 text-base text-emerald-50">
-                  Nominal: <strong>{registrationInfo.okb.fee}</strong>
                 </p>
               </div>
               <CopyAccountButton accountNumber={registrationInfo.okb.accountNumber} />
             </div>
+            <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-white/15 pt-5">
+              <span className="text-sm font-semibold text-emerald-100">Nominal</span>
+              <strong className="text-2xl font-black text-amber-300">{registrationInfo.okb.fee}</strong>
+            </div>
           </article>
 
-          <article className="flex flex-col justify-between rounded-[2rem] border border-amber-200 bg-amber-50 p-6 sm:p-8">
+          <article className="flex flex-col justify-between rounded-3xl bg-white p-6 text-slate-950 shadow-2xl shadow-emerald-950/30 sm:p-8">
             <div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-200 text-amber-900">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
                 <FileText aria-hidden="true" size={24} />
               </span>
-              <h3 className="mt-5 text-2xl font-bold text-slate-950">Rincian biaya resmi</h3>
-              <p className="mt-3 text-base leading-7 text-slate-700">
+              <h3 className="mt-5 text-xl font-bold">Rincian biaya resmi</h3>
+              <p className="mt-2 text-[0.95rem] leading-7 text-slate-600">
                 Unduh dokumen registrasi Tahun Pelajaran {registrationInfo.academicYear} untuk
                 melihat rincian biaya secara lengkap.
               </p>
-              <p className="mt-4 flex items-start gap-2 text-sm font-semibold text-emerald-900">
+              <p className="mt-4 flex items-start gap-2 text-sm font-semibold text-public-green">
                 <ShieldCheck aria-hidden="true" className="mt-0.5 shrink-0" size={18} />
                 Dokumen PDF resmi dari SD Plus 3 Al-Muhajirin.
               </p>
@@ -62,7 +65,7 @@ export default function PaymentInformation() {
             <a
               href={registrationInfo.feeDocument}
               download
-              className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-3 text-base font-extrabold text-white transition-colors hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950"
+              className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-public-green px-6 py-3 text-base font-bold text-white transition-colors hover:bg-public-green-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-public-green"
             >
               <Download aria-hidden="true" size={19} /> Unduh Rincian Biaya PDF
             </a>
