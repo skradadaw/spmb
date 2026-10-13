@@ -73,6 +73,9 @@ describe('ParticipantDetail', () => {
     expect(documentsCard).not.toBe(detailsCard);
     expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_33rem]');
     expect(documentsCard?.parentElement?.className).toContain('xl:sticky');
+    // A tall right column scrolls by itself so its lower cards are reachable without scrolling the whole page.
+    expect(documentsCard?.parentElement?.className).toContain('xl:overflow-y-auto');
+    expect(documentsCard?.parentElement?.className).toContain('xl:max-h-[calc(100dvh-2rem)]');
     expect(detailsCard?.querySelector('[data-detail-groups]')?.className).not.toContain('xl:grid-cols-3');
     expect(detailsCard?.querySelector('[data-detail-group]')?.className).not.toContain('lg:grid-cols-[10rem_minmax(0,1fr)]');
     expect(detailsCard?.querySelector('[data-detail-group]')?.firstElementChild?.firstElementChild?.tagName).toBe('H3');
@@ -102,6 +105,14 @@ describe('ParticipantDetail', () => {
       'Lihat pratinjau PDF Akta Kelahiran',
     ]);
     expect(screen.getAllByLabelText('Catatan admin')).toHaveLength(1);
+  });
+
+  it('colours the header status badge by status', () => {
+    const { unmount } = render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB' }} />);
+    expect(document.querySelector('[data-status="Terjadwal OKB"]')?.className).toContain('bg-amber-50');
+    unmount();
+    render(<ParticipantDetail participant={{ ...participant, status: 'Ditolak' }} />);
+    expect(document.querySelector('[data-status="Ditolak"]')?.className).toContain('bg-rose-50');
   });
 
   it('links each parent number to WhatsApp Web from the admin note', () => {

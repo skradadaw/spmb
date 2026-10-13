@@ -37,7 +37,7 @@ describe('AdminDashboard', () => {
     expect(screen.getByText('Distribusi pilihan kelas')).toBeDefined();
     expect(screen.getByText('Jenis pendaftaran')).toBeDefined();
     expect(screen.getAllByText('Bima Pratama')).toHaveLength(2);
-    expect(screen.getAllByText('Terverifikasi')[0].className).toContain('text-emerald-700');
+    expect(screen.getAllByText('Terverifikasi')[0].className).toContain('text-emerald-800');
   });
 
   it('provides semantic progress values', () => {

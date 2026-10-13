@@ -4,10 +4,10 @@ import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminN
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
 import { DocumentPreviewButton } from './DocumentPreviewButton';
 import { ParticipantStatusPanel } from './ParticipantStatusPanel';
+import { ParticipantStatusBadge } from './ParticipantStatus';
 import { ParticipantEditableGroup } from './ParticipantEditableGroup';
 import { ReplaceDocumentButton } from './ReplaceDocumentButton';
 import { DownloadProofButton } from '@/features/registration/components/DownloadProofButton';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,7 +64,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
               className={ADMIN_SECONDARY_BUTTON}
             />
           )}
-          <Badge>{participant.status}</Badge>
+          <ParticipantStatusBadge status={participant.status} />
         </div>
       </div>
       <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_33rem]">
@@ -81,7 +81,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
             <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Pengusul / rujukan murid" name="referral" values={participant.referral} />
           </CardContent>
         </Card>
-        <div className="grid min-w-0 gap-4 xl:sticky xl:top-4">
+        <div data-detail-aside className="grid min-w-0 gap-4 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-y-auto xl:overscroll-contain xl:pb-1 xl:pr-1 xl:[scrollbar-width:thin]">
           <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
             <CardHeader className="border-b border-slate-200 bg-slate-50/80 p-4 pb-3">
               <div className="flex items-start justify-between gap-3">
