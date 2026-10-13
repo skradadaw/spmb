@@ -11,7 +11,7 @@ export function DashboardSidebar({ active = 'summary', collapsed = false, onTogg
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_20%_10%,rgba(57,209,85,0.32),transparent_35%),linear-gradient(145deg,transparent_50%,rgba(255,255,255,0.05))]" />
       <div className={`relative flex h-full flex-col py-6 ${collapsed ? 'px-3' : 'px-5'}`}>
         <div className={`flex items-center transition-[gap,padding] duration-200 ease-in-out motion-reduce:transition-none ${collapsed ? 'justify-center gap-0 px-0' : 'gap-3 px-2'}`}>
-          <Image src="/logo.png" alt="Logo SD Plus 3 Al-Muhajirin" width={52} height={52} className="size-11 shrink-0 object-contain drop-shadow-[0_5px_9px_rgba(0,0,0,0.24)]" priority />
+          <Image src="/logo.png" alt="Logo SD Plus 3 Al-Muhajirin" width={44} height={44} className="size-11 shrink-0 object-contain drop-shadow-[0_5px_9px_rgba(0,0,0,0.24)]" priority />
           <div aria-hidden={collapsed} className={`min-w-0 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out motion-reduce:transition-none ${collapsed ? 'max-w-0 opacity-0' : 'max-w-48 opacity-100'}`}>
             <p className="truncate text-sm font-bold tracking-[-0.02em]">SD Plus 3 Al-Muhajirin</p>
             <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-emerald-200">Panel Administrasi SPMB</p>

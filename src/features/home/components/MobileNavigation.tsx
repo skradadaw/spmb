@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import {
   BookOpen,
   CalendarDays,
@@ -15,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ButtonLink } from '@/components/ui/button-link';
 
 type MobileNavigationProps = {
   items: ReadonlyArray<readonly [label: string, href: string]>;
@@ -128,21 +128,25 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
 
               {/* Action Buttons */}
               <div className="mt-6 grid gap-2.5 border-t border-slate-200/80 pt-4 sm:grid-cols-2">
-                <Button
+                <ButtonLink
                   variant="outline"
-                  render={<Link href="/login" aria-label="Login Panitia" onClick={closeMenu} />}
+                  href="/login"
+                  aria-label="Login Panitia"
+                  onClick={closeMenu}
                   className="h-12 justify-center gap-2 rounded-xl border-emerald-900/15 bg-white font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-950"
                 >
                   <LockKeyhole aria-hidden="true" className="size-4" />
                   Login Panitia
-                </Button>
-                <Button
-                  render={<Link href="/pendaftaran" aria-label="Daftar Sekarang" onClick={closeMenu} />}
+                </ButtonLink>
+                <ButtonLink
+                  href="/pendaftaran"
+                  aria-label="Daftar Sekarang"
+                  onClick={closeMenu}
                   className="h-12 justify-center gap-2 rounded-xl bg-[#008A12] font-bold text-white shadow-sm hover:bg-[#006F0E] hover:text-white"
                 >
                   <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" />
                   Daftar Sekarang
-                </Button>
+                </ButtonLink>
               </div>
             </div>
           </nav>

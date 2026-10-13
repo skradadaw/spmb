@@ -12,7 +12,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { registrationInfo } from '@/features/home/data';
-import { Button } from '@/components/ui/button';
+import { ButtonLink } from '@/components/ui/button-link';
 import MobileNavigation from './MobileNavigation';
 
 const navigationItems = [
@@ -68,22 +68,24 @@ export function HomeHeader() {
         </nav>
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          <Button
+          <ButtonLink
             variant="ghost"
-            render={<Link href="/login" aria-label="Login Panitia" />}
+            href="/login"
+            aria-label="Login Panitia"
             className="h-[42px] min-w-11 gap-2 rounded-none border-transparent bg-transparent px-2.5 font-semibold whitespace-nowrap text-slate-600 shadow-none hover:border-transparent hover:bg-transparent hover:text-slate-950 focus-visible:border-transparent focus-visible:ring-slate-400/25 sm:ml-1 sm:border-l sm:border-l-slate-200 sm:pl-5 sm:pr-3"
           >
             <LockKeyhole aria-hidden="true" className="size-4 text-slate-600" strokeWidth={2.2} />
             <span className="hidden sm:inline">Login Panitia</span>
-          </Button>
-          <Button
-            render={<Link href="/pendaftaran" aria-label="Daftar Sekarang" />}
+          </ButtonLink>
+          <ButtonLink
+            href="/pendaftaran"
+            aria-label="Daftar Sekarang"
             className="h-[42px] gap-2 rounded-full border border-emerald-950/10 bg-[#008A12] px-4.5 font-bold whitespace-nowrap text-white shadow-[0_3px_8px_rgba(0,85,11,0.22)] hover:bg-[#006F0E] hover:text-white hover:shadow-[0_4px_10px_rgba(0,85,11,0.26)] focus-visible:border-emerald-700 focus-visible:ring-[#007A10]/25 sm:px-5"
           >
             <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" strokeWidth={2.4} />
             <span className="hidden sm:inline">Daftar Sekarang</span>
             <span className="sm:hidden">Daftar</span>
-          </Button>
+          </ButtonLink>
         </div>
 
         <MobileNavigation items={navigationItems} />

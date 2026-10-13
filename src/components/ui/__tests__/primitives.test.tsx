@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Button } from '../button';
+import { ButtonLink } from '../button-link';
 import { Input } from '../input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../card';
 import { Alert, AlertTitle, AlertDescription } from '../alert';
@@ -31,6 +32,18 @@ describe('UI Primitives (Shadcn)', () => {
       const link = screen.getByRole('link', { name: 'Login' });
       expect(link).toBeDefined();
       expect(link.getAttribute('href')).toBe('/login');
+      expect(link.getAttribute('data-slot')).toBe('button');
+      expect(link.className).toContain('border-border');
+    });
+
+  });
+
+  describe('ButtonLink', () => {
+    it('styles navigation as a button while keeping link semantics', () => {
+      render(<ButtonLink href="/admin/pendaftar" variant="outline">Reset</ButtonLink>);
+      const link = screen.getByRole('link', { name: 'Reset' });
+      expect(link.getAttribute('href')).toBe('/admin/pendaftar');
+      expect(link.getAttribute('role')).toBeNull();
       expect(link.getAttribute('data-slot')).toBe('button');
       expect(link.className).toContain('border-border');
     });
