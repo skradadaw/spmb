@@ -46,6 +46,16 @@ describe('document viewer', () => {
     expect(screen.getByRole('link', { name: 'Unduh berkas Akta Kelahiran' }).getAttribute('href')).toBe(`${documents[0].href}&download=1`);
   });
 
+  it('fetches PDFs through the binary preview variant so no download is triggered', async () => {
+    const pdf: ViewerDocument = { id: 'buktiPembayaran', title: 'Bukti Pembayaran OKB', href: `${base}/buktiPembayaran?contentType=application%2Fpdf&v=o`, verified: false, replacedAt: null };
+    vi.mocked(fetch).mockResolvedValue(new Response(new Uint8Array(16), { status: 200, headers: { 'content-type': 'application/octet-stream' } }));
+    render(<DocumentPreviewButton participantId={participantId} documents={[pdf]} index={0} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Lihat pratinjau PDF Bukti Pembayaran OKB' }));
+    await screen.findByRole('dialog', { name: 'Berkas Bukti Pembayaran OKB' });
+    expect(fetch).toHaveBeenCalledWith(`${pdf.href}&preview=pdfjs`, expect.anything());
+    expect(screen.getByRole('link', { name: 'Unduh berkas Bukti Pembayaran OKB' }).getAttribute('href')).toBe(`${pdf.href}&download=1`);
+  });
+
   it('moves between documents with buttons and arrow keys', async () => {
     const dialog = await open();
     fireEvent.click(screen.getByRole('button', { name: 'Berkas berikutnya' }));

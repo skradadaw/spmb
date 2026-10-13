@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { documentFetchHref } from '../documentVersion';
 
 type Loaded = {
   key: string;
@@ -28,7 +29,7 @@ export function useDocumentBytes(href: string) {
 
     void (async () => {
       try {
-        const response = await fetch(href, { credentials: 'same-origin', signal: controller.signal });
+        const response = await fetch(documentFetchHref(href), { credentials: 'same-origin', signal: controller.signal });
         if (!response.ok || !response.body) throw new Error('Berkas tidak dapat dimuat');
         const total = Number(response.headers.get('content-length')) || null;
         const reader = response.body.getReader();
