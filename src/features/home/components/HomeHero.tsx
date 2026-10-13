@@ -20,8 +20,7 @@ const navigationItems = [
   ['Jadwal', '#jadwal'],
   ['Alur', '#alur'],
   ['Kelas', '#kelas'],
-  ['Biaya', '#biaya'],
-  ['Berkas', '#berkas'],
+  ['Biaya & Berkas', '#persiapan'],
   ['FAQ', '#faq'],
 ] as const;
 
@@ -309,7 +308,7 @@ export default function HomeHero({ usedSeats }: { usedSeats: number | null }) {
         </aside>
       </div>
 
-      <SectionWave edge="bottom" className="text-white" />
+      <SectionWave className="text-white" />
     </section>
   );
 }

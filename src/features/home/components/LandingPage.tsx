@@ -2,7 +2,6 @@ import ClassOptions from './ClassOptions';
 import ClosingCta from './ClosingCta';
 import FrequentQuestions from './FrequentQuestions';
 import HomeHero, { HomeHeader } from './HomeHero';
-import PaymentInformation from './PaymentInformation';
 import RegistrationPreparation from './RegistrationPreparation';
 import RegistrationSteps from './RegistrationSteps';
 import SiteFooter from './SiteFooter';
@@ -28,7 +27,6 @@ export default function LandingPage({
         <HomeHero usedSeats={usedSeats} />
         <RegistrationSteps />
         <ClassOptions classCapacities={classCapacities} />
-        <PaymentInformation />
         <RegistrationPreparation />
         <FrequentQuestions />
         <ClosingCta />

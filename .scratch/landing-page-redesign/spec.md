@@ -208,3 +208,7 @@ Bagian "Mengapa Al-Muhajirin" dihapus. Menu navigasi menjadi **Jadwal · Alur ·
   - Data di situs sekolah tampak berasal dari template, misalnya NPSN placeholder, jadi tidak dipakai selain yang dikonfirmasi pemilik.
 - Nomor WhatsApp yang ditampilkan hanya 0819-9831-1470 (Panitia Open Booking). Nomor lain di situs sekolah tidak dipakai.
 - Sebelum menulis kode, baca panduan Next.js yang relevan di dokumentasi lokal paket `next`, sesuai instruksi `AGENTS.md`.
+
+## Perubahan setelah implementasi
+
+- 2026-10-14: atas permintaan pemilik, bagian Biaya & Rekening dan Berkas yang Disiapkan digabung menjadi satu bagian **Biaya & Berkas** (`#persiapan`) berlatar terang: kartu hijau tua "Langkah 1 · Pembayaran OKB" dan kartu "Langkah 2 · Berkas yang Disiapkan". Pita hijau tua dan gelombang di bagian Biaya dihapus karena latarnya terlihat tidak rapi. Menu navigasi menjadi Jadwal · Alur · Kelas · Biaya & Berkas · FAQ.

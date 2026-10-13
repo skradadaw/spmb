@@ -63,8 +63,7 @@ describe('Open Booking landing page', () => {
       ['Jadwal', '#jadwal'],
       ['Alur', '#alur'],
       ['Kelas', '#kelas'],
-      ['Biaya', '#biaya'],
-      ['Berkas', '#berkas'],
+      ['Biaya & Berkas', '#persiapan'],
       ['FAQ', '#faq'],
     ]);
   });
@@ -111,7 +110,7 @@ describe('Open Booking landing page', () => {
     expect(mobileNavigation.className).toContain('bg-gradient-to-b');
     expect(within(mobileNavigation).getByText('Menu Utama')).toBeDefined();
     expect(within(mobileNavigation).getByText('Informasi Open Booking')).toBeDefined();
-    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(8);
+    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(7);
     expect(within(mobileNavigation).getByRole('link', { name: 'Daftar Sekarang' })).toBeDefined();
 
     fireEvent.click(within(mobileNavigation).getByRole('link', { name: 'Jadwal' }));
@@ -247,8 +246,11 @@ describe('Open Booking landing page', () => {
   it('lists the four Berkas exactly as the form asks, with NISN mentioned once', () => {
     const { container } = renderHome();
 
-    const section = screen.getByRole('region', { name: 'Berkas yang Disiapkan' });
-    expect(section.getAttribute('id')).toBe('berkas');
+    const section = screen.getByRole('region', { name: 'Biaya & Berkas' });
+    expect(section.getAttribute('id')).toBe('persiapan');
+    expect(
+      within(section).getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent),
+    ).toEqual(['Pembayaran OKB', 'Berkas yang Disiapkan']);
     const berkas = within(section).getByRole('list', { name: 'Daftar Berkas' });
     expect(within(berkas).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
       'Akta Kelahiran',
@@ -296,8 +298,7 @@ describe('Open Booking landing page', () => {
       'Jadwal penting',
       'Alur Pendaftaran',
       'Pilihan Kelas',
-      'Pembayaran OKB',
-      'Berkas yang Disiapkan',
+      'Biaya & Berkas',
       'Pertanyaan yang Sering Diajukan',
       'Siap melanjutkan Open Booking Pendaftaran?',
     ]);

@@ -6,7 +6,6 @@ import {
   CalendarDays,
   ChevronRight,
   CircleArrowRight,
-  ClipboardCheck,
   LockKeyhole,
   School,
   Menu,
@@ -29,8 +28,7 @@ const navigationIcons: Record<
   Jadwal: CalendarDays,
   Alur: BookOpen,
   Kelas: School,
-  Biaya: WalletCards,
-  Berkas: ClipboardCheck,
+  'Biaya & Berkas': WalletCards,
   FAQ: MessageCircleQuestion,
 };
 
