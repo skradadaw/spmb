@@ -5,7 +5,7 @@ import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contrac
 import { parseParticipantListQuery } from '../query';
 
 function fixture() {
-  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), gt: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
+  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), gt: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(), lt: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
   return { q, repo: createParticipantsRepository({ from: vi.fn(() => q) } as unknown as SupabaseClient) };
 }
 describe('participants repository', () => {
@@ -16,17 +16,17 @@ describe('participants repository', () => {
     expect(q.select).toHaveBeenCalledWith(expect.stringContaining('nama_ayah'));
     expect(q.select).toHaveBeenCalledWith(expect.not.stringContaining('dokumen_pas_foto'));
     expect(q.ilike).toHaveBeenCalledWith('nama_lengkap', '%Ani%');
-    expect(q.eq).toHaveBeenCalledWith('pilihan_kelas', 'Reguler');
+    expect(q.eq).toHaveBeenCalledWith('jenis_pendaftaran', 'Siswa Baru');
     expect(result[0]).toMatchObject({ fields: { namaLengkap: 'Ani', fatherNama: 'Budi' }, adminNote: 'Catatan' });
   });
 
   it('escapes literal wildcards, filters, paginates and orders with minimal columns', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [], count: 41, error: null }).mockResolvedValueOnce({ data: [{ id: 'a', nama_lengkap: null, asal_sekolah: 'TK Melati' }], count: 41, error: null });
-    const result = await repo.list(parseParticipantListQuery(new URLSearchParams('q=100%25_&kelas=Reguler&jenis=Pindahan&status=Menunggu+Unggahan&page=99')));
+    const result = await repo.list(parseParticipantListQuery(new URLSearchParams('q=100%25_&kelas=Reguler&status=Menunggu+Unggahan&page=99')));
     expect(q.ilike).toHaveBeenCalledWith('nama_lengkap', '%100\\%\\_%');
-    expect(q.eq).toHaveBeenCalledWith('pilihan_kelas', 'Reguler');
-    expect(q.eq).toHaveBeenCalledWith('jenis_pendaftaran', 'Pindahan');
+    expect(q.eq).toHaveBeenCalledWith('jenis_pendaftaran', 'Siswa Baru');
+    expect(q.or).toHaveBeenCalledWith('kelas_penempatan.eq.Reguler,and(kelas_penempatan.is.null,pilihan_kelas.eq.Reguler)');
     expect(q.eq).toHaveBeenCalledWith('status', 'Menunggu Unggahan');
     expect(q.select).toHaveBeenCalledWith(PARTICIPANT_LIST_COLUMNS, { count: 'exact' });
     expect(q.order).toHaveBeenCalledWith('created_at', { ascending: false });
@@ -66,6 +66,34 @@ describe('participants repository', () => {
     expect(PARTICIPANT_DETAIL_COLUMNS).toContain('nisn_tidak_sesuai');
   });
 
+  it('filters Pindahan by registration type regardless of class', async () => {
+    const { q, repo } = fixture();
+    await repo.list(parseParticipantListQuery(new URLSearchParams('kelas=Pindahan')));
+    expect(q.eq).toHaveBeenCalledWith('jenis_pendaftaran', 'Pindahan');
+    expect(q.or).not.toHaveBeenCalled();
+  });
+
+  it('finds Tidak Hadir OKB: still scheduled with a date before today in Jakarta', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-10-17T18:30:00Z')); // already 18 Oct in Jakarta
+      const { q, repo } = fixture();
+      await repo.list(parseParticipantListQuery(new URLSearchParams('okb=terlewat')));
+      expect(q.eq).toHaveBeenCalledWith('status', 'Terjadwal OKB');
+      expect(q.lt).toHaveBeenCalledWith('jadwal_okb_tanggal', '2026-10-18');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('uses the chosen page size for the range and page count', async () => {
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: [{ id: 'a' }], count: 120, error: null });
+    const result = await repo.list(parseParticipantListQuery(new URLSearchParams('per=50&page=2')));
+    expect(q.range).toHaveBeenCalledWith(50, 99);
+    expect(result).toMatchObject({ page: 2, pageSize: 50, totalPages: 3 });
+  });
+
   it('loads a normal page with its count in a single round trip', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [{ id: 'a', nama_lengkap: 'Ani' }], count: 25, error: null });
@@ -88,9 +116,9 @@ describe('participants repository', () => {
   it('does not disguise count or data failures as an empty list', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: null, count: null, error: new Error('secret') });
-    await expect(repo.list(parseParticipantListQuery(new URLSearchParams()))).rejects.toThrow('Data peserta tidak dapat dimuat.');
+    await expect(repo.list(parseParticipantListQuery(new URLSearchParams()))).rejects.toThrow('Data pendaftar tidak dapat dimuat.');
     q.range.mockResolvedValueOnce({ data: null, count: 1, error: null });
-    await expect(repo.list(parseParticipantListQuery(new URLSearchParams()))).rejects.toThrow('Data peserta tidak dapat dimuat.');
+    await expect(repo.list(parseParticipantListQuery(new URLSearchParams()))).rejects.toThrow('Data pendaftar tidak dapat dimuat.');
   });
   it('returns safe mapped detail and never selects submission secrets', async () => {
     const { q, repo } = fixture();
@@ -119,7 +147,7 @@ describe('participants repository', () => {
     const { q, repo } = fixture();
     expect(await repo.getById('missing')).toBeNull();
     q.maybeSingle.mockResolvedValue({ data: null, error: 'secret' });
-    await expect(repo.getById('missing')).rejects.toThrow('Data peserta tidak dapat dimuat.');
+    await expect(repo.getById('missing')).rejects.toThrow('Data pendaftar tidak dapat dimuat.');
   });
   it('maps internal document review metadata without mixing it into participant status', async () => {
     const { q, repo } = fixture();

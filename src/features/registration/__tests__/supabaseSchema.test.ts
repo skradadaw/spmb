@@ -291,14 +291,17 @@ describe('Supabase registration security schema', () => {
     expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.next_registration_number() FROM PUBLIC, anon, authenticated;');
   });
 
-  it('aggregates the admin dashboard in the database and returns only the newest eight applicants', () => {
+  it('aggregates the admin dashboard in the database, sharing the Kuota rule with the capacity menu', () => {
     const functionSql = compactSql(schema.match(
       /CREATE OR REPLACE FUNCTION public\.get_admin_dashboard_summary\([\s\S]*?\$\$;/,
     )?.[0] ?? '');
 
-    expect(functionSql).toContain("'awaiting', (SELECT count(*) FROM public.pendaftar WHERE status = 'Menunggu Verifikasi')");
-    expect(functionSql).toContain('GROUP BY pilihan_kelas');
-    expect(functionSql).toContain('ORDER BY created_at DESC, id DESC LIMIT 8');
+    expect(functionSql).toContain("'total', (SELECT count(*) FROM public.pendaftar WHERE status <> 'Menunggu Unggahan')");
+    expect(functionSql).toContain("'awaiting', count(*) FILTER (WHERE status = 'Menunggu Verifikasi')");
+    expect(functionSql).toContain("jadwal_okb_tanggal < (SELECT d FROM today)");
+    expect(functionSql).toContain('FROM public.get_class_capacity_usage() AS usage');
+    expect(functionSql).toContain("(now() AT TIME ZONE 'Asia/Jakarta')::date");
+    expect(functionSql).not.toContain('LIMIT 8');
     expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.get_admin_dashboard_summary() FROM PUBLIC, anon, authenticated;');
     expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.get_admin_dashboard_summary() TO service_role;');
     // Perlu Perhatian never counts withdrawn or rejected applicants.

@@ -5,78 +5,70 @@ import type { AdminDashboardSummary } from '../../contracts';
 import { AdminDashboard } from '../AdminDashboard';
 
 const summary: AdminDashboardSummary = {
-  totalRegistrations: 32,
-  awaitingVerification: 12,
-  completedRegistrations: 28,
-  incompleteUploads: 4,
+  today: '2026-10-18',
+  totalRegistrations: 60,
+  tasks: { uploading: 4, awaiting: 12, verified: 5, absent: 2, decision: 0 },
   attention: { any: 5, nisn: 3 },
-  classDistribution: [
-    { label: 'Reguler', count: 16, percentage: 50 },
-    { label: 'Bilingual', count: 10, percentage: 31 },
-    { label: 'Tahfizh', count: 6, percentage: 19 },
+  capacity: [{ label: 'Reguler', kuota: 28, terpakai: 20 }, { label: 'Bilingual', kuota: 56, terpakai: 48 }, { label: 'Tahfizh', kuota: 28, terpakai: 28 }],
+  transfers: 7,
+  results: { accepted: 40, rejected: 6, withdrawn: 3 },
+  acceptedByClass: [{ label: 'Reguler', count: 12 }, { label: 'Bilingual', count: 20 }, { label: 'Tahfizh', count: 8 }],
+  schedule: [
+    { date: '2026-10-18', total: 18, sessions: [{ label: 'Sesi 1', count: 10 }, { label: 'Sesi 2', count: 8 }] },
+    { date: '2026-10-25', total: 6, sessions: [{ label: 'Sesi 1', count: 6 }] },
   ],
-  typeDistribution: [
-    { label: 'Siswa Baru', count: 26, percentage: 81 },
-    { label: 'Pindahan', count: 6, percentage: 19 },
-  ],
-  recentApplicants: [
-    { id: '1', namaLengkap: 'Nama Siswa Sangat Panjang Untuk Menguji Responsivitas Tampilan', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Verifikasi', createdAt: '2026-10-06T08:00:00Z' },
-    { id: '2', namaLengkap: 'Bima Pratama', pilihanKelas: 'Tahfizh', jenisPendaftaran: 'Pindahan', status: 'Terverifikasi', createdAt: '2026-10-05T08:00:00Z' },
-  ],
-  updatedAt: '2026-10-06T10:30:00Z',
 };
 
+const tile = (label: string) => screen.getByText(label).closest('a')!;
+
 describe('AdminDashboard', () => {
-  it('links each Perlu Perhatian count to the matching participant filter', () => {
+  it('links every admin task to Data Pendaftar filtered to exactly that work', () => {
     render(<AdminDashboard summary={summary} />);
-    expect(screen.getByRole('link', { name: /5 peserta perlu ditangani/ }).getAttribute('href')).toBe('/admin/pendaftar?perhatian=semua');
+    expect(tile('Perlu diverifikasi').getAttribute('href')).toBe('/admin/pendaftar?status=Menunggu%20Verifikasi');
+    expect(tile('Perlu dijadwalkan OKB').getAttribute('href')).toBe('/admin/pendaftar?status=Terverifikasi');
+    expect(tile('Tidak hadir OKB').getAttribute('href')).toBe('/admin/pendaftar?okb=terlewat');
+    expect(tile('Menunggu keputusan').getAttribute('href')).toBe('/admin/pendaftar?status=Sudah%20OKB');
+    expect(tile('Belum selesai unggah').getAttribute('href')).toBe('/admin/pendaftar?status=Menunggu%20Unggahan');
+    expect(tile('Perlu perhatian').getAttribute('href')).toBe('/admin/pendaftar?perhatian=semua');
     expect(screen.getByRole('link', { name: /3\s*NISN tidak sesuai/ }).getAttribute('href')).toBe('/admin/pendaftar?perhatian=nisn');
-    expect(screen.queryByText(/tindak lanjut/i)).toBeNull();
+    expect(tile('Perlu diverifikasi').textContent).toContain('12');
   });
 
-  it('renders metrics, distributions, and recent applicants', () => {
+  it('dims a finished task instead of hiding it', () => {
     render(<AdminDashboard summary={summary} />);
-
-    expect(screen.getByText('Total pendaftar')).toBeDefined();
-    expect(screen.getByText('Menunggu verifikasi')).toBeDefined();
-    expect(screen.getByText('Pendaftaran selesai')).toBeDefined();
-    expect(screen.getByText('Berkas belum lengkap')).toBeDefined();
-    expect(screen.getAllByText('32').length).toBeGreaterThan(0);
-    expect(screen.getByText('Distribusi pilihan kelas')).toBeDefined();
-    expect(screen.getByText('Jenis pendaftaran')).toBeDefined();
-    expect(screen.getAllByText('Bima Pratama')).toHaveLength(2);
-    expect(screen.getAllByText('Terverifikasi')[0].className).toContain('text-emerald-800');
+    expect(tile('Menunggu keputusan').textContent).toContain('Tidak ada yang perlu dikerjakan');
+    expect(tile('Perlu diverifikasi').textContent).not.toContain('Tidak ada yang perlu dikerjakan');
   });
 
-  it('provides semantic progress values', () => {
+  it('shows Kuota usage per class with full classes marked, and Pindahan outside the quota', () => {
     render(<AdminDashboard summary={summary} />);
-    const regular = screen.getByRole('progressbar', { name: 'Reguler: 16 pendaftar' });
-    expect(regular.getAttribute('aria-valuenow')).toBe('50');
+    expect(screen.getByText('96')).toBeDefined();
+    expect(screen.getByRole('progressbar', { name: 'Bilingual: 48 dari 56 kursi' }).getAttribute('aria-valuenow')).toBe('86');
+    expect(screen.getByText('Penuh')).toBeDefined();
+    expect(screen.getAllByText('sisa 8')).toHaveLength(2);
+    expect(screen.getByText(/Pindahan, di luar kuota/).textContent).toContain('7');
   });
 
-  it('protects long names in both desktop and mobile representations', () => {
+  it('lists upcoming OKB days, marks today and offers the attendance scan', () => {
     render(<AdminDashboard summary={summary} />);
-    const longNames = screen.getAllByText(/Nama Siswa Sangat Panjang/);
-    expect(longNames).toHaveLength(2);
-    expect(longNames.every((element) => /truncate|break-words/.test(element.className))).toBe(true);
+    expect(screen.getByText('Hari ini')).toBeDefined();
+    expect(screen.getByText('Sesi 1: 10 · Sesi 2: 8')).toBeDefined();
+    expect(screen.getByRole('link', { name: /Scan Kehadiran/ }).getAttribute('href')).toBe('/admin/scan');
   });
 
-  it('keeps malformed dates and long statuses safe on mobile', () => {
-    const longStatus = 'Status administratif sangat panjang yang belum dikenali oleh sistem';
-    render(<AdminDashboard summary={{
-      ...summary,
-      recentApplicants: [{ ...summary.recentApplicants[0], status: longStatus, createdAt: null }],
-    }} />);
-
-    expect(screen.getAllByText('Tanggal belum tersedia')).toHaveLength(2);
-    const statuses = screen.getAllByText(longStatus);
-    expect(statuses).toHaveLength(2);
-    expect(statuses.every((element) => element.className.includes('break-words'))).toBe(true);
+  it('hides the scan shortcut and shows an empty state without upcoming OKB', () => {
+    render(<AdminDashboard summary={{ ...summary, schedule: [] }} />);
+    expect(screen.getByText('Belum ada Jadwal OKB mendatang.')).toBeDefined();
+    expect(screen.queryByRole('link', { name: /Scan Kehadiran/ })).toBeNull();
   });
 
-  it('renders one shared empty state without list structures', () => {
-    render(<AdminDashboard summary={{ ...summary, recentApplicants: [] }} />);
-    expect(screen.getAllByText('Belum ada data pendaftar. Data akan muncul setelah formulir pendaftaran dikirim.')).toHaveLength(1);
-    expect(screen.queryByRole('table')).toBeNull();
+  it('reports totals and Siswa Baru accepted per class, without the old distribution and recent lists', () => {
+    render(<AdminDashboard summary={summary} />);
+    expect(tile('Total pendaftar').textContent).toContain('60');
+    expect(tile('Diterima').getAttribute('href')).toBe('/admin/pendaftar?status=Diterima');
+    expect(screen.getByText(/Siswa Baru diterima per kelas/).textContent).toContain('Bilingual 20');
+    expect(screen.queryByText('Pendaftar terbaru')).toBeNull();
+    expect(screen.queryByText('Distribusi pilihan kelas')).toBeNull();
+    expect(screen.queryByText(/Diperbarui/)).toBeNull();
   });
 });

@@ -16,16 +16,10 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 
 import AdminPage from '../page';
 
-function clientReturning(rows: Array<Record<string, string>>, error: unknown = null) {
-  const count = (key: string) => Object.entries(rows.reduce<Record<string, number>>((acc, row) => ({ ...acc, [row[key]]: (acc[row[key]] ?? 0) + 1 }), {}))
-    .map(([label, total]) => ({ label, count: total }));
+function clientReturning(awaiting: number, error: unknown = null) {
   const data = {
-    total: rows.length,
-    awaiting: rows.filter((row) => row.status === 'Menunggu Verifikasi').length,
-    incomplete: rows.filter((row) => row.status === 'Menunggu Unggahan').length,
-    classes: count('pilihan_kelas'),
-    types: count('jenis_pendaftaran'),
-    recent: rows,
+    today: '2026-10-18', total: awaiting, tasks: { awaiting }, attention: { any: 0, nisn: 0 },
+    capacity: [], transfers: 0, results: {}, acceptedByClass: [], schedule: [],
   };
   return { rpc: vi.fn().mockResolvedValue({ data: error ? null : data, error }) };
 }
@@ -45,20 +39,18 @@ describe('AdminPage', () => {
   });
 
   it('renders live registration metrics from Supabase', async () => {
-    mocks.getSupabaseAdmin.mockReturnValue(clientReturning([
-      { id: '1', nama_lengkap: 'Alya', pilihan_kelas: 'Reguler', jenis_pendaftaran: 'Siswa Baru', status: 'Menunggu Verifikasi', created_at: '2026-10-06T08:00:00Z' },
-    ]));
+    mocks.getSupabaseAdmin.mockReturnValue(clientReturning(3));
     render(await AdminPage());
 
     expect(screen.getByText('Dashboard Pendaftaran')).toBeDefined();
-    expect(screen.getAllByText('Alya')).toHaveLength(2);
-    expect(screen.getAllByText('1').length).toBeGreaterThan(0);
+    expect(screen.getByText('Perlu diverifikasi').closest('a')?.textContent).toContain('3');
   });
 
-  it('renders the dashboard empty state for zero registrations', async () => {
-    mocks.getSupabaseAdmin.mockReturnValue(clientReturning([]));
+  it('renders a calm dashboard for zero registrations', async () => {
+    mocks.getSupabaseAdmin.mockReturnValue(clientReturning(0));
     render(await AdminPage());
-    expect(screen.getByText(/Belum ada data pendaftar/)).toBeDefined();
+    expect(screen.getAllByText('Tidak ada yang perlu dikerjakan')).toHaveLength(6);
+    expect(screen.getByText('Belum ada Jadwal OKB mendatang.')).toBeDefined();
   });
 
   it('renders a safe alert when configuration is unavailable', async () => {
@@ -72,7 +64,7 @@ describe('AdminPage', () => {
   });
 
   it('does not expose raw Supabase errors', async () => {
-    mocks.getSupabaseAdmin.mockReturnValue(clientReturning([], { message: 'secret database detail' }));
+    mocks.getSupabaseAdmin.mockReturnValue(clientReturning(0, { message: 'secret database detail' }));
     render(await AdminPage());
 
     expect(screen.getByRole('alert').textContent).toContain('Dashboard belum dapat dimuat');

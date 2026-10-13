@@ -16,7 +16,7 @@ export async function saveDocumentReviewAction(formData: FormData): Promise<void
   const participantId = String(formData.get('participantId') ?? '');
   const documentId = String(formData.get('documentId') ?? '');
   const status = String(formData.get('status') ?? '');
-  if (!UUID_PATTERN.test(participantId)) throw new Error('Data peserta tidak valid.');
+  if (!UUID_PATTERN.test(participantId)) throw new Error('Data pendaftar tidak valid.');
   if (!DOCUMENT_DEFINITIONS.some(document => document.id === documentId)) throw new Error('Jenis dokumen tidak valid.');
   if (!REVIEW_STATUSES.has(status)) throw new Error('Status pemeriksaan tidak valid.');
 
@@ -53,7 +53,7 @@ export async function saveDocumentReviewAction(formData: FormData): Promise<void
     const allDocumentsVerified = DOCUMENT_DEFINITIONS.every(document => verifiedIds.has(document.id));
     if (allDocumentsVerified) {
       const { error: statusError } = await supabase.from('pendaftar').update({ status: 'Terverifikasi' }).eq('id', participantId).eq('status', 'Menunggu Verifikasi');
-      if (statusError) throw new Error('Status peserta tidak dapat diperbarui.');
+      if (statusError) throw new Error('Status pendaftar tidak dapat diperbarui.');
       revalidatePath('/admin/pendaftar');
     }
   }

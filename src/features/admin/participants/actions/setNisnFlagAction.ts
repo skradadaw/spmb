@@ -12,7 +12,7 @@ export async function setNisnFlagAction(formData: FormData): Promise<void> {
 
   const participantId = String(formData.get('participantId') ?? '');
   const flagged = formData.get('flagged');
-  if (!UUID_PATTERN.test(participantId)) throw new Error('Data peserta tidak valid.');
+  if (!UUID_PATTERN.test(participantId)) throw new Error('Data pendaftar tidak valid.');
   if (flagged !== 'true' && flagged !== 'false') throw new Error('Penanda NISN tidak valid.');
 
   const { data, error } = await getSupabaseAdmin()

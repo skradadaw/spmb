@@ -1,8 +1,10 @@
 import { DOCUMENT_DEFINITIONS, type RegistrationDocumentId } from '@/features/registration/contracts';
 
 export const PARTICIPANT_PAGE_SIZE = 20;
+export const PARTICIPANT_PAGE_SIZES = [20, 50, 100] as const;
 export const PARTICIPANT_CLASSES = ['Reguler', 'Bilingual', 'Tahfizh'] as const;
-export const PARTICIPANT_TYPES = ['Siswa Baru', 'Pindahan'] as const;
+/** Filter Kelas: tiga program kelas untuk Siswa Baru (Kelas Penempatan bila sudah ditetapkan, selain itu Pilihan Kelas), plus semua Pindahan. */
+export const PARTICIPANT_CLASS_FILTERS = [...PARTICIPANT_CLASSES, 'Pindahan'] as const;
 export const PARTICIPANT_DEFAULT_STATUSES = ['Menunggu Unggahan', 'Menunggu Verifikasi', 'Terverifikasi', 'Terjadwal OKB', 'Sudah OKB', 'Diterima', 'Ditolak', 'Dibatalkan'] as const;
 /** Status yang masih boleh dibatalkan admin; Ditolak sudah final dan Menunggu Unggahan belum dianggap mendaftar. */
 export const CANCELLABLE_STATUSES = ['Menunggu Verifikasi', 'Terverifikasi', 'Terjadwal OKB', 'Sudah OKB', 'Diterima'] as const;
@@ -14,8 +16,8 @@ export type AttentionFilter = keyof typeof ATTENTION_FILTERS;
 /** Perlu Perhatian (lihat CONTEXT.md): berkas yang sekadar belum diperiksa tidak dihitung. */
 export type ParticipantAttention = { nisnMismatch: boolean; missingDocuments: number };
 
-export type ParticipantListQuery = { search: string; classFilter: string | null; typeFilter: string | null; statusFilter: string | null; attentionFilter: AttentionFilter | null; page: number };
-export type ParticipantListItem = { id: string; nomorPendaftaran: string | null; namaLengkap: string; asalSekolah: string | null; pilihanKelas: string; jenisPendaftaran: string; status: string; createdAt: string | null; attention: ParticipantAttention };
+export type ParticipantListQuery = { search: string; classFilter: string | null; statusFilter: string | null; attentionFilter: AttentionFilter | null; /** Tidak Hadir OKB; hanya lewat tautan dari Ringkasan. */ okbMissed: boolean; page: number; pageSize: number };
+export type ParticipantListItem = { id: string; nomorPendaftaran: string | null; namaLengkap: string; asalSekolah: string | null; pilihanKelas: string; kelasPenempatan: string | null; kelasTujuan: string | null; jenisPendaftaran: string; status: string; createdAt: string | null; attention: ParticipantAttention };
 export type ParticipantListResult = { items: ParticipantListItem[]; page: number; pageSize: number; total: number; totalPages: number };
 export type ParticipantExportRecord = { id: string; createdAt: string | null; updatedAt: string | null; status: string; adminNote: string | null; nisnMismatch: boolean; fields: Record<string, string | null> };
 export type ParticipantDocument = { id: RegistrationDocumentId; title: string; path: string | null };
@@ -39,7 +41,7 @@ export type ParticipantDetail = {
   nisnMismatch: boolean;
 };
 
-export const PARTICIPANT_LIST_COLUMNS = 'id,nomor_pendaftaran,nama_lengkap,asal_sekolah,pilihan_kelas,jenis_pendaftaran,status,created_at,nisn_tidak_sesuai,berkas_belum_tersedia';
+export const PARTICIPANT_LIST_COLUMNS = 'id,nomor_pendaftaran,nama_lengkap,asal_sekolah,pilihan_kelas,kelas_penempatan,kelas_tujuan,jenis_pendaftaran,status,created_at,nisn_tidak_sesuai,berkas_belum_tersedia';
 export const PARTICIPANT_EXPORT_COLUMNS = 'id,created_at,updated_at,status,catatan_admin,nisn_tidak_sesuai,nama_lengkap,jenis_kelamin,tempat_lahir,tanggal_lahir,nik,nisn,nomor_pendaftaran,jenis_pendaftaran,pilihan_kelas,kelas_tujuan,asal_sekolah,prestasi_anak,tingkat_prestasi,jarak_ke_sekolah,bekerja_di_direktorat2,profesi_di_direktorAT2,nama_orangtua_direktorat2,unit_orangtua_direktorat2,saudara_di_direktorat2,nama_saudara_direktorat2,unit_saudara_direktorat2,ada_pengusul,tipe_pengusul,nama_tk_pengusul,nama_pengusul,nomor_wa_pengusul,jadwal_okb_tanggal,jadwal_okb_sesi,kelas_penempatan,alamat_jalan,rt,rw,kelurahan,kecamatan,kota,provinsi,alamat_rumah,nama_ayah,nik_ayah,pendidikan_ayah,pekerjaan_ayah,penghasilan_ayah,telepon_ayah,alamat_ayah,nama_ibu,nik_ibu,pendidikan_ibu,pekerjaan_ibu,penghasilan_ibu,telepon_ibu,alamat_ibu'.replace('profesi_di_direktorAT2', 'profesi_di_direktorat2');
 const PARTICIPANT_DETAIL_BASE_COLUMNS = 'id,created_at,updated_at,status,status_sebelum_dibatalkan,catatan_admin,nisn_tidak_sesuai,nomor_pendaftaran,jenis_pendaftaran,pilihan_kelas,kelas_tujuan,nama_lengkap,jenis_kelamin,tempat_lahir,tanggal_lahir,nik,nisn,asal_sekolah,prestasi_anak,tingkat_prestasi,jarak_ke_sekolah,bekerja_di_direktorat2,profesi_di_direktorat2,nama_orangtua_direktorat2,unit_orangtua_direktorat2,saudara_di_direktorat2,nama_saudara_direktorat2,unit_saudara_direktorat2,ada_pengusul,tipe_pengusul,nama_tk_pengusul,nama_pengusul,nomor_wa_pengusul,jadwal_okb_tanggal,jadwal_okb_sesi,kelas_penempatan,alamat_jalan,rt,rw,kelurahan,kecamatan,kota,provinsi,alamat_rumah,nama_ayah,nik_ayah,pendidikan_ayah,pekerjaan_ayah,penghasilan_ayah,telepon_ayah,alamat_ayah,nama_ibu,nik_ibu,pendidikan_ibu,pekerjaan_ibu,penghasilan_ibu,telepon_ibu,alamat_ibu';
 export const PARTICIPANT_DETAIL_COLUMNS = `${PARTICIPANT_DETAIL_BASE_COLUMNS},${DOCUMENT_DEFINITIONS.map(({ dbColumn }) => dbColumn).join(',')}`;

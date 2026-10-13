@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { parseParticipantListQuery, participantListHref, escapeSearch } from '../query';
+import { parseParticipantListQuery, participantListHref, escapeSearch, paginationPages } from '../query';
 
 describe('participant query', () => {
   it('normalizes invalid pages and allowlists filters', () => {
-    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, typeFilter: null, statusFilter: null, attentionFilter: null, page: 1 });
+    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, page: 1, pageSize: 20 });
     expect(parseParticipantListQuery(new URLSearchParams('page=2.5')).page).toBe(1);
   });
   it('allowlists the Perlu Perhatian filter and keeps it in links', () => {
@@ -19,6 +19,26 @@ describe('participant query', () => {
   it('builds internal links preserving filters', () => {
     const query = parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler&page=3'));
     expect(participantListHref(query, 2)).toBe('/admin/pendaftar?q=Ani&kelas=Reguler&page=2');
+  });
+  it('accepts Pindahan as a class and only the offered page sizes', () => {
+    expect(parseParticipantListQuery(new URLSearchParams('kelas=Pindahan')).classFilter).toBe('Pindahan');
+    expect(parseParticipantListQuery(new URLSearchParams('per=37')).pageSize).toBe(20);
+    const query = parseParticipantListQuery(new URLSearchParams('per=50&kelas=Tahfizh'));
+    expect(participantListHref(query, 2)).toBe('/admin/pendaftar?kelas=Tahfizh&per=50&page=2');
+    expect(participantListHref({ ...query, pageSize: 20 })).toBe('/admin/pendaftar?kelas=Tahfizh');
+  });
+  it('keeps the link-only Tidak hadir OKB filter in links', () => {
+    const query = parseParticipantListQuery(new URLSearchParams('okb=terlewat'));
+    expect(query.okbMissed).toBe(true);
+    expect(participantListHref(query, 2)).toBe('/admin/pendaftar?okb=terlewat&page=2');
+    expect(parseParticipantListQuery(new URLSearchParams('okb=lain')).okbMissed).toBe(false);
+  });
+  it('lists page numbers with gaps around the current page', () => {
+    expect(paginationPages(1, 1)).toEqual([1]);
+    expect(paginationPages(1, 5)).toEqual([1, 2, null, 5]);
+    expect(paginationPages(6, 12)).toEqual([1, null, 5, 6, 7, null, 12]);
+    expect(paginationPages(4, 12)).toEqual([1, 2, 3, 4, 5, null, 12]);
+    expect(paginationPages(12, 12)).toEqual([1, null, 11, 12]);
   });
   it('ignores status values that are not in the supported list', () => {
     expect(parseParticipantListQuery(new URLSearchParams('status=Unknown'))).toMatchObject({ statusFilter: null });

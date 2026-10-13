@@ -102,7 +102,7 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
         className="rounded-xl border border-emerald-700/25 bg-gradient-to-r from-emerald-900/15 via-emerald-700/10 to-lime-600/15 p-3.5 shadow-sm shadow-emerald-950/10 ring-1 ring-inset ring-white/25"
       >
         <p id="capacity-title" className="text-sm font-extrabold text-emerald-950">
-          Progress peserta
+          Progress pendaftar
         </p>
         <p className="mt-1 text-sm font-bold leading-5 text-slate-800">
           Progress sementara tidak tersedia
@@ -117,7 +117,7 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
   const safeCount = Math.max(0, completedCount);
   const progressValue = Math.min(safeCount, registrationInfo.capacity);
   const percentage = Math.min(100, Math.round((safeCount / registrationInfo.capacity) * 100));
-  const label = `${safeCount} dari ${registrationInfo.capacity} peserta telah menyelesaikan pendaftaran`;
+  const label = `${safeCount} dari ${registrationInfo.capacity} pendaftar telah menyelesaikan pendaftaran`;
 
   return (
     <section
@@ -126,7 +126,7 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p id="capacity-title" className="text-sm font-bold text-emerald-950">
-          Progress peserta
+          Progress pendaftar
         </p>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#007A10] shadow-sm shadow-emerald-900/5 ring-1 ring-inset ring-emerald-950/10">
           <span className="relative flex h-2 w-2">

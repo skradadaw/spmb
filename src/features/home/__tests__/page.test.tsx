@@ -131,13 +131,13 @@ describe('Open Booking landing page', () => {
 
     const schedule = screen.getByRole('complementary', { name: 'Jadwal penting' });
     const progress = within(schedule).getByRole('progressbar', {
-      name: '86 dari 112 peserta telah menyelesaikan pendaftaran',
+      name: '86 dari 112 pendaftar telah menyelesaikan pendaftaran',
     });
     expect(progress.getAttribute('aria-valuenow')).toBe('86');
     expect(progress.getAttribute('aria-valuemax')).toBe('112');
     expect(within(schedule).getByText('86 / 112')).toBeDefined();
     expect(
-      within(schedule).getByRole('region', { name: 'Progress peserta' }).className,
+      within(schedule).getByRole('region', { name: 'Progress pendaftar' }).className,
     ).toContain('from-emerald-900/15');
     expect(
       within(schedule).getByText(/kuota terbatas! segera daftarkan putra-putri ayah & bunda/i),
@@ -148,7 +148,7 @@ describe('Open Booking landing page', () => {
     renderHome(120);
 
     const progress = screen.getByRole('progressbar', {
-      name: '120 dari 112 peserta telah menyelesaikan pendaftaran',
+      name: '120 dari 112 pendaftar telah menyelesaikan pendaftaran',
     });
     expect(progress.getAttribute('aria-valuenow')).toBe('112');
     expect(progress.getAttribute('style')).toContain('width: 100%');
@@ -159,7 +159,7 @@ describe('Open Booking landing page', () => {
 
     expect(screen.getByText('Progress sementara tidak tersedia')).toBeDefined();
     expect(screen.queryByRole('progressbar')).toBeNull();
-    expect(screen.queryByText('0 peserta')).toBeNull();
+    expect(screen.queryByText('0 pendaftar')).toBeNull();
   });
 
   it('replaces detailed fees with the official downloadable PDF', () => {

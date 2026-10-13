@@ -16,6 +16,6 @@ export async function GET(request: Request) {
     const date = new Date().toISOString().slice(0, 10);
     return new Response(await participantExportXlsx(items), { status: 200, headers: { ...PRIVATE_HEADERS, 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': `attachment; filename="data-pendaftar-${date}.xlsx"` } });
   } catch {
-    return Response.json({ error: 'Data peserta belum dapat diekspor.' }, { status: 500, headers: PRIVATE_HEADERS });
+    return Response.json({ error: 'Data pendaftar belum dapat diekspor.' }, { status: 500, headers: PRIVATE_HEADERS });
   }
 }

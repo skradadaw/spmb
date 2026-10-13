@@ -5,7 +5,7 @@ export type AdminSection = 'summary' | 'participants' | 'attendance' | 'capacity
 export function AdminNavigation({ active, mobile = false, collapsed = false, onNavigate }: { active: AdminSection; mobile?: boolean; collapsed?: boolean; onNavigate?: () => void }) {
   const items = [
     { key: 'summary', href: '/admin', label: 'Ringkasan', icon: LayoutDashboard },
-    { key: 'participants', href: '/admin/pendaftar', label: 'Data Peserta', icon: UsersRound },
+    { key: 'participants', href: '/admin/pendaftar', label: 'Data Pendaftar', icon: UsersRound },
     { key: 'attendance', href: '/admin/scan', label: 'Scan Kehadiran', icon: ScanLine },
     { key: 'capacity', href: '/admin/kuota', label: 'Kuota Kelas', icon: Armchair },
   ];

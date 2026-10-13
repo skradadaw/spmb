@@ -46,7 +46,7 @@ export async function GET(request: Request, { params }: Context) {
     if (!document) return errorResponse('Dokumen tidak ditemukan.', 404);
 
     const upstream = await fetch(document.signedUrl, { cache: 'no-store', redirect: 'error' });
-    if (!upstream.ok || !upstream.body) return errorResponse('Dokumen peserta belum dapat dibuka.', 502);
+    if (!upstream.ok || !upstream.body) return errorResponse('Dokumen pendaftar belum dapat dibuka.', 502);
 
     const extension = document.path.match(/\.(pdf|jpg|png|webp)$/i)?.[1]?.toLowerCase();
     if (!extension || !MIME_TYPES[extension]) return errorResponse('Dokumen tidak ditemukan.', 404);
@@ -69,6 +69,6 @@ export async function GET(request: Request, { params }: Context) {
       },
     });
   } catch {
-    return errorResponse('Dokumen peserta belum dapat dibuka.', 502);
+    return errorResponse('Dokumen pendaftar belum dapat dibuka.', 502);
   }
 }

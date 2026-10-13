@@ -41,6 +41,6 @@ export async function createParticipantDocumentUrl(
   const path = getDocumentPath(row, documentId);
   if (!path) return null;
   const result = await storage.createSignedUrl(path, 60);
-  if (result.error || !result.data?.signedUrl) throw new Error('Dokumen peserta tidak dapat dibuka.');
+  if (result.error || !result.data?.signedUrl) throw new Error('Dokumen pendaftar tidak dapat dibuka.');
   return { signedUrl: result.data.signedUrl, path };
 }

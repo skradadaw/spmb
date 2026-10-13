@@ -1,7 +1,7 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ParticipantAttention, ParticipantDetail, ParticipantDocumentReviews, ParticipantExportRecord, ParticipantListItem, ParticipantListQuery, ParticipantListResult } from '../contracts';
-import { ATTENTION_EXCLUDED_STATUSES, PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS, PARTICIPANT_PAGE_SIZE } from '../contracts';
+import { ATTENTION_EXCLUDED_STATUSES, PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contracts';
 import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
 import { escapeSearch } from '../query';
 import { fromPendaftarRow } from '../editing';
@@ -12,6 +12,7 @@ type Query = {
   ilike: (column: string, value: string) => Query;
   eq: (column: string, value: string | boolean) => Query;
   not: (column: string, operator: string, value: string) => Query;
+  lt: (column: string, value: string) => Query;
   or: (filters: string) => Query;
   order: (column: string, options?: { ascending?: boolean }) => Query;
   range: (from: number, to: number) => Result<unknown[]>;
@@ -19,10 +20,11 @@ type Query = {
 };
 type Client = { from: (table: 'pendaftar' | 'verifikasi_dokumen') => { select: (columns: string, options?: { count?: 'exact'; head?: boolean }) => Query } };
 const text = (value: unknown): string | null => typeof value === 'string' && value.trim() ? value : null;
-const failure = () => new Error('Data peserta tidak dapat dimuat.');
+const failure = () => new Error('Data pendaftar tidak dapat dimuat.');
 /** Pencarian yang diawali "OB-" dicocokkan ke Nomor Pendaftaran, selain itu ke nama. */
 const searchColumn = (search: string) => /^OB-/i.test(search.trim()) ? 'nomor_pendaftaran' : 'nama_lengkap';
 
+const jakartaToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
 const count = (value: unknown) => Math.max(0, Number(value) || 0);
 const EXCLUDED_STATUS_LIST = `(${ATTENTION_EXCLUDED_STATUSES.map(status => `"${status}"`).join(',')})`;
 
@@ -33,9 +35,15 @@ function mapAttention(row: Record<string, unknown>, status: string): Participant
 
 function applyFilters(request: Query, query: ParticipantListQuery) {
   if (query.search) request = request.ilike(searchColumn(query.search), `%${escapeSearch(query.search.trim())}%`);
-  if (query.classFilter) request = request.eq('pilihan_kelas', query.classFilter);
-  if (query.typeFilter) request = request.eq('jenis_pendaftaran', query.typeFilter);
+  if (query.classFilter === 'Pindahan') request = request.eq('jenis_pendaftaran', 'Pindahan');
+  else if (query.classFilter) {
+    // Kelas Penempatan dari Panitia menggantikan Pilihan Kelas begitu ditetapkan.
+    request = request.eq('jenis_pendaftaran', 'Siswa Baru')
+      .or(`kelas_penempatan.eq.${query.classFilter},and(kelas_penempatan.is.null,pilihan_kelas.eq.${query.classFilter})`);
+  }
   if (query.statusFilter) request = request.eq('status', query.statusFilter);
+  // Tidak Hadir OKB: tanggal Jadwal OKB sudah lewat tanpa Scan Kehadiran.
+  if (query.okbMissed) request = request.eq('status', 'Terjadwal OKB').lt('jadwal_okb_tanggal', jakartaToday());
   if (query.attentionFilter) {
     request = request.not('status', 'in', EXCLUDED_STATUS_LIST);
     if (query.attentionFilter === 'nisn') request = request.eq('nisn_tidak_sesuai', true);
@@ -48,7 +56,7 @@ function mapList(row: Record<string, unknown>): ParticipantListItem {
   const status = text(row.status) ?? 'Belum diisi';
   return {
     id: String(row.id), nomorPendaftaran: text(row.nomor_pendaftaran), namaLengkap: text(row.nama_lengkap) ?? 'Nama belum diisi', asalSekolah: text(row.asal_sekolah),
-    pilihanKelas: text(row.pilihan_kelas) ?? 'Belum diisi', jenisPendaftaran: text(row.jenis_pendaftaran) ?? 'Belum diisi',
+    pilihanKelas: text(row.pilihan_kelas) ?? 'Belum diisi', kelasPenempatan: text(row.kelas_penempatan), kelasTujuan: text(row.kelas_tujuan), jenisPendaftaran: text(row.jenis_pendaftaran) ?? 'Belum diisi',
     status, createdAt: text(row.created_at), attention: mapAttention(row, status),
   };
 }
@@ -61,7 +69,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
   return {
     async list(query: ParticipantListQuery): Promise<ParticipantListResult> {
       const fetchPage = (page: number) => filtered(query).order('created_at', { ascending: false }).order('id', { ascending: false })
-        .range((page - 1) * PARTICIPANT_PAGE_SIZE, page * PARTICIPANT_PAGE_SIZE - 1);
+        .range((page - 1) * query.pageSize, page * query.pageSize - 1);
       // Rows and the exact count arrive in one round trip; only a page beyond the end needs a second query.
       let page = query.page;
       let result = await fetchPage(page);
@@ -73,7 +81,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         page = 1;
       }
       const total = result.count ?? 0;
-      const totalPages = Math.max(1, Math.ceil(total / PARTICIPANT_PAGE_SIZE));
+      const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
       const lastAllowedPage = Math.min(query.page, totalPages);
       if (lastAllowedPage !== page) {
         page = lastAllowedPage;
@@ -81,7 +89,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         if (result.error || result.count == null) throw failure();
       }
       if (!result.data) throw failure();
-      return { items: result.data.map(row => mapList(row as Record<string, unknown>)), page, pageSize: PARTICIPANT_PAGE_SIZE, total, totalPages };
+      return { items: result.data.map(row => mapList(row as Record<string, unknown>)), page, pageSize: query.pageSize, total, totalPages };
     },
     async exportAll(query: ParticipantListQuery): Promise<ParticipantListItem[]> {
       const items: ParticipantListItem[] = [];

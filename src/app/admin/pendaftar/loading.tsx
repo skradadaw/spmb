@@ -3,7 +3,7 @@ import { LoadingStatus, SkeletonBlock, SkeletonHeading } from '@/features/admin/
 export default function ParticipantsLoading() {
   return (
     <div>
-      <LoadingStatus label="Memuat data peserta..." />
+      <LoadingStatus label="Memuat data pendaftar..." />
       <SkeletonHeading />
       <div className="mt-6 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

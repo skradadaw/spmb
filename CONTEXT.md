@@ -54,7 +54,7 @@ Tingkat kelas (2–6) yang dituju seorang Pendaftar Pindahan.
 Program kelas yang diminta orang tua saat mendaftar: Reguler, Bilingual, atau Tahfizh.
 
 **Kelas Penempatan** (*Class Placement*):
-Program kelas yang ditetapkan Panitia untuk Pendaftar yang Diterima; dapat berbeda dari Pilihan Kelas, misalnya Pendaftar Tahfizh ditempatkan di Reguler ketika Tahfizh tidak mencapai satu kelas.
+Program kelas yang ditetapkan Panitia untuk Pendaftar yang Diterima; dapat berbeda dari Pilihan Kelas, misalnya Pendaftar Tahfizh ditempatkan di Reguler ketika Tahfizh tidak mencapai satu kelas. Begitu ditetapkan, Kelas Penempatan menggantikan Pilihan Kelas ketika admin melihat atau menyaring Pendaftar menurut kelasnya.
 
 **Berkas** (*Document*):
 Salah satu dari empat dokumen wajib Pendaftar: Akta Kelahiran, Kartu Keluarga, Pas Foto, dan Bukti Pembayaran OKB.
@@ -94,6 +94,10 @@ Pemindaian QR pada Bukti Pendaftaran oleh admin di hari OKB, yang langsung menca
 **Berkas Pengganti** (*Replacement Document*):
 File yang diunggah admin untuk menggantikan salah satu Berkas Pendaftar, kapan pun dan pada status apa pun. File lama dihapus, Berkas kembali berstatus belum diperiksa, dan status Pendaftar tidak berubah.
 _Avoid_: upload ulang, revisi berkas
+
+**Tidak Hadir OKB** (*Missed OKB*):
+Keadaan Pendaftar yang masih Terjadwal OKB padahal tanggal Jadwal OKB-nya sudah lewat, karena tidak tercatat lewat Scan Kehadiran. Bukan Status Pendaftar; admin menjadwalkan ulang atau membatalkannya.
+_Avoid_: mangkir, absen
 
 **NISN Tidak Sesuai** (*Unverified NISN*):
 Penanda admin pada Pendaftar yang NISN-nya diduga salah atau asal diisi orang tua. Bukan Status Pendaftar dan tidak menghalangi langkah apa pun; admin menghubungi orang tua untuk meminta NISN yang benar dari TK asal. Penanda hilang ketika admin mengganti NISN, atau dihapus admin bila NISN ternyata benar.

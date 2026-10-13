@@ -3,7 +3,7 @@ import { LoadingStatus, SkeletonBlock } from '@/features/admin/components/AdminS
 export default function ParticipantDetailLoading() {
   return (
     <div>
-      <LoadingStatus label="Memuat detail peserta..." />
+      <LoadingStatus label="Memuat detail pendaftar..." />
       <SkeletonBlock className="mb-4 h-9 w-48" />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-3">

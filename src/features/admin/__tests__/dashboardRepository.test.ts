@@ -1,20 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { AdminDashboardLoadError, createAdminDashboardRepository } from '../server/dashboardRepository';
 
-const recent = [
-  { id: '3', nama_lengkap: 'Citra', pilihan_kelas: 'Bilingual', jenis_pendaftaran: 'Siswa Baru', status: 'Terverifikasi', created_at: '2026-10-06T10:00:00Z' },
-  { id: '2', nama_lengkap: 'Bima', pilihan_kelas: 'Tahfizh', jenis_pendaftaran: 'Pindahan', status: 'Menunggu Unggahan', created_at: '2026-10-06T09:00:00Z' },
-  { id: '1', nama_lengkap: 'Alya Putri', pilihan_kelas: 'Reguler', jenis_pendaftaran: 'Siswa Baru', status: 'Menunggu Verifikasi', created_at: '2026-10-06T08:00:00Z' },
-];
-
 const payload = {
-  total: 3,
-  awaiting: 1,
-  incomplete: 1,
+  today: '2026-10-18',
+  total: 60,
+  tasks: { uploading: 4, awaiting: 12, verified: 5, absent: 2, decision: 1 },
   attention: { any: 2, nisn: 1 },
-  classes: [{ label: 'Reguler', count: 1 }, { label: 'Bilingual', count: 1 }, { label: 'Tahfizh', count: 1 }],
-  types: [{ label: 'Siswa Baru', count: 2 }, { label: 'Pindahan', count: 1 }],
-  recent,
+  capacity: [{ label: 'Tahfizh', kuota: 28, terpakai: 28 }, { label: 'Reguler', kuota: 28, terpakai: 20 }, { label: 'Bilingual', kuota: 56, terpakai: 48 }],
+  transfers: 7,
+  results: { accepted: 40, rejected: 6, withdrawn: 3 },
+  acceptedByClass: [{ label: 'Bilingual', count: 20 }, { label: 'Reguler', count: 12 }],
+  schedule: [{ date: '2026-10-18', total: 3, sessions: [{ label: ' Sesi 1 ', count: 2 }, { label: null, count: 1 }] }],
 };
 
 function clientReturning(data: unknown, error: unknown = null) {
@@ -29,60 +25,35 @@ describe('admin dashboard repository', () => {
 
     expect(rpc).toHaveBeenCalledTimes(1);
     expect(rpc).toHaveBeenCalledWith('get_admin_dashboard_summary');
-    expect(summary.totalRegistrations).toBe(3);
-    expect(summary.awaitingVerification).toBe(1);
-    expect(summary.completedRegistrations).toBe(2);
-    expect(summary.incompleteUploads).toBe(1);
-    expect(summary.attention).toEqual({ any: 2, nisn: 1 });
-    expect(summary.classDistribution.map(({ label, count }) => ({ label, count }))).toEqual([
-      { label: 'Reguler', count: 1 }, { label: 'Bilingual', count: 1 }, { label: 'Tahfizh', count: 1 },
-    ]);
-    expect(summary.typeDistribution.map(({ label, count }) => ({ label, count }))).toEqual([
-      { label: 'Siswa Baru', count: 2 }, { label: 'Pindahan', count: 1 },
-    ]);
-    expect(summary.recentApplicants.map((item) => item.namaLengkap)).toEqual(['Citra', 'Bima', 'Alya Putri']);
+    expect(summary).toMatchObject({ today: '2026-10-18', totalRegistrations: 60, tasks: payload.tasks, attention: payload.attention, transfers: 7, results: payload.results });
   });
 
-  it('returns a zero-safe empty summary', async () => {
-    const { client } = clientReturning({ total: 0, awaiting: 0, incomplete: 0, classes: [], types: [], recent: [] });
-    const summary = await createAdminDashboardRepository(client).getSummary();
+  it('keeps the three program classes in a fixed order, filling missing ones with zero', async () => {
+    const summary = await createAdminDashboardRepository(clientReturning(payload).client).getSummary();
+    expect(summary.capacity.map(row => row.label)).toEqual(['Reguler', 'Bilingual', 'Tahfizh']);
+    expect(summary.capacity[2]).toEqual({ label: 'Tahfizh', kuota: 28, terpakai: 28 });
+    expect(summary.acceptedByClass).toEqual([{ label: 'Reguler', count: 12 }, { label: 'Bilingual', count: 20 }, { label: 'Tahfizh', count: 0 }]);
+  });
 
+  it('tidies session labels and names a missing one', async () => {
+    const summary = await createAdminDashboardRepository(clientReturning(payload).client).getSummary();
+    expect(summary.schedule[0].sessions).toEqual([{ label: 'Sesi 1', count: 2 }, { label: 'Tanpa sesi', count: 1 }]);
+  });
+
+  it('returns a zero-safe summary when counts are missing', async () => {
+    const { client } = clientReturning({ today: '2026-10-18', total: null, capacity: [], acceptedByClass: [], schedule: [] });
+    const summary = await createAdminDashboardRepository(client).getSummary();
     expect(summary.totalRegistrations).toBe(0);
-    expect(summary.classDistribution.every((item) => item.percentage === 0)).toBe(true);
-    expect(summary.recentApplicants).toEqual([]);
-    // An older database function without attention counts still renders zeros.
+    expect(summary.tasks).toEqual({ uploading: 0, awaiting: 0, verified: 0, absent: 0, decision: 0 });
     expect(summary.attention).toEqual({ any: 0, nisn: 0 });
-  });
-
-  it('groups unknown and null categories under Lainnya', async () => {
-    const { client } = clientReturning({
-      ...payload,
-      total: 1,
-      classes: [{ label: null, count: 1 }],
-      types: [{ label: 'Lain', count: 1 }],
-      recent: [{ ...recent[0], pilihan_kelas: null, jenis_pendaftaran: 'Lain', status: null }],
-    });
-    const summary = await createAdminDashboardRepository(client).getSummary();
-
-    expect(summary.classDistribution).toContainEqual({ label: 'Lainnya', count: 1, percentage: 100 });
-    expect(summary.typeDistribution).toContainEqual({ label: 'Lainnya', count: 1, percentage: 100 });
-    expect(summary.recentApplicants[0]).toMatchObject({ pilihanKelas: 'Lainnya', jenisPendaftaran: 'Lainnya', status: 'Belum diisi' });
-  });
-
-  it('normalizes missing or malformed registration dates', async () => {
-    const { client } = clientReturning({
-      ...payload,
-      recent: [{ ...recent[0], id: '4', created_at: null }, { ...recent[0], id: '5', created_at: 'not-a-date' }],
-    });
-    const summary = await createAdminDashboardRepository(client).getSummary();
-
-    expect(summary.recentApplicants.map((item) => item.createdAt)).toEqual([null, null]);
+    expect(summary.capacity.every(row => row.kuota === 0 && row.terpakai === 0)).toBe(true);
   });
 
   it('returns only a safe error when Supabase fails or returns an unexpected shape', async () => {
     await expect(createAdminDashboardRepository(clientReturning(null, { message: 'secret database detail' }).client).getSummary())
       .rejects.toEqual(new AdminDashboardLoadError());
-    await expect(createAdminDashboardRepository(clientReturning({ total: 1 }).client).getSummary())
+    // An older database function without the new fields is treated as a load error, not rendered as zeros.
+    await expect(createAdminDashboardRepository(clientReturning({ total: 1, classes: [], types: [], recent: [] }).client).getSummary())
       .rejects.toEqual(new AdminDashboardLoadError());
   });
 });

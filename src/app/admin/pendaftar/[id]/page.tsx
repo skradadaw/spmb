@@ -35,7 +35,7 @@ export default async function ParticipantPage({ params, searchParams }: Props) {
   try {
     participant = await createParticipantsRepository(getSupabaseAdmin()).getById(id);
   } catch {
-    return <Alert variant="destructive"><AlertTitle>Detail peserta belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau kembali ke daftar peserta.</AlertDescription></Alert>;
+    return <Alert variant="destructive"><AlertTitle>Detail pendaftar belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau kembali ke daftar pendaftar.</AlertDescription></Alert>;
   }
 
   if (!participant) notFound();

@@ -512,7 +512,7 @@ $$;
 REVOKE ALL ON FUNCTION public.update_applicant_registration(UUID, TEXT, TEXT, TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.update_applicant_registration(UUID, TEXT, TEXT, TEXT) TO service_role;
 
--- Ringkasan dashboard admin dihitung di database: hanya angka agregat dan 8 pendaftar terbaru yang dikirim.
+-- Ringkasan dashboard admin dihitung di database: hanya angka agregat yang dikirim.
 CREATE OR REPLACE FUNCTION public.get_admin_dashboard_summary()
 RETURNS JSONB
 LANGUAGE sql
@@ -520,10 +520,22 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
+  WITH today AS (SELECT (now() AT TIME ZONE 'Asia/Jakarta')::date AS d)
   SELECT jsonb_build_object(
-    'total', (SELECT count(*) FROM public.pendaftar),
-    'awaiting', (SELECT count(*) FROM public.pendaftar WHERE status = 'Menunggu Verifikasi'),
-    'incomplete', (SELECT count(*) FROM public.pendaftar WHERE status = 'Menunggu Unggahan'),
+    'today', (SELECT d FROM today),
+    -- Menunggu Unggahan belum dianggap mendaftar.
+    'total', (SELECT count(*) FROM public.pendaftar WHERE status <> 'Menunggu Unggahan'),
+    'tasks', (
+      SELECT jsonb_build_object(
+        'uploading', count(*) FILTER (WHERE status = 'Menunggu Unggahan'),
+        'awaiting', count(*) FILTER (WHERE status = 'Menunggu Verifikasi'),
+        'verified', count(*) FILTER (WHERE status = 'Terverifikasi'),
+        -- Tidak Hadir OKB: tanggal Jadwal OKB sudah lewat tanpa Scan Kehadiran.
+        'absent', count(*) FILTER (WHERE status = 'Terjadwal OKB' AND jadwal_okb_tanggal < (SELECT d FROM today)),
+        'decision', count(*) FILTER (WHERE status = 'Sudah OKB')
+      )
+      FROM public.pendaftar
+    ),
     -- Perlu Perhatian tidak pernah menghitung Pendaftar Dibatalkan atau Ditolak.
     'attention', (
       SELECT jsonb_build_object(
@@ -533,22 +545,47 @@ AS $$
       FROM public.pendaftar
       WHERE status NOT IN ('Dibatalkan', 'Ditolak')
     ),
-    'classes', COALESCE((
-      SELECT jsonb_agg(jsonb_build_object('label', pilihan_kelas, 'count', jumlah))
-      FROM (SELECT pilihan_kelas, count(*) AS jumlah FROM public.pendaftar GROUP BY pilihan_kelas) AS kelas
+    -- Sama dengan menu Kuota Kelas agar kedua halaman tidak pernah berbeda angka.
+    'capacity', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('label', usage.pilihan_kelas, 'kuota', usage.kuota, 'terpakai', usage.terpakai))
+      FROM public.get_class_capacity_usage() AS usage
     ), '[]'::jsonb),
-    'types', COALESCE((
-      SELECT jsonb_agg(jsonb_build_object('label', jenis_pendaftaran, 'count', jumlah))
-      FROM (SELECT jenis_pendaftaran, count(*) AS jumlah FROM public.pendaftar GROUP BY jenis_pendaftaran) AS jenis
-    ), '[]'::jsonb),
-    'recent', COALESCE((
-      SELECT jsonb_agg(to_jsonb(terbaru) ORDER BY terbaru.created_at DESC, terbaru.id DESC)
+    'transfers', (
+      SELECT count(*) FROM public.pendaftar
+      WHERE jenis_pendaftaran = 'Pindahan' AND status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')
+    ),
+    'results', (
+      SELECT jsonb_build_object(
+        'accepted', count(*) FILTER (WHERE status = 'Diterima'),
+        'rejected', count(*) FILTER (WHERE status = 'Ditolak'),
+        'withdrawn', count(*) FILTER (WHERE status = 'Dibatalkan')
+      )
+      FROM public.pendaftar
+    ),
+    'acceptedByClass', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('label', kelas, 'count', jumlah))
       FROM (
-        SELECT id, nama_lengkap, pilihan_kelas, jenis_pendaftaran, status, created_at
+        SELECT COALESCE(kelas_penempatan, pilihan_kelas) AS kelas, count(*) AS jumlah
         FROM public.pendaftar
-        ORDER BY created_at DESC, id DESC
-        LIMIT 8
-      ) AS terbaru
+        WHERE status = 'Diterima' AND jenis_pendaftaran = 'Siswa Baru'
+        GROUP BY 1
+      ) AS diterima
+    ), '[]'::jsonb),
+    -- Empat tanggal OKB terdekat; sesi berupa teks bebas sehingga dirapikan sebelum dihitung.
+    'schedule', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('date', tanggal, 'total', total, 'sessions', sesi) ORDER BY tanggal)
+      FROM (
+        SELECT tanggal, sum(jumlah)::INTEGER AS total, jsonb_agg(jsonb_build_object('label', label, 'count', jumlah) ORDER BY label) AS sesi
+        FROM (
+          SELECT jadwal_okb_tanggal AS tanggal, min(btrim(jadwal_okb_sesi)) AS label, count(*)::INTEGER AS jumlah
+          FROM public.pendaftar
+          WHERE status = 'Terjadwal OKB' AND jadwal_okb_tanggal >= (SELECT d FROM today)
+          GROUP BY jadwal_okb_tanggal, lower(regexp_replace(btrim(COALESCE(jadwal_okb_sesi, '')), '\s+', ' ', 'g'))
+        ) AS per_sesi
+        GROUP BY tanggal
+        ORDER BY tanggal
+        LIMIT 4
+      ) AS per_tanggal
     ), '[]'::jsonb)
   );
 $$;

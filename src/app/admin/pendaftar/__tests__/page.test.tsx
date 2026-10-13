@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({ getAdminSession: vi.fn(), getSupabaseAdmin: vi
 vi.mock('@/features/auth/session', () => ({ getAdminSession: mocks.getAdminSession }));
 vi.mock('@/features/registration/server/supabaseAdmin', () => ({ getSupabaseAdmin: mocks.getSupabaseAdmin }));
 vi.mock('@/features/admin/participants/server/participantsRepository', () => ({ createParticipantsRepository: mocks.createParticipantsRepository }));
-vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect, useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }) }));
 
 import ParticipantsPage from '../page';
 
@@ -36,7 +36,7 @@ describe('ParticipantsPage', () => {
   it('shows an error instead of an empty list when the query fails', async () => {
     mocks.createParticipantsRepository.mockReturnValue({ list: vi.fn().mockRejectedValue(new Error('db down')) });
     render(await ParticipantsPage({ searchParams: Promise.resolve({}) }));
-    expect(screen.getByText('Data peserta belum dapat dimuat')).toBeDefined();
+    expect(screen.getByText('Data pendaftar belum dapat dimuat')).toBeDefined();
     expect(screen.queryByRole('table')).toBeNull();
   });
 });

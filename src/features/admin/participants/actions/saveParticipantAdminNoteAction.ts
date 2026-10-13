@@ -11,7 +11,7 @@ export async function saveParticipantAdminNoteAction(formData: FormData): Promis
 
   const participantId = String(formData.get('participantId') ?? '');
   const note = String(formData.get('adminNote') ?? '').trim();
-  if (!UUID_PATTERN.test(participantId)) throw new Error('Data peserta tidak valid.');
+  if (!UUID_PATTERN.test(participantId)) throw new Error('Data pendaftar tidak valid.');
   if (note.length > 1000) throw new Error('Catatan maksimal 1.000 karakter.');
 
   const { data, error } = await getSupabaseAdmin()

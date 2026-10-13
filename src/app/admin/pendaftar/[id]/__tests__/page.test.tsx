@@ -45,7 +45,7 @@ describe('ParticipantPage', () => {
     const page = await ParticipantPage({ params: Promise.resolve({ id }), searchParams: Promise.resolve({ q: 'Alya', kelas: 'Reguler', status: 'Status Lama', next: 'https://example.test' }) });
     render(page);
     expect(screen.getByRole('heading', { name: 'Alya' })).toBeDefined();
-    expect(screen.getByRole('link', { name: /Kembali ke Data Peserta/ }).getAttribute('href')).toBe('/admin/pendaftar?q=Alya&kelas=Reguler&status=Status+Lama');
+    expect(screen.getByRole('link', { name: /Kembali ke Data Pendaftar/ }).getAttribute('href')).toBe('/admin/pendaftar?q=Alya&kelas=Reguler&status=Status+Lama');
     expect(client.query.select.mock.calls[0][0]).not.toContain('submission_secret_hash');
   });
 
@@ -59,7 +59,7 @@ describe('ParticipantPage', () => {
     mocks.getSupabaseAdmin.mockReturnValue(clientWith(null, new Error('private database error')));
     const page = await ParticipantPage({ params: Promise.resolve({ id }), searchParams: Promise.resolve({}) });
     render(page);
-    expect(screen.getByRole('alert').textContent).toContain('Detail peserta belum dapat dimuat');
+    expect(screen.getByRole('alert').textContent).toContain('Detail pendaftar belum dapat dimuat');
     expect(document.body.textContent).not.toContain('private database error');
   });
 });

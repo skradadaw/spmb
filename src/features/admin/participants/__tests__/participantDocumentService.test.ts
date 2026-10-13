@@ -36,6 +36,6 @@ describe('participant document service', () => {
 
   it('rejects storage failures without returning a URL', async () => {
     const getDocumentRow = vi.fn().mockResolvedValue({ id, submission_id: submissionId, dokumen_pas_foto: path });
-    await expect(createParticipantDocumentUrl(id, 'pasFoto', { getDocumentRow }, { createSignedUrl: vi.fn().mockResolvedValue({ data: null, error: new Error('private') }) })).rejects.toThrow('Dokumen peserta tidak dapat dibuka.');
+    await expect(createParticipantDocumentUrl(id, 'pasFoto', { getDocumentRow }, { createSignedUrl: vi.fn().mockResolvedValue({ data: null, error: new Error('private') }) })).rejects.toThrow('Dokumen pendaftar tidak dapat dibuka.');
   });
 });

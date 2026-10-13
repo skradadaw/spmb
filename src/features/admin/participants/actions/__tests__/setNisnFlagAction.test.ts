@@ -51,7 +51,7 @@ describe('setNisnFlagAction', () => {
 
   it('rejects invalid input and missing sessions', async () => {
     await expect(setNisnFlagAction(form('maybe'))).rejects.toThrow('Penanda NISN tidak valid.');
-    await expect(setNisnFlagAction(form('true', 'bukan-uuid'))).rejects.toThrow('Data peserta tidak valid.');
+    await expect(setNisnFlagAction(form('true', 'bukan-uuid'))).rejects.toThrow('Data pendaftar tidak valid.');
     mocks.session.mockResolvedValue(false);
     await expect(setNisnFlagAction(form('true'))).rejects.toThrow('Sesi admin tidak valid.');
     expect(mocks.update).not.toHaveBeenCalled();

@@ -1,26 +1,20 @@
 import 'server-only';
 
-import type { AdminDashboardSummary, DistributionItem } from '../contracts';
+import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
+import type { AdminDashboardSummary, LabelCount, OkbScheduleDay } from '../contracts';
 
-type RecentRow = {
-  id: string;
-  nama_lengkap: string | null;
-  pilihan_kelas: string | null;
-  jenis_pendaftaran: string | null;
-  status: string | null;
-  created_at: string | null;
-};
-
-type GroupCount = { label: string | null; count: number };
+type Counts<K extends string> = Partial<Record<K, unknown>> | null | undefined;
 
 type SummaryPayload = {
-  total: number;
-  awaiting: number;
-  incomplete: number;
-  attention?: { any?: number; nisn?: number } | null;
-  classes: GroupCount[];
-  types: GroupCount[];
-  recent: RecentRow[];
+  today: string;
+  total: unknown;
+  tasks?: Counts<keyof AdminDashboardSummary['tasks']>;
+  attention?: Counts<'any' | 'nisn'>;
+  capacity: { label: string | null; kuota: unknown; terpakai: unknown }[];
+  transfers?: unknown;
+  results?: Counts<keyof AdminDashboardSummary['results']>;
+  acceptedByClass: { label: string | null; count: unknown }[];
+  schedule: { date: string; total: unknown; sessions: { label: string | null; count: unknown }[] | null }[];
 };
 
 type DashboardClient = {
@@ -28,8 +22,6 @@ type DashboardClient = {
 };
 
 const SAFE_ERROR = 'Ringkasan pendaftaran tidak dapat dimuat.';
-const CLASS_LABELS = ['Reguler', 'Bilingual', 'Tahfizh'] as const;
-const TYPE_LABELS = ['Siswa Baru', 'Pindahan'] as const;
 
 export class AdminDashboardLoadError extends Error {
   constructor() {
@@ -38,60 +30,49 @@ export class AdminDashboardLoadError extends Error {
   }
 }
 
-function distribution(groups: GroupCount[], knownLabels: readonly string[], total: number): DistributionItem[] {
-  const counts = new Map(knownLabels.map((label) => [label, 0]));
-  let otherCount = 0;
-
-  for (const { label, count } of groups) {
-    const value = Number(count) || 0;
-    if (label && counts.has(label)) counts.set(label, (counts.get(label) ?? 0) + value);
-    else otherCount += value;
-  }
-
-  const items = knownLabels.map((label) => ({
-    label,
-    count: counts.get(label) ?? 0,
-    percentage: total === 0 ? 0 : Math.round(((counts.get(label) ?? 0) / total) * 100),
-  }));
-  if (otherCount > 0) items.push({ label: 'Lainnya', count: otherCount, percentage: Math.round((otherCount / total) * 100) });
-  return items;
-}
-
-function validDate(value: string | null): string | null {
-  return value && Number.isFinite(Date.parse(value)) ? value : null;
-}
+const num = (value: unknown) => Math.max(0, Number(value) || 0);
 
 function isPayload(value: unknown): value is SummaryPayload {
   const payload = value as Partial<SummaryPayload> | null;
-  return Boolean(payload) && Array.isArray(payload?.classes) && Array.isArray(payload?.types) && Array.isArray(payload?.recent);
+  return Boolean(payload) && typeof payload?.today === 'string'
+    && Array.isArray(payload?.capacity) && Array.isArray(payload?.acceptedByClass) && Array.isArray(payload?.schedule);
+}
+
+/** Always the three program classes in a fixed order, so the cards never reshuffle. */
+function perClass(rows: { label: string | null; count: unknown }[]): LabelCount[] {
+  const counts = new Map(rows.map(row => [row.label, num(row.count)]));
+  return CLASS_OPTIONS.map(label => ({ label, count: counts.get(label) ?? 0 }));
+}
+
+function schedule(rows: SummaryPayload['schedule']): OkbScheduleDay[] {
+  return rows.map(row => ({
+    date: row.date,
+    total: num(row.total),
+    sessions: (row.sessions ?? []).map(session => ({ label: session.label?.trim() || 'Tanpa sesi', count: num(session.count) })),
+  }));
 }
 
 export function createAdminDashboardRepository(client: DashboardClient) {
   return {
     async getSummary(): Promise<AdminDashboardSummary> {
-      // Aggregated in Postgres so only counts and the latest rows cross the network.
+      // Aggregated in Postgres so only counts cross the network.
       const { data, error } = await client.rpc('get_admin_dashboard_summary');
       if (error || !isPayload(data)) throw new AdminDashboardLoadError();
 
-      const totalRegistrations = Number(data.total) || 0;
-      const incompleteUploads = Number(data.incomplete) || 0;
+      const capacity = new Map(data.capacity.map(row => [row.label, row]));
       return {
-        totalRegistrations,
-        awaitingVerification: Number(data.awaiting) || 0,
-        incompleteUploads,
-        completedRegistrations: totalRegistrations - incompleteUploads,
-        attention: { any: Number(data.attention?.any) || 0, nisn: Number(data.attention?.nisn) || 0 },
-        classDistribution: distribution(data.classes, CLASS_LABELS, totalRegistrations),
-        typeDistribution: distribution(data.types, TYPE_LABELS, totalRegistrations),
-        recentApplicants: data.recent.map((row) => ({
-          id: row.id,
-          namaLengkap: row.nama_lengkap?.trim() || 'Belum diisi',
-          pilihanKelas: CLASS_LABELS.includes(row.pilihan_kelas as (typeof CLASS_LABELS)[number]) ? row.pilihan_kelas! : 'Lainnya',
-          jenisPendaftaran: TYPE_LABELS.includes(row.jenis_pendaftaran as (typeof TYPE_LABELS)[number]) ? row.jenis_pendaftaran! : 'Lainnya',
-          status: row.status?.trim() || 'Belum diisi',
-          createdAt: validDate(row.created_at),
-        })),
-        updatedAt: new Date().toISOString(),
+        today: data.today,
+        totalRegistrations: num(data.total),
+        tasks: {
+          uploading: num(data.tasks?.uploading), awaiting: num(data.tasks?.awaiting), verified: num(data.tasks?.verified),
+          absent: num(data.tasks?.absent), decision: num(data.tasks?.decision),
+        },
+        attention: { any: num(data.attention?.any), nisn: num(data.attention?.nisn) },
+        capacity: CLASS_OPTIONS.map(label => ({ label, kuota: num(capacity.get(label)?.kuota), terpakai: num(capacity.get(label)?.terpakai) })),
+        transfers: num(data.transfers),
+        results: { accepted: num(data.results?.accepted), rejected: num(data.results?.rejected), withdrawn: num(data.results?.withdrawn) },
+        acceptedByClass: perClass(data.acceptedByClass),
+        schedule: schedule(data.schedule),
       };
     },
   };

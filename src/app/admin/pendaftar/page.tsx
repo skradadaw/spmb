@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ParticipantFilters } from '@/features/admin/participants/components/ParticipantFilters';
 import { ParticipantList } from '@/features/admin/participants/components/ParticipantList';
 import { PARTICIPANT_DEFAULT_STATUSES, type ParticipantListResult } from '@/features/admin/participants/contracts';
-import { parseParticipantListQuery, participantListHref } from '@/features/admin/participants/query';
+import { parseParticipantListQuery } from '@/features/admin/participants/query';
 import { createParticipantsRepository } from '@/features/admin/participants/server/participantsRepository';
 import { getAdminSession } from '@/features/auth/session';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
@@ -33,15 +33,14 @@ export default async function ParticipantsPage({ searchParams }: Props) {
   return <>
     <section className="flex flex-col gap-2">
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
-      <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Data Peserta</h1>
-      <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">Cari dan lihat data peserta yang sudah masuk ke sistem pendaftaran.</p>
+      <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Data Pendaftar</h1>
+      <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">Cari dan lihat data pendaftar yang sudah masuk ke sistem pendaftaran.</p>
     </section>
     <div className="mt-6">
       {result ? <>
-        {/* Keyed by the active query so client-side navigation (e.g. Reset) remounts the uncontrolled inputs. */}
-        <ParticipantFilters key={participantListHref(query)} query={query} statuses={PARTICIPANT_DEFAULT_STATUSES} />
+        <ParticipantFilters query={query} statuses={PARTICIPANT_DEFAULT_STATUSES} total={result.total} />
         <ParticipantList result={result} query={query} />
-      </> : <Alert variant="destructive"><AlertTitle>Data peserta belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau coba lagi nanti.</AlertDescription></Alert>}
+      </> : <Alert variant="destructive"><AlertTitle>Data pendaftar belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau coba lagi nanti.</AlertDescription></Alert>}
     </div>
   </>;
 }

@@ -55,13 +55,13 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
   return (
     <div>
       <ButtonLink href={backHref} variant="ghost" className="mb-4 -ml-2">
-        <ArrowLeft aria-hidden="true" />Kembali ke Data Peserta
+        <ArrowLeft aria-hidden="true" />Kembali ke Data Pendaftar
       </ButtonLink>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Detail peserta{participant.registration.nomorPendaftaran ? ` · ${participant.registration.nomorPendaftaran}` : ''}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Detail pendaftar{participant.registration.nomorPendaftaran ? ` · ${participant.registration.nomorPendaftaran}` : ''}</p>
           <h1 className="mt-2 break-words text-2xl font-bold tracking-[-0.04em] sm:text-3xl">
-            {participant.identity.namaLengkap ? formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap) : 'Peserta'}
+            {participant.identity.namaLengkap ? formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap) : 'Pendaftar'}
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
