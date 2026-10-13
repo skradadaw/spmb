@@ -17,6 +17,11 @@ const PRIVATE_HEADERS = { 'Cache-Control': 'private, no-store, max-age=0', 'X-Co
  * version), so only the admin's own browser may keep it for a while. Shared caches never store it.
  */
 const VERSIONED_CACHE_CONTROL = 'private, max-age=3600, immutable';
+/**
+ * PDF bytes for the in-app viewer. Download managers such as IDM grab application/pdf and even
+ * application/octet-stream responses, but never plain text; nosniff keeps the browser from rendering it.
+ */
+const PDFJS_PREVIEW_CONTENT_TYPE = 'text/plain; charset=x-user-defined';
 
 type Context = { params: Promise<{ id: string; documentId: string }> };
 
@@ -57,7 +62,7 @@ export async function GET(request: Request, { params }: Context) {
       headers: {
         ...PRIVATE_HEADERS,
         ...(cacheable ? { 'Cache-Control': VERSIONED_CACHE_CONTROL } : {}),
-        'Content-Type': pdfJsPreview ? 'application/octet-stream' : MIME_TYPES[extension],
+        'Content-Type': pdfJsPreview ? PDFJS_PREVIEW_CONTENT_TYPE : MIME_TYPES[extension],
         ...(contentLength && /^\d+$/.test(contentLength) ? { 'Content-Length': contentLength } : {}),
         'X-Content-Type-Options': 'nosniff',
         ...(pdfJsPreview ? {} : { 'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename="${id}-${documentId}.${extension}"` }),

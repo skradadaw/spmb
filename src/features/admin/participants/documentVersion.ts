@@ -12,12 +12,14 @@ export function documentReplacedAt(path: string) {
 }
 
 /**
- * URL the viewer and prefetch download from. PDFs use the `preview=pdfjs` variant, served as a plain
- * binary stream without Content-Disposition, so download managers do not grab the file and start a download.
+ * URL the viewer and prefetch download from. PDFs use the `preview=pdfjs` variant, served as plain text
+ * without Content-Disposition, so download managers such as IDM do not grab the file and start a download.
  */
 export function documentFetchHref(href: string) {
   const url = new URL(href, 'http://localhost');
   if (url.searchParams.get('contentType') !== 'application/pdf') return href;
   url.searchParams.set('preview', 'pdfjs');
+  // New cache key: browsers may still hold the earlier binary-typed copy of this URL for up to an hour.
+  url.searchParams.set('as', 'text');
   return `${url.pathname}${url.search}`;
 }

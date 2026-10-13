@@ -52,7 +52,7 @@ describe('document viewer', () => {
     render(<DocumentPreviewButton participantId={participantId} documents={[pdf]} index={0} />);
     fireEvent.click(screen.getByRole('button', { name: 'Lihat pratinjau PDF Bukti Pembayaran OKB' }));
     await screen.findByRole('dialog', { name: 'Berkas Bukti Pembayaran OKB' });
-    expect(fetch).toHaveBeenCalledWith(`${pdf.href}&preview=pdfjs`, expect.anything());
+    expect(fetch).toHaveBeenCalledWith(`${pdf.href}&preview=pdfjs&as=text`, expect.anything());
     expect(screen.getByRole('link', { name: 'Unduh berkas Bukti Pembayaran OKB' }).getAttribute('href')).toBe(`${pdf.href}&download=1`);
   });
 

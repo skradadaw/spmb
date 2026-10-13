@@ -10,7 +10,7 @@ describe('document version', () => {
   });
 
   it('downloads PDFs through the binary preview variant so download managers ignore them', () => {
-    expect(documentFetchHref('/admin/pendaftar/a/dokumen/aktaKelahiran?contentType=application%2Fpdf&v=o')).toBe('/admin/pendaftar/a/dokumen/aktaKelahiran?contentType=application%2Fpdf&v=o&preview=pdfjs');
+    expect(documentFetchHref('/admin/pendaftar/a/dokumen/aktaKelahiran?contentType=application%2Fpdf&v=o')).toBe('/admin/pendaftar/a/dokumen/aktaKelahiran?contentType=application%2Fpdf&v=o&preview=pdfjs&as=text');
     expect(documentFetchHref('/admin/pendaftar/a/dokumen/pasFoto?contentType=image%2Fjpeg&v=o')).toBe('/admin/pendaftar/a/dokumen/pasFoto?contentType=image%2Fjpeg&v=o');
   });
 });
