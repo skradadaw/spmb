@@ -19,6 +19,11 @@
   --public-ink: #0f172a;
   --public-muted: #475569;
   --public-border: #dbe3da;
+  /* Landing page palette: one green scale, amber is the only accent */
+  --public-deep: #064e1b;
+  --public-green: #007a10;
+  --public-green-hover: #00550b;
+  --public-tint: #eaf6e8;
 
   /* Admin dashboard semantic surfaces */
   --admin-canvas: #f5f7f6;
@@ -70,6 +75,11 @@
   --color-brand-green-dark: var(--brand-green-dark);
   --color-brand-green-light: var(--brand-green-light);
   --color-brand-green-tint: var(--brand-green-tint);
+  --color-public-canvas: var(--public-canvas);
+  --color-public-deep: var(--public-deep);
+  --color-public-green: var(--public-green);
+  --color-public-green-hover: var(--public-green-hover);
+  --color-public-tint: var(--public-tint);
   --font-sans: var(--font-plus-jakarta);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-heading: var(--font-plus-jakarta);

@@ -32,7 +32,7 @@ export default function RegistrationSteps() {
     >
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
-          <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#007A10]">
+          <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-public-green">
             Cara mendaftar
           </p>
           <h2 id="steps-title" className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
@@ -45,16 +45,16 @@ export default function RegistrationSteps() {
 
         <ol aria-label="Langkah pendaftaran" className="mt-10 grid gap-4 lg:grid-cols-3">
           {steps.map(({ number, title, description, icon: Icon }) => (
-            <li key={title} className="relative rounded-2xl border border-slate-200 bg-[#FAFBF8] p-6">
+            <li key={title} className="relative rounded-2xl border border-slate-200 bg-public-canvas p-6">
               <div className="flex items-center justify-between gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#EAF6E8] text-[#007A10]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-public-tint text-public-green">
                   <Icon aria-hidden="true" size={23} />
                 </span>
                 <span aria-hidden="true" className="text-3xl font-black text-slate-200">
                   {number}
                 </span>
               </div>
-              <h3 className="mt-6 text-xl font-black text-slate-950">{title}</h3>
+              <h3 className="mt-6 text-xl font-bold text-slate-950">{title}</h3>
               <p className="mt-2 text-base leading-7 text-slate-700">{description}</p>
             </li>
           ))}

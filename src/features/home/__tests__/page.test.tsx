@@ -89,7 +89,7 @@ describe('Open Booking landing page', () => {
     );
     const headerRegistrationLink = within(header).getByRole('link', { name: 'Daftar Sekarang' });
     expect(headerRegistrationLink.className).toContain('rounded-full');
-    expect(headerRegistrationLink.className).toContain('bg-[#008A12]');
+    expect(headerRegistrationLink.className).toContain('bg-public-green');
     expect(within(header).getByRole('link', { name: 'Login Panitia' }).className).toContain(
       'sm:border-l-slate-200',
     );

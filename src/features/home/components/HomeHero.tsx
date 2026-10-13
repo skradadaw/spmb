@@ -23,7 +23,7 @@ const navigationItems = [
 ] as const;
 
 const primaryActionClass =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#007A10] px-6 py-3 text-base font-extrabold text-white shadow-lg shadow-emerald-950/20 transition-colors hover:bg-[#00550B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+  'inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-public-green px-6 py-3 text-base font-extrabold text-white shadow-lg shadow-emerald-950/20 transition-colors hover:bg-public-green-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 export function HomeHeader() {
   return (
@@ -31,7 +31,7 @@ export function HomeHeader() {
       <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:gap-5 lg:px-8">
         <a
           href="#atas"
-          className="group flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#007A10]"
+          className="group flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-public-green"
           aria-label="SD Plus 3 Al-Muhajirin - kembali ke atas"
         >
           <Image
@@ -46,7 +46,7 @@ export function HomeHeader() {
             <span className="truncate text-sm font-extrabold tracking-tight text-slate-950 sm:text-base">
               SD Plus 3 Al-Muhajirin
             </span>
-            <span className="truncate text-[11px] font-semibold text-[#007A10] sm:text-xs">
+            <span className="truncate text-[11px] font-semibold text-public-green sm:text-xs">
               Open Booking {registrationInfo.academicYear}
             </span>
           </span>
@@ -60,7 +60,7 @@ export function HomeHeader() {
             <a
               key={href}
               href={href}
-              className="relative inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold text-slate-600 transition-colors after:absolute after:bottom-0.5 after:left-3 after:right-3 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-full after:bg-[#007A10] after:transition-transform hover:text-emerald-900 hover:after:scale-x-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007A10] motion-reduce:after:transition-none"
+              className="relative inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold text-slate-600 transition-colors after:absolute after:bottom-0.5 after:left-3 after:right-3 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-full after:bg-public-green after:transition-transform hover:text-emerald-900 hover:after:scale-x-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-public-green motion-reduce:after:transition-none"
             >
               {label}
             </a>
@@ -80,7 +80,7 @@ export function HomeHeader() {
           <ButtonLink
             href="/pendaftaran"
             aria-label="Daftar Sekarang"
-            className="h-[42px] gap-2 rounded-full border border-emerald-950/10 bg-[#008A12] px-4.5 font-bold whitespace-nowrap text-white shadow-[0_3px_8px_rgba(0,85,11,0.22)] hover:bg-[#006F0E] hover:text-white hover:shadow-[0_4px_10px_rgba(0,85,11,0.26)] focus-visible:border-emerald-700 focus-visible:ring-[#007A10]/25 sm:px-5"
+            className="h-[42px] gap-2 rounded-full border border-emerald-950/10 bg-public-green px-4.5 font-bold whitespace-nowrap text-white shadow-[0_3px_8px_rgba(0,85,11,0.22)] hover:bg-public-green-hover hover:text-white hover:shadow-[0_4px_10px_rgba(0,85,11,0.26)] focus-visible:border-emerald-700 focus-visible:ring-public-green/25 sm:px-5"
           >
             <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" strokeWidth={2.4} />
             <span className="hidden sm:inline">Daftar Sekarang</span>
@@ -128,10 +128,10 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
         <p id="capacity-title" className="text-sm font-bold text-emerald-950">
           Progress pendaftar
         </p>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#007A10] shadow-sm shadow-emerald-900/5 ring-1 ring-inset ring-emerald-950/10">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-public-green shadow-sm shadow-emerald-900/5 ring-1 ring-inset ring-emerald-950/10">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00AA13]" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-public-green" />
           </span>
           {safeCount} / {registrationInfo.capacity}
         </span>
@@ -143,7 +143,7 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
           aria-valuemin={0}
           aria-valuemax={registrationInfo.capacity}
           aria-valuenow={progressValue}
-          className="h-full rounded-full bg-gradient-to-r from-[#007A10] to-emerald-500 transition-[width] duration-300 motion-reduce:transition-none"
+          className="h-full rounded-full bg-gradient-to-r from-public-green to-emerald-500 transition-[width] duration-300 motion-reduce:transition-none"
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -156,7 +156,7 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
 
 export default function HomeHero({ completedCount }: { completedCount: number | null }) {
   return (
-    <section id="atas" className="relative isolate overflow-hidden bg-[#064E1B] text-white">
+    <section id="atas" className="relative isolate overflow-hidden bg-public-deep text-white">
       <div aria-hidden="true" className="hero-grid absolute inset-0 -z-20 opacity-20" />
       <div
         aria-hidden="true"
@@ -237,7 +237,7 @@ export default function HomeHero({ completedCount }: { completedCount: number | 
           aria-labelledby="jadwal-title"
           className="relative w-full scroll-mt-24 justify-self-center rounded-[2rem] border border-emerald-100/25 bg-gradient-to-br from-emerald-200/25 via-emerald-100/10 to-lime-200/15 p-4 shadow-2xl shadow-emerald-950/30 backdrop-blur-xl sm:p-5 lg:max-w-[34rem] lg:justify-self-end"
         >
-          <span aria-hidden="true" className="absolute -right-3 -top-3 h-7 w-7 rounded-full border-[6px] border-amber-300 bg-[#064E1B] shadow-lg" />
+          <span aria-hidden="true" className="absolute -right-3 -top-3 h-7 w-7 rounded-full border-[6px] border-amber-300 bg-public-deep shadow-lg" />
           <span aria-hidden="true" className="absolute -bottom-4 -left-4 hidden h-12 w-12 rounded-2xl border border-white/20 bg-emerald-300/15 backdrop-blur-md sm:block" />
 
           <div className="relative overflow-hidden rounded-[1.35rem] border border-emerald-200/80 bg-gradient-to-br from-emerald-100 via-green-50 to-lime-100 p-4 text-slate-950 shadow-xl shadow-emerald-950/20 ring-1 ring-emerald-950/5 sm:p-5">
@@ -246,7 +246,7 @@ export default function HomeHero({ completedCount }: { completedCount: number | 
 
             <div className="relative border-b border-emerald-900/15 pb-3.5">
               <div aria-hidden="true" className="mb-2.5 h-1 w-10 rounded-full bg-amber-400" />
-              <p className="text-xs font-bold uppercase leading-5 tracking-wider text-[#007A10]">
+              <p className="text-xs font-bold uppercase leading-5 tracking-wider text-public-green">
                 Ringkasan Open Booking
               </p>
               <h2 id="jadwal-title" className="mt-1.5 text-2xl font-bold tracking-tight text-slate-950">
@@ -256,7 +256,7 @@ export default function HomeHero({ completedCount }: { completedCount: number | 
 
             <dl className="relative divide-y divide-emerald-900/15">
               <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 py-3.5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-200/70 text-[#007A10] ring-1 ring-inset ring-emerald-300/70">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-200/70 text-public-green ring-1 ring-inset ring-emerald-300/70">
                   <CalendarDays aria-hidden="true" size={19} strokeWidth={2.2} />
                 </span>
                 <div className="min-w-0">

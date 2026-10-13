@@ -28,7 +28,7 @@ export default function CopyAccountButton({
         type="button"
         onClick={handleCopy}
         aria-label="Salin nomor rekening"
-        className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-[#007A10] shadow-sm ring-1 ring-white/60 transition-colors hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-public-green shadow-sm ring-1 ring-white/60 transition-colors hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         {copyState === 'success' ? (
           <Check aria-hidden="true" size={17} />

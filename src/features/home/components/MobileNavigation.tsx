@@ -61,7 +61,7 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
         aria-expanded={isOpen}
         aria-controls="mobile-navigation"
         onClick={() => setIsOpen((open) => !open)}
-        className="size-11 rounded-xl border-emerald-900/15 bg-white text-emerald-950 shadow-sm hover:bg-emerald-50 hover:text-[#007A10] focus-visible:ring-[#007A10]/20"
+        className="size-11 rounded-xl border-emerald-900/15 bg-white text-emerald-950 shadow-sm hover:bg-emerald-50 hover:text-public-green focus-visible:ring-public-green/20"
       >
         {isOpen ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
       </Button>
@@ -91,12 +91,12 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
                           key={href}
                           href={href}
                           onClick={closeMenu}
-                          className="group flex min-h-[54px] items-center justify-between px-4 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-emerald-50/70 hover:text-emerald-950 active:bg-emerald-100/60 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#007A10]"
+                          className="group flex min-h-[54px] items-center justify-between px-4 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-emerald-50/70 hover:text-emerald-950 active:bg-emerald-100/60 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-public-green"
                         >
                           <span className="flex items-center gap-3">
                             <span
                               aria-hidden="true"
-                              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[#007A10] transition-colors group-hover:bg-[#007A10] group-hover:text-white"
+                              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-public-green transition-colors group-hover:bg-public-green group-hover:text-white"
                             >
                               <IconComponent aria-hidden="true" className="size-4" />
                             </span>
@@ -142,7 +142,7 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
                   href="/pendaftaran"
                   aria-label="Daftar Sekarang"
                   onClick={closeMenu}
-                  className="h-12 justify-center gap-2 rounded-xl bg-[#008A12] font-bold text-white shadow-sm hover:bg-[#006F0E] hover:text-white"
+                  className="h-12 justify-center gap-2 rounded-xl bg-public-green font-bold text-white shadow-sm hover:bg-public-green-hover hover:text-white"
                 >
                   <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" />
                   Daftar Sekarang

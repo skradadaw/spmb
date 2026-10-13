@@ -7,14 +7,14 @@ const highlights = [
     description:
       'Perpaduan kurikulum nasional dan nilai-nilai Islami yang komprehensif.',
     icon: GraduationCap,
-    tone: 'bg-emerald-50 text-[#00AA13] border-emerald-100',
+    tone: 'bg-emerald-50 text-public-green border-emerald-100',
   },
   {
     title: 'Tenaga Pendidik Profesional',
     description:
       'Guru berpengalaman yang berdedikasi membimbing setiap potensi anak.',
     icon: Users,
-    tone: 'bg-sky-50 text-sky-700 border-sky-100',
+    tone: 'bg-public-tint text-public-green border-emerald-100',
   },
   {
     title: 'Fasilitas Modern',
@@ -27,8 +27,8 @@ const highlights = [
 
 export function SchoolHighlights() {
   return (
-    <div className="mt-20 rounded-[2rem] border border-emerald-100 bg-[#F4F7F1] px-5 py-10 text-center sm:px-8 sm:py-14 lg:px-12">
-      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#007A10]">
+    <div className="mt-20 rounded-[2rem] border border-emerald-100 bg-public-canvas px-5 py-10 text-center sm:px-8 sm:py-14 lg:px-12">
+      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-public-green">
         Mengapa Al-Muhajirin?
       </p>
       <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
@@ -40,7 +40,7 @@ export function SchoolHighlights() {
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm">
               <Icon aria-hidden="true" size={23} />
             </span>
-            <h3 className="mt-5 text-lg font-black text-slate-950">{title}</h3>
+            <h3 className="mt-5 text-lg font-bold text-slate-950">{title}</h3>
             <p className="mt-2 text-base leading-7 text-slate-700">{description}</p>
           </article>
         ))}
@@ -59,7 +59,7 @@ export default function RegistrationPreparation() {
       <div className="mx-auto max-w-7xl">
         <div className="grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           <div>
-            <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#007A10]">
+            <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-public-green">
               Persiapan Pendaftaran
             </p>
             <h2
@@ -80,9 +80,9 @@ export default function RegistrationPreparation() {
             {registrationInfo.requirements.map((item, index) => (
               <article
                 key={item}
-                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-[#FAFBF8] p-5"
+                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-public-canvas p-5"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EAF6E8] text-[#007A10]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-public-tint text-public-green">
                   <Check aria-hidden="true" size={20} strokeWidth={3} />
                 </span>
                 <div>
