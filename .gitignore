@@ -46,3 +46,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+# Claude Code local settings
+.claude/settings.local.json
