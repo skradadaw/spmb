@@ -38,11 +38,30 @@ describe('participants repository', () => {
     expect(PARTICIPANT_LIST_COLUMNS).toContain('asal_sekolah');
     expect(PARTICIPANT_LIST_COLUMNS).not.toContain('nik');
   });
+  it('loads a normal page with its count in a single round trip', async () => {
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: [{ id: 'a', nama_lengkap: 'Ani' }], count: 25, error: null });
+    const result = await repo.list(parseParticipantListQuery(new URLSearchParams('page=2')));
+    expect(q.range).toHaveBeenCalledTimes(1);
+    expect(q.range).toHaveBeenCalledWith(20, 39);
+    expect(result).toMatchObject({ page: 2, total: 25, totalPages: 2 });
+  });
+  it('recovers when PostgREST rejects an offset past the end', async () => {
+    const { q, repo } = fixture();
+    q.range
+      .mockResolvedValueOnce({ data: null, count: null, error: { code: 'PGRST103' } })
+      .mockResolvedValueOnce({ data: [], count: 41, error: null })
+      .mockResolvedValueOnce({ data: [{ id: 'z' }], count: 41, error: null });
+    const result = await repo.list(parseParticipantListQuery(new URLSearchParams('page=99')));
+    expect(q.range).toHaveBeenLastCalledWith(40, 59);
+    expect(result).toMatchObject({ page: 3, total: 41, totalPages: 3 });
+    expect(result.items).toHaveLength(1);
+  });
   it('does not disguise count or data failures as an empty list', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: null, count: null, error: new Error('secret') });
     await expect(repo.list(parseParticipantListQuery(new URLSearchParams()))).rejects.toThrow('Data peserta tidak dapat dimuat.');
-    q.range.mockResolvedValueOnce({ data: [], count: 1, error: null }).mockResolvedValueOnce({ data: null, error: 'secret' });
+    q.range.mockResolvedValueOnce({ data: null, count: 1, error: null });
     await expect(repo.list(parseParticipantListQuery(new URLSearchParams()))).rejects.toThrow('Data peserta tidak dapat dimuat.');
   });
   it('returns safe mapped detail and never selects submission secrets', async () => {
@@ -83,12 +102,15 @@ describe('participants repository', () => {
     expect(result?.adminNote).toBe('Hubungi orang tua');
     expect(result?.documentReviews.aktaKelahiran).toEqual({ status: 'follow_up', reviewedAt: '2026-10-11T00:00:00Z', reviewedBy: 'Admin' });
   });
-  it('loads actual status options without loading personal information', async () => {
+  it('reads the applicant and their document reviews in parallel', async () => {
+    let resolveRow: (value: unknown) => void = () => {};
     const { q, repo } = fixture();
-    q.range.mockResolvedValue({ data: [{ status: 'Baru' }, { status: 'Baru' }, { status: null }, { status: 'Menunggu Unggahan' }], error: null });
-    expect(await repo.getStatuses()).toEqual(['Baru', 'Menunggu Unggahan']);
-    expect(await repo.getStatuses()).toEqual(['Baru', 'Menunggu Unggahan']);
-    expect(q.range).toHaveBeenCalledTimes(1);
-    expect(q.select).toHaveBeenCalledWith('status');
+    q.maybeSingle.mockReturnValue(new Promise((resolve) => { resolveRow = resolve; }));
+    q.range.mockResolvedValue({ data: [], error: null });
+    const pending = repo.getById('a');
+    await Promise.resolve();
+    expect(q.range).toHaveBeenCalledWith(0, 99);
+    resolveRow({ data: { id: 'a' }, error: null });
+    await expect(pending).resolves.toMatchObject({ id: 'a' });
   });
 });

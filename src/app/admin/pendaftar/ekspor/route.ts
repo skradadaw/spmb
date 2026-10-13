@@ -11,9 +11,7 @@ export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
     const repository = createParticipantsRepository(getSupabaseAdmin());
-    let statuses;
-    try { statuses = await repository.getStatuses(); } catch { statuses = undefined; }
-    const query = parseParticipantListQuery(params, statuses);
+    const query = parseParticipantListQuery(params);
     const items = await repository.exportDetails(query);
     const date = new Date().toISOString().slice(0, 10);
     return new Response(await participantExportXlsx(items), { status: 200, headers: { ...PRIVATE_HEADERS, 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': `attachment; filename="data-pendaftar-${date}.xlsx"` } });

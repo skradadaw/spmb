@@ -2,7 +2,7 @@ import 'server-only';
 
 import type { AdminDashboardSummary, DistributionItem } from '../contracts';
 
-type RegistrationRow = {
+type RecentRow = {
   id: string;
   nama_lengkap: string | null;
   pilihan_kelas: string | null;
@@ -11,10 +11,19 @@ type RegistrationRow = {
   created_at: string | null;
 };
 
+type GroupCount = { label: string | null; count: number };
+
+type SummaryPayload = {
+  total: number;
+  awaiting: number;
+  incomplete: number;
+  classes: GroupCount[];
+  types: GroupCount[];
+  recent: RecentRow[];
+};
+
 type DashboardClient = {
-  from(table: 'pendaftar'): {
-    select(columns: string): PromiseLike<{ data: unknown[] | null; error: unknown }>;
-  };
+  rpc(fn: 'get_admin_dashboard_summary'): PromiseLike<{ data: unknown; error: unknown }>;
 };
 
 const SAFE_ERROR = 'Ringkasan pendaftaran tidak dapat dimuat.';
@@ -28,14 +37,14 @@ export class AdminDashboardLoadError extends Error {
   }
 }
 
-function distribution(values: Array<string | null>, knownLabels: readonly string[]): DistributionItem[] {
-  const total = values.length;
+function distribution(groups: GroupCount[], knownLabels: readonly string[], total: number): DistributionItem[] {
   const counts = new Map(knownLabels.map((label) => [label, 0]));
   let otherCount = 0;
 
-  for (const value of values) {
-    if (value && counts.has(value)) counts.set(value, (counts.get(value) ?? 0) + 1);
-    else otherCount += 1;
+  for (const { label, count } of groups) {
+    const value = Number(count) || 0;
+    if (label && counts.has(label)) counts.set(label, (counts.get(label) ?? 0) + value);
+    else otherCount += value;
   }
 
   const items = knownLabels.map((label) => ({
@@ -51,35 +60,35 @@ function validDate(value: string | null): string | null {
   return value && Number.isFinite(Date.parse(value)) ? value : null;
 }
 
+function isPayload(value: unknown): value is SummaryPayload {
+  const payload = value as Partial<SummaryPayload> | null;
+  return Boolean(payload) && Array.isArray(payload?.classes) && Array.isArray(payload?.types) && Array.isArray(payload?.recent);
+}
+
 export function createAdminDashboardRepository(client: DashboardClient) {
   return {
     async getSummary(): Promise<AdminDashboardSummary> {
-      const { data, error } = await client
-        .from('pendaftar')
-        .select('id,nama_lengkap,pilihan_kelas,jenis_pendaftaran,status,created_at');
+      // Aggregated in Postgres so only counts and the latest rows cross the network.
+      const { data, error } = await client.rpc('get_admin_dashboard_summary');
+      if (error || !isPayload(data)) throw new AdminDashboardLoadError();
 
-      if (error || !data) throw new AdminDashboardLoadError();
-
-      const rows = data as RegistrationRow[];
-      const totalRegistrations = rows.length;
+      const totalRegistrations = Number(data.total) || 0;
+      const incompleteUploads = Number(data.incomplete) || 0;
       return {
         totalRegistrations,
-        awaitingVerification: rows.filter((row) => row.status === 'Menunggu Verifikasi').length,
-        incompleteUploads: rows.filter((row) => row.status === 'Menunggu Unggahan').length,
-        completedRegistrations: rows.filter((row) => row.status !== 'Menunggu Unggahan').length,
-        classDistribution: distribution(rows.map((row) => row.pilihan_kelas), CLASS_LABELS),
-        typeDistribution: distribution(rows.map((row) => row.jenis_pendaftaran), TYPE_LABELS),
-        recentApplicants: [...rows]
-          .sort((a, b) => (validDate(b.created_at) ? Date.parse(b.created_at!) : -Infinity) - (validDate(a.created_at) ? Date.parse(a.created_at!) : -Infinity))
-          .slice(0, 8)
-          .map((row) => ({
-            id: row.id,
-            namaLengkap: row.nama_lengkap?.trim() || 'Belum diisi',
-            pilihanKelas: CLASS_LABELS.includes(row.pilihan_kelas as (typeof CLASS_LABELS)[number]) ? row.pilihan_kelas! : 'Lainnya',
-            jenisPendaftaran: TYPE_LABELS.includes(row.jenis_pendaftaran as (typeof TYPE_LABELS)[number]) ? row.jenis_pendaftaran! : 'Lainnya',
-            status: row.status?.trim() || 'Belum diisi',
-            createdAt: validDate(row.created_at),
-          })),
+        awaitingVerification: Number(data.awaiting) || 0,
+        incompleteUploads,
+        completedRegistrations: totalRegistrations - incompleteUploads,
+        classDistribution: distribution(data.classes, CLASS_LABELS, totalRegistrations),
+        typeDistribution: distribution(data.types, TYPE_LABELS, totalRegistrations),
+        recentApplicants: data.recent.map((row) => ({
+          id: row.id,
+          namaLengkap: row.nama_lengkap?.trim() || 'Belum diisi',
+          pilihanKelas: CLASS_LABELS.includes(row.pilihan_kelas as (typeof CLASS_LABELS)[number]) ? row.pilihan_kelas! : 'Lainnya',
+          jenisPendaftaran: TYPE_LABELS.includes(row.jenis_pendaftaran as (typeof TYPE_LABELS)[number]) ? row.jenis_pendaftaran! : 'Lainnya',
+          status: row.status?.trim() || 'Belum diisi',
+          createdAt: validDate(row.created_at),
+        })),
         updatedAt: new Date().toISOString(),
       };
     },

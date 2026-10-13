@@ -28,10 +28,6 @@ function mapList(row: Record<string, unknown>): ParticipantListItem {
   };
 }
 
-const STATUS_CACHE_TTL_MS = 60_000;
-let statusCache: { expiresAt: number; values: string[] } | null = null;
-let statusRequest: Promise<string[]> | null = null;
-
 export function createParticipantsRepository(supabase: SupabaseClient) {
   const client = supabase as unknown as Client;
   function filtered(query: ParticipantListQuery) {
@@ -44,15 +40,27 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
   }
   return {
     async list(query: ParticipantListQuery): Promise<ParticipantListResult> {
-      // Count before calculating the range avoids overflowing or querying past the last page.
-      const countResult = await filtered(query).range(0, 0);
-      if (countResult.error || countResult.count == null) throw failure();
-      const total = countResult.count;
-      const totalPages = Math.max(1, Math.ceil(total / PARTICIPANT_PAGE_SIZE));
-      const page = Math.min(query.page, totalPages);
-      const result = await filtered(query).order('created_at', { ascending: false }).order('id', { ascending: false })
+      const fetchPage = (page: number) => filtered(query).order('created_at', { ascending: false }).order('id', { ascending: false })
         .range((page - 1) * PARTICIPANT_PAGE_SIZE, page * PARTICIPANT_PAGE_SIZE - 1);
-      if (result.error || !result.data) throw failure();
+      // Rows and the exact count arrive in one round trip; only a page beyond the end needs a second query.
+      let page = query.page;
+      let result = await fetchPage(page);
+      if (result.error || result.count == null) {
+        // PostgREST answers an out-of-range offset with an error, so re-check from the first page before failing.
+        if (page === 1) throw failure();
+        result = await fetchPage(1);
+        if (result.error || result.count == null) throw failure();
+        page = 1;
+      }
+      const total = result.count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(total / PARTICIPANT_PAGE_SIZE));
+      const lastAllowedPage = Math.min(query.page, totalPages);
+      if (lastAllowedPage !== page) {
+        page = lastAllowedPage;
+        result = await fetchPage(page);
+        if (result.error || result.count == null) throw failure();
+      }
+      if (!result.data) throw failure();
       return { items: result.data.map(row => mapList(row as Record<string, unknown>)), page, pageSize: PARTICIPANT_PAGE_SIZE, total, totalPages };
     },
     async exportAll(query: ParticipantListQuery): Promise<ParticipantListItem[]> {
@@ -85,41 +93,20 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         if (result.data.length < 1000) return records;
       }
     },
-    async getStatuses(): Promise<string[]> {
-      if (statusCache && statusCache.expiresAt > Date.now()) return statusCache.values;
-      if (statusRequest) return statusRequest;
-      const request = (async () => {
-        const statuses = new Set<string>();
-        for (let offset = 0; ; offset += 1000) {
-          const result = await client.from('pendaftar').select('status').order('id', { ascending: true }).range(offset, offset + 999);
-          if (result.error || !result.data) throw failure();
-          for (const row of result.data) { const status = text((row as Record<string, unknown>).status); if (status) statuses.add(status); }
-          if (result.data.length < 1000) break;
-        }
-        return [...statuses].sort((a, b) => a.localeCompare(b, 'id'));
-      })();
-      statusRequest = request;
-      try {
-        const values = await request;
-        statusCache = { expiresAt: Date.now() + STATUS_CACHE_TTL_MS, values };
-        return values;
-      } catch {
-        if (statusCache) return statusCache.values;
-        throw failure();
-      } finally {
-        statusRequest = null;
-      }
-    },    async getDocumentRow(id: string): Promise<Record<string, unknown> | null> {
+    async getDocumentRow(id: string): Promise<Record<string, unknown> | null> {
       const columns = 'id,submission_id,' + DOCUMENT_DEFINITIONS.map(document => document.dbColumn).join(',');
       const result = await client.from('pendaftar').select(columns).eq('id', id).maybeSingle();
       if (result.error) throw failure();
       return result.data;
     },    async getById(id: string): Promise<ParticipantDetail | null> {
-      const result = await client.from('pendaftar').select(PARTICIPANT_DETAIL_COLUMNS).eq('id', id).maybeSingle();
+      // Both reads depend only on the id, so they run in parallel instead of back to back.
+      const [result, reviewResult] = await Promise.all([
+        client.from('pendaftar').select(PARTICIPANT_DETAIL_COLUMNS).eq('id', id).maybeSingle(),
+        client.from('verifikasi_dokumen').select('dokumen_id,status,diperiksa_pada,diperiksa_oleh').eq('pendaftar_id', id).range(0, 99),
+      ]);
       if (result.error) throw failure();
       const row = result.data;
       if (!row) return null;
-      const reviewResult = await client.from('verifikasi_dokumen').select('dokumen_id,status,diperiksa_pada,diperiksa_oleh').eq('pendaftar_id', id).range(0, 99);
       if (reviewResult.error || !reviewResult.data) throw failure();
       const documentReviews = Object.fromEntries(reviewResult.data.map(review => {
         const item = review as Record<string, unknown>;

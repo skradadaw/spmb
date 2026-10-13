@@ -415,6 +415,41 @@ $$;
 REVOKE ALL ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) TO service_role;
 
+-- Ringkasan dashboard admin dihitung di database: hanya angka agregat dan 8 pendaftar terbaru yang dikirim.
+CREATE OR REPLACE FUNCTION public.get_admin_dashboard_summary()
+RETURNS JSONB
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT jsonb_build_object(
+    'total', (SELECT count(*) FROM public.pendaftar),
+    'awaiting', (SELECT count(*) FROM public.pendaftar WHERE status = 'Menunggu Verifikasi'),
+    'incomplete', (SELECT count(*) FROM public.pendaftar WHERE status = 'Menunggu Unggahan'),
+    'classes', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('label', pilihan_kelas, 'count', jumlah))
+      FROM (SELECT pilihan_kelas, count(*) AS jumlah FROM public.pendaftar GROUP BY pilihan_kelas) AS kelas
+    ), '[]'::jsonb),
+    'types', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('label', jenis_pendaftaran, 'count', jumlah))
+      FROM (SELECT jenis_pendaftaran, count(*) AS jumlah FROM public.pendaftar GROUP BY jenis_pendaftaran) AS jenis
+    ), '[]'::jsonb),
+    'recent', COALESCE((
+      SELECT jsonb_agg(to_jsonb(terbaru) ORDER BY terbaru.created_at DESC, terbaru.id DESC)
+      FROM (
+        SELECT id, nama_lengkap, pilihan_kelas, jenis_pendaftaran, status, created_at
+        FROM public.pendaftar
+        ORDER BY created_at DESC, id DESC
+        LIMIT 8
+      ) AS terbaru
+    ), '[]'::jsonb)
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.get_admin_dashboard_summary() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_admin_dashboard_summary() TO service_role;
+
 -- 7. Setup Storage Bucket (Supabase Storage)
 INSERT INTO storage.buckets (
   id, name, public, file_size_limit, allowed_mime_types

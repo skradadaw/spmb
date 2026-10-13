@@ -16,8 +16,18 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 
 import AdminPage from '../page';
 
-function clientReturning(data: unknown[] | null, error: unknown = null) {
-  return { from: vi.fn().mockReturnValue({ select: vi.fn().mockResolvedValue({ data, error }) }) };
+function clientReturning(rows: Array<Record<string, string>>, error: unknown = null) {
+  const count = (key: string) => Object.entries(rows.reduce<Record<string, number>>((acc, row) => ({ ...acc, [row[key]]: (acc[row[key]] ?? 0) + 1 }), {}))
+    .map(([label, total]) => ({ label, count: total }));
+  const data = {
+    total: rows.length,
+    awaiting: rows.filter((row) => row.status === 'Menunggu Verifikasi').length,
+    incomplete: rows.filter((row) => row.status === 'Menunggu Unggahan').length,
+    classes: count('pilihan_kelas'),
+    types: count('jenis_pendaftaran'),
+    recent: rows,
+  };
+  return { rpc: vi.fn().mockResolvedValue({ data: error ? null : data, error }) };
 }
 
 describe('AdminPage', () => {
@@ -62,7 +72,7 @@ describe('AdminPage', () => {
   });
 
   it('does not expose raw Supabase errors', async () => {
-    mocks.getSupabaseAdmin.mockReturnValue(clientReturning(null, { message: 'secret database detail' }));
+    mocks.getSupabaseAdmin.mockReturnValue(clientReturning([], { message: 'secret database detail' }));
     render(await AdminPage());
 
     expect(screen.getByRole('alert').textContent).toContain('Dashboard belum dapat dimuat');

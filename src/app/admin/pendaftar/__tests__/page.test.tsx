@@ -16,20 +16,27 @@ describe('ParticipantsPage', () => {
     mocks.getSupabaseAdmin.mockReturnValue({});
   });
 
-  it('keeps rendering the participant list when status options cannot load', async () => {
-    mocks.createParticipantsRepository.mockReturnValue({
-      getStatuses: vi.fn().mockRejectedValue(new Error('status query failed')),
-      list: vi.fn().mockResolvedValue({ items: [{ id: 'one', namaLengkap: 'Alya', asalSekolah: 'TK Melati', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Verifikasi', createdAt: null }], page: 1, pageSize: 20, total: 1, totalPages: 1 }),
-    });
-    render(await ParticipantsPage({ searchParams: Promise.resolve({}) }));
+  it('renders the list with the fixed status filter options from a single repository call', async () => {
+    const list = vi.fn().mockResolvedValue({ items: [{ id: 'one', nomorPendaftaran: 'OB-2027-001', namaLengkap: 'Alya', asalSekolah: 'TK Melati', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Verifikasi', createdAt: null }], page: 1, pageSize: 20, total: 1, totalPages: 1 });
+    mocks.createParticipantsRepository.mockReturnValue({ list });
+    render(await ParticipantsPage({ searchParams: Promise.resolve({ status: 'Terjadwal OKB' }) }));
     expect(screen.getByRole('table')).toBeDefined();
     expect(screen.getAllByText('Alya')).toHaveLength(2);
-    expect(screen.getByRole('alert').textContent).toContain('filter status');
+    expect(list).toHaveBeenCalledTimes(1);
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ statusFilter: 'Terjadwal OKB' }));
   });
 
-  it('preserves an explicitly requested status if the status query is unavailable', async () => {
+  it('ignores a status outside the fixed lifecycle', async () => {
     const list = vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20, total: 0, totalPages: 1 });
-    mocks.createParticipantsRepository.mockReturnValue({ getStatuses: vi.fn().mockRejectedValue(new Error('status query failed')), list });
+    mocks.createParticipantsRepository.mockReturnValue({ list });
     render(await ParticipantsPage({ searchParams: Promise.resolve({ status: 'Status Lama' }) }));
-    expect(list).toHaveBeenCalledWith(expect.objectContaining({ statusFilter: 'Status Lama' }));
-  });});
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ statusFilter: null }));
+  });
+
+  it('shows an error instead of an empty list when the query fails', async () => {
+    mocks.createParticipantsRepository.mockReturnValue({ list: vi.fn().mockRejectedValue(new Error('db down')) });
+    render(await ParticipantsPage({ searchParams: Promise.resolve({}) }));
+    expect(screen.getByText('Data peserta belum dapat dimuat')).toBeDefined();
+    expect(screen.queryByRole('table')).toBeNull();
+  });
+});
