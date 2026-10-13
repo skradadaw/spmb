@@ -1,12 +1,11 @@
-import Link from 'next/link';
-import { ArrowRight, FileCheck2 } from 'lucide-react';
 import ClassOptions from './ClassOptions';
+import ClosingCta from './ClosingCta';
 import FrequentQuestions from './FrequentQuestions';
 import HomeHero, { HomeHeader } from './HomeHero';
 import PaymentInformation from './PaymentInformation';
 import RegistrationPreparation from './RegistrationPreparation';
 import RegistrationSteps from './RegistrationSteps';
-import { registrationInfo } from '../data';
+import SiteFooter from './SiteFooter';
 import { totalUsedSeats, type ClassCapacity } from '@/features/registration/classCapacity';
 
 export default function LandingPage({
@@ -32,34 +31,9 @@ export default function LandingPage({
         <PaymentInformation />
         <RegistrationPreparation />
         <FrequentQuestions />
-        <section className="bg-white px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
-          <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-public-deep px-6 py-12 text-white shadow-[0_24px_60px_-28px_rgba(0,75,18,0.7)] sm:px-10 sm:py-16 lg:px-16">
-            <div aria-hidden="true" className="absolute -right-16 -top-20 h-64 w-64 rounded-full border-[44px] border-white/5" />
-            <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
-              <div>
-                <FileCheck2 aria-hidden="true" className="text-amber-300" size={36} />
-                <h2 className="mt-5 max-w-2xl text-3xl font-black tracking-tight sm:text-4xl">
-                  Siap melanjutkan Open Booking Pendaftaran?
-                </h2>
-                <p className="mt-4 max-w-2xl text-base leading-8 text-emerald-50">
-                  Pastikan dokumen dan bukti pembayaran telah disiapkan, lalu isi formulir
-                  Tahun Pelajaran {registrationInfo.academicYear} dengan data yang benar.
-                </p>
-              </div>
-              <Link
-                href="/pendaftaran"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-public-green px-6 py-3 text-base font-extrabold text-white shadow-lg shadow-emerald-950/30 ring-1 ring-white/30 transition-colors hover:bg-public-green-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-              >
-                Mulai Pendaftaran <ArrowRight aria-hidden="true" size={19} />
-              </Link>
-            </div>
-          </div>
-        </section>
+        <ClosingCta />
       </main>
-      <footer className="border-t border-white/10 bg-public-deep px-4 py-10 text-center text-sm text-emerald-100/80">
-        <p className="font-bold text-white">SD Plus 3 Al-Muhajirin</p>
-        <p className="mt-2">Open Booking Pendaftaran · {registrationInfo.academicYear}</p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

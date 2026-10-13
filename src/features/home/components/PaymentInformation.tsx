@@ -28,7 +28,7 @@ export default function PaymentInformation() {
         />
 
         <div className="mt-10 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-          <article className="rounded-3xl border border-white/15 bg-white/10 p-6 shadow-2xl shadow-emerald-950/30 backdrop-blur-md sm:p-8">
+          <article className="flex flex-col rounded-3xl border border-white/15 bg-white/10 p-6 shadow-2xl shadow-emerald-950/30 backdrop-blur-md sm:p-8">
             <p className="flex items-center gap-2 text-sm font-bold text-emerald-100">
               <Landmark aria-hidden="true" size={18} className="text-amber-300" /> Rekening pembayaran OKB
             </p>
@@ -41,7 +41,7 @@ export default function PaymentInformation() {
               </div>
               <CopyAccountButton accountNumber={registrationInfo.okb.accountNumber} />
             </div>
-            <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-white/15 pt-5">
+            <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-white/15 pt-5 lg:mt-auto">
               <span className="text-sm font-semibold text-emerald-100">Nominal</span>
               <strong className="text-2xl font-black text-amber-300">{registrationInfo.okb.fee}</strong>
             </div>

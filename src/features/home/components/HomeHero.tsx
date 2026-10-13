@@ -132,7 +132,7 @@ function BookingProgress({ completedCount }: { completedCount: number | null }) 
         </p>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-public-green shadow-sm shadow-emerald-900/5 ring-1 ring-inset ring-emerald-950/10">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-public-green" />
           </span>
           {safeCount} / {registrationInfo.capacity}

@@ -24,10 +24,6 @@ export default function RegistrationSteps() {
           aria-label="Langkah pendaftaran"
           className="relative mt-12 grid gap-0 lg:grid-cols-5 lg:gap-6"
         >
-          <span
-            aria-hidden="true"
-            className="absolute left-6 right-auto top-6 hidden h-0.5 w-[calc(100%-3rem)] bg-gradient-to-r from-public-green via-emerald-300 to-amber-300 lg:block"
-          />
           {registrationFlow.map(({ title, description }, index) => {
             const last = index === registrationFlow.length - 1;
             return (
@@ -38,7 +34,7 @@ export default function RegistrationSteps() {
                 {!last && (
                   <span
                     aria-hidden="true"
-                    className="absolute bottom-0 left-6 top-12 w-0.5 -translate-x-1/2 bg-emerald-200 lg:hidden"
+                    className="absolute bottom-0 left-6 top-12 w-0.5 -translate-x-1/2 bg-emerald-200 lg:bottom-auto lg:left-12 lg:right-[-1.5rem] lg:top-6 lg:h-0.5 lg:w-auto lg:translate-x-0 lg:bg-gradient-to-r lg:from-public-green lg:to-emerald-300"
                   />
                 )}
                 <span

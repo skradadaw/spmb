@@ -285,6 +285,54 @@ describe('Open Booking landing page', () => {
     expect(whatsapp.getAttribute('target')).toBe('_blank');
   });
 
+  it('orders the sections from the hero down to the closing CTA', () => {
+    renderHome();
+
+    expect(
+      within(screen.getByRole('main'))
+        .getAllByRole('heading', { level: 2 })
+        .map((heading) => heading.textContent),
+    ).toEqual([
+      'Jadwal penting',
+      'Alur Pendaftaran',
+      'Pilihan Kelas',
+      'Pembayaran OKB',
+      'Berkas yang Disiapkan',
+      'Pertanyaan yang Sering Diajukan',
+      'Siap melanjutkan Open Booking Pendaftaran?',
+    ]);
+  });
+
+  it('closes with a WhatsApp option next to the registration CTA', () => {
+    renderHome();
+
+    const cta = screen.getByRole('region', { name: 'Siap melanjutkan Open Booking Pendaftaran?' });
+    expect(within(cta).getByRole('link', { name: /mulai pendaftaran/i }).getAttribute('href')).toBe(
+      '/pendaftaran',
+    );
+    expect(within(cta).getByRole('link', { name: /whatsapp/i }).getAttribute('href')).toBe(
+      'https://wa.me/6281998311470',
+    );
+  });
+
+  it('puts the school contact, location, and accreditation in the footer', () => {
+    renderHome();
+
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByText('Terakreditasi A')).toBeDefined();
+    expect(
+      within(footer).getByText('Jl. Ipik Gandamanah No. 33, Ciseureuh, Purwakarta, Jawa Barat'),
+    ).toBeDefined();
+    expect(within(footer).getByText(/07\.00–17\.00/)).toBeDefined();
+    expect(within(footer).getByText(/2027\/2028/)).toBeDefined();
+    const whatsapp = within(footer).getByRole('link', { name: /0819-9831-1470/ });
+    expect(whatsapp.getAttribute('href')).toBe('https://wa.me/6281998311470');
+    const maps = within(footer).getByRole('link', { name: /buka di google maps/i });
+    expect(maps.getAttribute('href')).toMatch(/^https:\/\/www\.google\.com\/maps\/place\/SD\+Plus\+3\+Al-Muhajirin/);
+    expect(maps.getAttribute('href')).not.toMatch(/entry=|g_ep=|skid=/);
+    expect(maps.getAttribute('target')).toBe('_blank');
+  });
+
   it('never uses the word seleksi', () => {
     const { container } = renderHome();
 
