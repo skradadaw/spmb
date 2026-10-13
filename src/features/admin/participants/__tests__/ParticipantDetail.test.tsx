@@ -84,7 +84,7 @@ describe('ParticipantDetail', () => {
     const documentGrid = screen.getByTestId('document-grid');
     expect(documentGrid.className).toContain('md:grid-cols-2');
     expect(documentGrid.getAttribute('data-density')).toBe('compact');
-    expect(within(documentGrid).getAllByText('Lihat berkas')).toHaveLength(4);
+    expect(within(documentGrid).getAllByText('Lihat')).toHaveLength(4);
     expect(within(documentGrid).queryByText('Pratinjau PDF')).toBeNull();
     expect(screen.getAllByRole('button', { name: /^Lihat berkas / })).toHaveLength(3);
     expect(screen.getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' })).toBeDefined();
@@ -102,6 +102,23 @@ describe('ParticipantDetail', () => {
       'Lihat pratinjau PDF Akta Kelahiran',
     ]);
     expect(screen.getAllByLabelText('Catatan admin')).toHaveLength(1);
+  });
+
+  it('links each parent number to WhatsApp Web from the admin note', () => {
+    render(<ParticipantDetail participant={{ ...participant, father: { ...participant.father, telepon: '081234567890' }, mother: { ...participant.mother, telepon: '085612345678' } }} />);
+    const father = screen.getByRole('link', { name: 'Hubungi ayah lewat WhatsApp Web' });
+    expect(father.getAttribute('href')).toMatch(/^https:\/\/web\.whatsapp\.com\/send\?phone=6281234567890&text=/);
+    expect(father.getAttribute('target')).toBe('_blank');
+    expect(screen.getByRole('link', { name: 'Hubungi ibu lewat WhatsApp Web' }).getAttribute('href')).toContain('phone=6285612345678');
+  });
+
+  it('shows one WhatsApp button when both parents share a number and none when it is invalid', () => {
+    const { unmount } = render(<ParticipantDetail participant={{ ...participant, father: { ...participant.father, telepon: '081234567890' }, mother: { ...participant.mother, telepon: '081234567890' } }} />);
+    expect(screen.getAllByRole('link', { name: /lewat WhatsApp Web/ })).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Hubungi orang tua lewat WhatsApp Web' })).toBeDefined();
+    unmount();
+    render(<ParticipantDetail participant={participant} />);
+    expect(screen.queryAllByRole('link', { name: /lewat WhatsApp Web/ })).toHaveLength(0);
   });
 
   it('keeps neutral card surfaces and marks review state on the marker and badge', () => {

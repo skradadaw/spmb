@@ -103,7 +103,7 @@ export function AttendanceScanner() {
         {cameraOn ? (
           <Button type="button" variant="outline" onClick={stopCamera} className="w-full gap-2"><CameraOff aria-hidden="true" className="size-4" />Matikan kamera</Button>
         ) : (
-          <Button type="button" onClick={startCamera} className="w-full gap-2 bg-emerald-700 text-white hover:bg-emerald-800"><Camera aria-hidden="true" className="size-4" />Mulai scan</Button>
+          <Button type="button" onClick={startCamera} className="w-full gap-2"><Camera aria-hidden="true" className="size-4" />Mulai scan</Button>
         )}
         {cameraError && <p role="alert" className="text-sm text-rose-700">{cameraError}</p>}
         <form onSubmit={handleManual} className="flex gap-2">

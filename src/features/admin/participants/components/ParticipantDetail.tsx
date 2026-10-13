@@ -1,4 +1,5 @@
-import { ArrowLeft, Check, ClipboardCheck, MessageSquareText } from 'lucide-react';
+import { ArrowLeft, Check, ClipboardCheck } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminNoteAction';
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
 import { DocumentPreviewButton } from './DocumentPreviewButton';
@@ -11,10 +12,11 @@ import { Button } from '@/components/ui/button';
 import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ADMIN_ACTION_BUTTON } from '@/features/admin/components/adminStyles';
+import { ADMIN_DONE_BUTTON, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
 import { Textarea } from '@/components/ui/textarea';
 import type { DocumentReviewStatus, ParticipantDetail as ParticipantDetailData } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
+import { whatsAppWebHref } from '../whatsapp';
 
 function getDocumentContentType(path: string) {
   const extension = path.match(/\.(pdf|jpe?g|png|webp)$/i)?.[1]?.toLowerCase();
@@ -28,6 +30,14 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
   const uploadedDocuments = participant.documents.filter(document => document.path);
   const reviewedCount = uploadedDocuments.filter(document => participant.documentReviews[document.id]).length;
   const followUpCount = uploadedDocuments.filter(document => participant.documentReviews[document.id]?.status === 'follow_up').length;
+  const childName = participant.identity.namaLengkap ? formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap) : 'ananda';
+  const greeting = `Assalamu'alaikum Bapak/Ibu, kami dari panitia SPMB ingin menghubungi terkait pendaftaran ${childName}${participant.registration.nomorPendaftaran ? ` (${participant.registration.nomorPendaftaran})` : ''}.`;
+  const fatherHref = whatsAppWebHref(participant.father.telepon, greeting);
+  const motherHref = whatsAppWebHref(participant.mother.telepon, greeting);
+  // Parents often share one number; show a single button then.
+  const contacts = fatherHref && fatherHref === motherHref
+    ? [{ label: 'WA orang tua', href: fatherHref }]
+    : [{ label: 'WA ayah', href: fatherHref }, { label: 'WA ibu', href: motherHref }].filter((contact): contact is { label: string; href: string } => Boolean(contact.href));
 
   return (
     <div>
@@ -51,7 +61,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                 pilihanKelas: participant.registration.pilihanKelas ?? '',
                 kelasTujuan: participant.registration.kelasTujuan ?? null,
               }}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+              className={ADMIN_SECONDARY_BUTTON}
             />
           )}
           <Badge>{participant.status}</Badge>
@@ -140,11 +150,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                             aria-label={`${status === 'verified' ? 'Terverifikasi' : 'Verifikasi'} ${document.title}`}
                             aria-pressed={status === 'verified'}
                             size="sm"
-                            className={`${ADMIN_ACTION_BUTTON} w-full min-w-0 px-2 ${
-                              status === 'verified'
-                              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                              : 'bg-emerald-700 text-white hover:bg-emerald-800'
-                            }`}
+                            className={`${status === 'verified' ? ADMIN_DONE_BUTTON : ADMIN_PRIMARY_BUTTON} w-full min-w-0 px-2`}
                           >
                             <Check aria-hidden="true" className="size-3 shrink-0" />
                             <span className="truncate">{status === 'verified' ? 'Terverifikasi' : 'Verifikasi'}</span>
@@ -167,16 +173,26 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                   );
                 })}
               </div>
-              <form action={saveParticipantAdminNoteAction} className="space-y-3 rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/70 to-white p-4 shadow-sm shadow-blue-950/[0.03]">
+              <form action={saveParticipantAdminNoteAction} className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
                 <input type="hidden" name="participantId" value={participant.id} />
-                <div className="flex items-center gap-2">
-                  <span className="flex size-8 items-center justify-center rounded-lg bg-white text-blue-700 shadow-sm"><MessageSquareText aria-hidden="true" className="size-4" /></span>
-                  <Label htmlFor="participant-admin-note" className="font-semibold text-slate-900">Catatan admin</Label>
-                </div>
-                <p className="text-xs leading-5 text-slate-600">Catatan internal untuk membantu tindak lanjut berkas melalui WhatsApp.</p>
-                <Textarea id="participant-admin-note" name="adminNote" maxLength={1000} defaultValue={participant.adminNote ?? ''} rows={3} placeholder="Contoh: Hubungi orang tua untuk meminta ulang berkas yang belum jelas." className="min-h-20 resize-y bg-white shadow-sm" />
-                <div className="flex justify-end">
-                  <Button type="submit" size="sm" className="h-8 rounded-lg bg-slate-900 px-3 text-xs text-white hover:bg-slate-700">Simpan catatan</Button>
+                <Label htmlFor="participant-admin-note" className={ADMIN_SECTION_TITLE}>Catatan admin</Label>
+                <Textarea id="participant-admin-note" name="adminNote" maxLength={1000} defaultValue={participant.adminNote ?? ''} rows={2} placeholder="Catatan internal, mis. berkas yang perlu diminta ulang." className="min-h-14 resize-y bg-white text-xs md:text-xs" />
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {contacts.map(contact => (
+                      <a
+                        key={contact.label}
+                        href={contact.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Hubungi ${contact.label.replace('WA ', '')} lewat WhatsApp Web`}
+                        className={`${ADMIN_SECONDARY_BUTTON} inline-flex items-center`}
+                      >
+                        <WhatsAppIcon className="size-3.5 text-[#25D366]" />{contact.label}
+                      </a>
+                    ))}
+                  </div>
+                  <Button type="submit" className={ADMIN_PRIMARY_BUTTON}>Simpan catatan</Button>
                 </div>
               </form>
             </CardContent>

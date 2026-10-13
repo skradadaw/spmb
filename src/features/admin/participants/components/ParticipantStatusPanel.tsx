@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { FormSelect } from '@/features/admin/components/FormSelect';
-import { ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
+import { ADMIN_DANGER_BUTTON, ADMIN_DANGER_SOLID_BUTTON, ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
 import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
 import { CANCELLABLE_STATUSES } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
@@ -259,7 +259,7 @@ function CancelDialog({ participantId, pending, formAction }: { participantId: s
   const [open, setOpen] = useState(false);
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger render={<Button type="button" variant="ghost" className={cn(ADMIN_SECONDARY_BUTTON, 'border-transparent bg-transparent px-2 text-rose-700 hover:bg-rose-50 hover:text-rose-800')} />}>
+      <AlertDialogTrigger render={<Button type="button" className={ADMIN_DANGER_BUTTON} />}>
         <XCircle aria-hidden="true" className="size-3.5" />Batalkan pendaftar
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -273,7 +273,7 @@ function CancelDialog({ participantId, pending, formAction }: { participantId: s
           <input type="hidden" name="participantId" value={participantId} />
           <AlertDialogFooter>
             <AlertDialogCancel>Kembali</AlertDialogCancel>
-            <Button type="submit" name="intent" value="cancel" disabled={pending} className="bg-rose-700 text-white hover:bg-rose-800">Ya, batalkan pendaftar</Button>
+            <Button type="submit" name="intent" value="cancel" disabled={pending} className={ADMIN_DANGER_SOLID_BUTTON}>Ya, batalkan pendaftar</Button>
           </AlertDialogFooter>
         </form>
       </AlertDialogContent>

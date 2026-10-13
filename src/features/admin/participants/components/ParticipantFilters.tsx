@@ -25,7 +25,7 @@ export function ParticipantFilters({ query, statuses }: { query: ParticipantList
       <FilterSelect id="participant-class" name="kelas" label="Kelas" value={query.classFilter} options={PARTICIPANT_CLASSES} />
       <FilterSelect id="participant-type" name="jenis" label="Jenis pendaftaran" value={query.typeFilter} options={PARTICIPANT_TYPES} />
       <FilterSelect id="participant-status" name="status" label="Status" value={query.statusFilter} options={statusOptions} />
-      <div className="flex flex-wrap gap-2 sm:col-span-2 xl:col-span-4"><Button type="submit" className="h-10 bg-[var(--admin-sidebar)] text-white hover:bg-[var(--brand-green-dark)]"><Search aria-hidden="true" />Terapkan filter</Button><ButtonLink href="/admin/pendaftar" variant="outline" className="h-10"><RotateCcw aria-hidden="true" />Reset</ButtonLink><a href={exportHref} className={buttonVariants({ variant: 'outline', className: 'h-10' })}><Download aria-hidden="true" />Ekspor Excel</a></div>
+      <div className="flex flex-wrap gap-2 sm:col-span-2 xl:col-span-4"><Button type="submit" className="h-10"><Search aria-hidden="true" />Terapkan filter</Button><ButtonLink href="/admin/pendaftar" variant="outline" className="h-10"><RotateCcw aria-hidden="true" />Reset</ButtonLink><a href={exportHref} className={buttonVariants({ variant: 'outline', className: 'h-10' })}><Download aria-hidden="true" />Ekspor Excel</a></div>
     </Form>
   </CardContent></Card>;
 }

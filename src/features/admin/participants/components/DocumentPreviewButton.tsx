@@ -106,8 +106,9 @@ export function DocumentPreviewButton({ href, title, compact = false, className 
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
-      <Dialog.Trigger aria-label={previewType === 'pdf' ? `Lihat pratinjau PDF ${title}` : `Lihat berkas ${title}`} className={`inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${compact ? 'gap-1.5 px-2 text-xs' : 'gap-1.5 px-2.5 text-xs'} ${className}`}>
-        <Eye aria-hidden="true" className="size-3.5" />Lihat berkas
+      <Dialog.Trigger aria-label={previewType === 'pdf' ? `Lihat pratinjau PDF ${title}` : `Lihat berkas ${title}`} className={`inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring whitespace-nowrap ${compact ? 'gap-1.5 px-2 text-xs' : 'gap-1.5 px-2.5 text-xs'} ${className}`}>
+        {/* Compact cards are too narrow for the full label; the aria-label still names the document. */}
+        <Eye aria-hidden="true" className="size-3.5 shrink-0" />{compact ? 'Lihat' : 'Lihat berkas'}
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none" />
