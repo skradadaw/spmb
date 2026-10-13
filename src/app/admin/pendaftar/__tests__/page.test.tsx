@@ -17,7 +17,7 @@ describe('ParticipantsPage', () => {
   });
 
   it('renders the list with the fixed status filter options from a single repository call', async () => {
-    const list = vi.fn().mockResolvedValue({ items: [{ id: 'one', nomorPendaftaran: 'OB-2027-001', namaLengkap: 'Alya', asalSekolah: 'TK Melati', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Verifikasi', createdAt: null, attention: { nisnMismatch: false, followUpDocuments: 0, missingDocuments: 0 } }], page: 1, pageSize: 20, total: 1, totalPages: 1 });
+    const list = vi.fn().mockResolvedValue({ items: [{ id: 'one', nomorPendaftaran: 'OB-2027-001', namaLengkap: 'Alya', asalSekolah: 'TK Melati', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Verifikasi', createdAt: null, attention: { nisnMismatch: false, missingDocuments: 0 } }], page: 1, pageSize: 20, total: 1, totalPages: 1 });
     mocks.createParticipantsRepository.mockReturnValue({ list });
     render(await ParticipantsPage({ searchParams: Promise.resolve({ status: 'Terjadwal OKB' }) }));
     expect(screen.getByRole('table')).toBeDefined();

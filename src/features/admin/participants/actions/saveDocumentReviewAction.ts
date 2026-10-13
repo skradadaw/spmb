@@ -7,7 +7,8 @@ import { getAdminSession } from '@/features/auth/session';
 import { createParticipantsRepository } from '../server/participantsRepository';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const REVIEW_STATUSES = new Set(['verified', 'follow_up']);
+/** "unverified" removes the review, returning the Berkas to belum diperiksa. */
+const REVIEW_STATUSES = new Set(['verified', 'unverified']);
 
 export async function saveDocumentReviewAction(formData: FormData): Promise<void> {
   if (!await getAdminSession()) throw new Error('Sesi admin tidak valid. Silakan masuk kembali.');
@@ -24,6 +25,14 @@ export async function saveDocumentReviewAction(formData: FormData): Promise<void
   const definition = DOCUMENT_DEFINITIONS.find(document => document.id === documentId as RegistrationDocumentId);
   if (!participant || !definition || typeof participant[definition.dbColumn] !== 'string') {
     throw new Error('Berkas tidak ditemukan atau belum diunggah.');
+  }
+
+  if (status === 'unverified') {
+    // Undoing a verification never moves the applicant's status back (see CONTEXT.md: Berkas).
+    const { error } = await supabase.from('verifikasi_dokumen').delete().eq('pendaftar_id', participantId).eq('dokumen_id', documentId);
+    if (error) throw new Error('Verifikasi tidak dapat dibatalkan.');
+    revalidatePath(`/admin/pendaftar/${participantId}`);
+    return;
   }
 
   const { error } = await supabase.from('verifikasi_dokumen').upsert({

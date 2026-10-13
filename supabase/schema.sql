@@ -198,13 +198,17 @@ REVOKE ALL ON TABLE public.pendaftar FROM PUBLIC, anon, authenticated;
 CREATE TABLE IF NOT EXISTS public.verifikasi_dokumen (
   pendaftar_id UUID NOT NULL REFERENCES public.pendaftar(id) ON DELETE CASCADE,
   dokumen_id TEXT NOT NULL CHECK (dokumen_id IN ('aktaKelahiran', 'kartuKeluarga', 'pasFoto', 'buktiPembayaran')),
-  status TEXT NOT NULL CHECK (status IN ('verified', 'follow_up')),
+  status TEXT NOT NULL CHECK (status = 'verified'),
   catatan TEXT,
   diperiksa_oleh TEXT NOT NULL DEFAULT 'Admin',
   diperiksa_pada TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (pendaftar_id, dokumen_id)
 );
 ALTER TABLE public.verifikasi_dokumen DROP CONSTRAINT IF EXISTS verifikasi_dokumen_check;
+-- Perlu Tindak Lanjut dihapus: Berkas hanya belum diperiksa (tanpa baris) atau terverifikasi.
+DELETE FROM public.verifikasi_dokumen WHERE status <> 'verified';
+ALTER TABLE public.verifikasi_dokumen DROP CONSTRAINT IF EXISTS verifikasi_dokumen_status_check;
+ALTER TABLE public.verifikasi_dokumen ADD CONSTRAINT verifikasi_dokumen_status_check CHECK (status = 'verified');
 UPDATE public.pendaftar AS peserta
 SET catatan_admin = catatan_terlama.catatan
 FROM (
@@ -219,9 +223,8 @@ ALTER TABLE public.verifikasi_dokumen ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.verifikasi_dokumen FROM PUBLIC, anon, authenticated;
 GRANT ALL ON TABLE public.verifikasi_dokumen TO service_role;
 
--- 6a-2. Perlu Perhatian: NISN Tidak Sesuai dan ringkasan Berkas per Pendaftar
+-- 6a-2. Perlu Perhatian: NISN Tidak Sesuai dan Berkas yang belum tersedia
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nisn_tidak_sesuai BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS berkas_tindak_lanjut SMALLINT NOT NULL DEFAULT 0;
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS berkas_belum_tersedia SMALLINT GENERATED ALWAYS AS (
   ((NULLIF(btrim(dokumen_akta_kelahiran), '') IS NULL)::INTEGER
   + (NULLIF(btrim(dokumen_kartu_keluarga), '') IS NULL)::INTEGER
@@ -247,51 +250,10 @@ CREATE TRIGGER trg_clear_nisn_flag
 BEFORE UPDATE OF nisn ON public.pendaftar
 FOR EACH ROW EXECUTE FUNCTION public.clear_nisn_flag_on_change();
 
--- Jumlah Berkas Perlu Tindak Lanjut disimpan di pendaftar agar tabel peserta bisa memfilternya tanpa join.
-CREATE OR REPLACE FUNCTION public.sync_berkas_tindak_lanjut()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_ids UUID[] := ARRAY[]::UUID[];
-  v_id UUID;
-BEGIN
-  IF TG_OP IN ('UPDATE', 'DELETE') THEN v_ids := v_ids || OLD.pendaftar_id; END IF;
-  IF TG_OP IN ('INSERT', 'UPDATE') THEN v_ids := v_ids || NEW.pendaftar_id; END IF;
-  FOREACH v_id IN ARRAY v_ids LOOP
-    UPDATE public.pendaftar AS peserta
-    SET berkas_tindak_lanjut = jumlah.total
-    FROM (
-      SELECT count(*)::SMALLINT AS total
-      FROM public.verifikasi_dokumen
-      WHERE pendaftar_id = v_id AND status = 'follow_up'
-    ) AS jumlah
-    WHERE peserta.id = v_id AND peserta.berkas_tindak_lanjut IS DISTINCT FROM jumlah.total;
-  END LOOP;
-  RETURN NULL;
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.sync_berkas_tindak_lanjut() FROM PUBLIC, anon, authenticated;
-
+-- Perlu Tindak Lanjut sudah tidak dipakai; hitungannya dibuang.
 DROP TRIGGER IF EXISTS trg_sync_berkas_tindak_lanjut ON public.verifikasi_dokumen;
-CREATE TRIGGER trg_sync_berkas_tindak_lanjut
-AFTER INSERT OR UPDATE OR DELETE ON public.verifikasi_dokumen
-FOR EACH ROW EXECUTE FUNCTION public.sync_berkas_tindak_lanjut();
-
-UPDATE public.pendaftar AS peserta
-SET berkas_tindak_lanjut = COALESCE(jumlah.total, 0)
-FROM public.pendaftar AS sumber
-LEFT JOIN (
-  SELECT pendaftar_id, count(*)::SMALLINT AS total
-  FROM public.verifikasi_dokumen
-  WHERE status = 'follow_up'
-  GROUP BY pendaftar_id
-) AS jumlah ON jumlah.pendaftar_id = sumber.id
-WHERE peserta.id = sumber.id
-  AND peserta.berkas_tindak_lanjut IS DISTINCT FROM COALESCE(jumlah.total, 0);
+DROP FUNCTION IF EXISTS public.sync_berkas_tindak_lanjut();
+ALTER TABLE public.pendaftar DROP COLUMN IF EXISTS berkas_tindak_lanjut;
 
 -- 6b. Kuota per Pilihan Kelas (lihat docs/adr/0001-kuota-per-pilihan-kelas.md)
 CREATE TABLE IF NOT EXISTS public.kuota_kelas (
@@ -565,9 +527,8 @@ AS $$
     -- Perlu Perhatian tidak pernah menghitung Pendaftar Dibatalkan atau Ditolak.
     'attention', (
       SELECT jsonb_build_object(
-        'any', count(*) FILTER (WHERE nisn_tidak_sesuai OR berkas_tindak_lanjut > 0 OR berkas_belum_tersedia > 0),
-        'nisn', count(*) FILTER (WHERE nisn_tidak_sesuai),
-        'followUp', count(*) FILTER (WHERE berkas_tindak_lanjut > 0)
+        'any', count(*) FILTER (WHERE nisn_tidak_sesuai OR berkas_belum_tersedia > 0),
+        'nisn', count(*) FILTER (WHERE nisn_tidak_sesuai)
       )
       FROM public.pendaftar
       WHERE status NOT IN ('Dibatalkan', 'Ditolak')

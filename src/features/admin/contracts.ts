@@ -19,7 +19,7 @@ export type AdminDashboardSummary = {
   completedRegistrations: number;
   incompleteUploads: number;
   /** Perlu Perhatian counts; Dibatalkan and Ditolak are never included. */
-  attention: { any: number; nisn: number; followUp: number };
+  attention: { any: number; nisn: number };
   classDistribution: DistributionItem[];
   typeDistribution: DistributionItem[];
   recentApplicants: RecentApplicant[];

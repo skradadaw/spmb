@@ -21,9 +21,6 @@ export function AttentionCard({ attention }: { attention: AdminDashboardSummary[
           <Link href="/admin/pendaftar?perhatian=nisn" className={linkClass}>
             <span className="tabular-nums text-amber-700">{attention.nisn}</span>NISN tidak sesuai<ChevronRight aria-hidden="true" className="size-3.5 text-slate-400" />
           </Link>
-          <Link href="/admin/pendaftar?perhatian=tindak-lanjut" className={linkClass}>
-            <span className="tabular-nums text-amber-700">{attention.followUp}</span>Berkas perlu tindak lanjut<ChevronRight aria-hidden="true" className="size-3.5 text-slate-400" />
-          </Link>
         </div>
       </CardContent>
     </Card>

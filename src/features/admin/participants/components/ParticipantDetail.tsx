@@ -3,7 +3,10 @@ import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminNoteAction';
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
 import { setNisnFlagAction } from '../actions/setNisnFlagAction';
-import { DocumentPreviewButton } from './DocumentPreviewButton';
+import { DocumentPreviewButton, type ViewerDocument } from './DocumentPreviewButton';
+import { DocumentPrefetch } from './DocumentPrefetch';
+import { StickyAside } from './StickyAside';
+import { documentReplacedAt, documentVersion } from '../documentVersion';
 import { ParticipantStatusPanel } from './ParticipantStatusPanel';
 import { ParticipantStatusBadge } from './ParticipantStatus';
 import { ParticipantEditableGroup } from './ParticipantEditableGroup';
@@ -19,6 +22,8 @@ import type { DocumentReviewStatus, ParticipantDetail as ParticipantDetailData }
 import { formatParticipantFieldValue } from '../presentation';
 import { whatsAppWebHref } from '../whatsapp';
 
+const shortDate = (value: string) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(value));
+
 function getDocumentContentType(path: string) {
   const extension = path.match(/\.(pdf|jpe?g|png|webp)$/i)?.[1]?.toLowerCase();
   if (extension === 'pdf') return 'application/pdf';
@@ -30,7 +35,14 @@ function getDocumentContentType(path: string) {
 export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }: { participant: ParticipantDetailData; backHref?: string }) {
   const uploadedDocuments = participant.documents.filter(document => document.path);
   const reviewedCount = uploadedDocuments.filter(document => participant.documentReviews[document.id]).length;
-  const followUpCount = uploadedDocuments.filter(document => participant.documentReviews[document.id]?.status === 'follow_up').length;
+  // The version in the URL changes when a Berkas Pengganti is uploaded, so the browser may cache each file.
+  const viewerDocuments: ViewerDocument[] = uploadedDocuments.map(document => ({
+    id: document.id,
+    title: document.title,
+    href: `/admin/pendaftar/${participant.id}/dokumen/${document.id}?contentType=${encodeURIComponent(getDocumentContentType(document.path!))}&v=${documentVersion(document.path!)}`,
+    verified: participant.documentReviews[document.id]?.status === 'verified',
+    replacedAt: documentReplacedAt(document.path!),
+  }));
   const childName = participant.identity.namaLengkap ? formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap) : 'ananda';
   const greeting = `Assalamu'alaikum Bapak/Ibu, kami dari panitia SPMB ingin menghubungi terkait pendaftaran ${childName}${participant.registration.nomorPendaftaran ? ` (${participant.registration.nomorPendaftaran})` : ''}.`;
   const fatherHref = whatsAppWebHref(participant.father.telepon, greeting);
@@ -96,66 +108,58 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
             <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Pengusul / rujukan murid" name="referral" values={participant.referral} />
           </CardContent>
         </Card>
-        <div data-detail-aside className="grid min-w-0 gap-4 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-y-auto xl:overscroll-contain xl:pb-1 xl:pr-1 xl:[scrollbar-width:thin]">
+        <StickyAside className="grid min-w-0 gap-4">
           <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
             <CardHeader className="border-b border-slate-200 bg-slate-50/80 p-4 pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <CardTitle className="text-base font-semibold tracking-tight text-slate-950">Dokumen terunggah</CardTitle>
-                  <p className="mt-1 text-xs leading-4 text-slate-600">{reviewedCount} dari {uploadedDocuments.length} berkas sudah diperiksa</p>
+                  <p className="mt-1 text-xs leading-4 text-slate-600">{reviewedCount} dari {participant.documents.length} berkas terverifikasi</p>
                 </div>
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-800"><ClipboardCheck aria-hidden="true" className="size-4" /></span>
               </div>
-              {followUpCount > 0 && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">{followUpCount} berkas perlu ditindaklanjuti</p>}
             </CardHeader>
             <CardContent className="space-y-3 p-3 sm:p-4">
+              <DocumentPrefetch hrefs={viewerDocuments.map(document => document.href)} />
               <div data-testid="document-grid" data-density="compact" className="grid gap-2 md:grid-cols-2">
-                {participant.documents.map((document, index) => {
+                {participant.documents.map(document => {
                   const review = participant.documentReviews[document.id];
                   const status = !document.path ? 'missing' : review?.status ?? 'pending';
-                  const statusLabel = status === 'missing' ? 'Belum tersedia' : status === 'verified' ? 'Terverifikasi' : status === 'follow_up' ? 'Perlu ditindaklanjuti' : 'Belum diperiksa';
-                  const statusStyles = status === 'missing' ? 'bg-slate-200 text-slate-700' : status === 'verified' ? 'bg-emerald-100 text-emerald-800' : status === 'follow_up' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700';
-                  const numberStyles = status === 'missing' ? 'bg-slate-200 text-slate-600' : status === 'verified' ? 'bg-emerald-600 text-white' : status === 'follow_up' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700';
+                  const replacedAt = document.path ? documentReplacedAt(document.path) : null;
+                  // Same second line on every card: where the file came from, not a status the buttons already show.
+                  const sourceLabel = !document.path ? 'Belum diunggah' : replacedAt ? `Diganti admin, ${shortDate(replacedAt)}` : 'Dari pendaftaran';
+                  const markerStyles = status === 'missing' ? 'border border-dashed border-slate-300 bg-white' : status === 'verified' ? 'bg-emerald-600 text-white' : 'border border-slate-300 bg-white';
                   return (
                     <article
                       key={document.id}
                       data-review-state={status}
-                      className={`flex min-w-0 flex-col rounded-xl border p-3 shadow-sm shadow-slate-950/[0.03] transition-colors ${
-                        status === 'missing'
-                          ? 'border-dashed border-slate-300 bg-slate-50'
-                          : status === 'follow_up'
-                          ? 'border-amber-300 bg-amber-50/50'
-                          : 'border-slate-200 bg-white'
+                      className={`flex h-full min-w-0 flex-col rounded-xl border p-3 shadow-sm shadow-slate-950/[0.03] transition-colors ${
+                        status === 'missing' ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 bg-white'
                       }`}
                     >
                       <div className="flex min-w-0 items-start gap-2.5">
+                        {/* A checkbox-like marker: ticked when verified, empty while waiting, dashed when missing. */}
                         <span
                           aria-hidden="true"
                           data-document-index
-                          className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${numberStyles}`}
+                          className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded ${markerStyles}`}
                         >
-                          {status === 'verified' ? <Check className="size-3" strokeWidth={3} /> : String(index + 1).padStart(2, '0')}
+                          {status === 'verified' && <Check className="size-3" strokeWidth={3} />}
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex min-w-0 items-start justify-between gap-2">
-                            <h3 className="break-words text-xs font-semibold leading-4 text-slate-950">{document.title}</h3>
+                            {/* Two lines reserved so a long title does not make its card taller than its neighbour. */}
+                            <h3 className="min-h-8 break-words text-xs font-semibold leading-4 text-slate-950">{document.title}</h3>
                             {document.path && (
                               <ReplaceDocumentButton participantId={participant.id} documentId={document.id} title={document.title} hasFile />
                             )}
                           </div>
-                          {/* A verified document says so on its button, so the badge would only repeat it. */}
-                          {status !== 'verified' && (
-                            <div className="mt-1">
-                              <span className={`inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium leading-3 ${statusStyles}`}>
-                                {statusLabel}
-                              </span>
-                            </div>
-                          )}
+                          <p data-document-source className="text-[11px] leading-4 text-slate-500">{sourceLabel}</p>
                         </div>
                       </div>
                       {document.path ? (
-                        // Full card width with two equal columns so the longer "Terverifikasi" label never pushes "Lihat berkas" out.
-                        <form action={saveDocumentReviewAction} className="mt-3 grid grid-cols-2 gap-1.5">
+                        // The verify button takes the spare width so "Terverifikasi" fits; "Lihat" only needs its label.
+                        <form action={saveDocumentReviewAction} className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 pt-3">
                           <input type="hidden" name="participantId" value={participant.id} />
                           <input type="hidden" name="documentId" value={document.id} />
                           <Button
@@ -172,15 +176,13 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                           </Button>
                           <DocumentPreviewButton
                             compact
-                            className="w-full min-w-0"
-                            href={`/admin/pendaftar/${participant.id}/dokumen/${document.id}?contentType=${encodeURIComponent(
-                              getDocumentContentType(document.path),
-                            )}`}
-                            title={document.title}
+                            participantId={participant.id}
+                            documents={viewerDocuments}
+                            index={viewerDocuments.findIndex(item => item.id === document.id)}
                           />
                         </form>
                       ) : (
-                        <div className="mt-3">
+                        <div className="mt-auto pt-3">
                           <ReplaceDocumentButton participantId={participant.id} documentId={document.id} title={document.title} hasFile={false} />
                         </div>
                       )}
@@ -221,7 +223,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
             pilihanKelas={participant.registration.pilihanKelas ?? null}
             kelasPenempatan={participant.decision.kelasPenempatan ?? null}
           />
-        </div>
+        </StickyAside>
       </div>
     </div>
   );

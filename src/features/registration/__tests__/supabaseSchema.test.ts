@@ -17,7 +17,10 @@ describe('Supabase registration security schema', () => {
   it('stores internal document reviews privately per participant and document', () => {
     expect(compactSchema).toContain('CREATE TABLE IF NOT EXISTS public.verifikasi_dokumen');
     expect(compactSchema).toContain('PRIMARY KEY (pendaftar_id, dokumen_id)');
-    expect(compactSchema).toContain("status IN ('verified', 'follow_up')");
+    expect(compactSchema).toContain("status TEXT NOT NULL CHECK (status = 'verified')");
+    // Perlu Tindak Lanjut was removed: old follow-up reviews become belum diperiksa.
+    expect(compactSchema).toContain("DELETE FROM public.verifikasi_dokumen WHERE status <> 'verified';");
+    expect(compactSchema).toContain("ADD CONSTRAINT verifikasi_dokumen_status_check CHECK (status = 'verified');");
     expect(compactSchema).toContain('ALTER TABLE public.verifikasi_dokumen ENABLE ROW LEVEL SECURITY;');
     expect(compactSchema).toContain('REVOKE ALL ON TABLE public.verifikasi_dokumen FROM PUBLIC, anon, authenticated;');
     expect(compactSchema).toContain('GRANT ALL ON TABLE public.verifikasi_dokumen TO service_role;');
@@ -300,21 +303,20 @@ describe('Supabase registration security schema', () => {
     expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.get_admin_dashboard_summary() TO service_role;');
     // Perlu Perhatian never counts withdrawn or rejected applicants.
     expect(functionSql).toContain("'nisn', count(*) FILTER (WHERE nisn_tidak_sesuai)");
-    expect(functionSql).toContain("'followUp', count(*) FILTER (WHERE berkas_tindak_lanjut > 0)");
+    expect(functionSql).not.toContain('berkas_tindak_lanjut');
     expect(functionSql).toContain("WHERE status NOT IN ('Dibatalkan', 'Ditolak')");
   });
 
   it('stores NISN Tidak Sesuai and per-applicant document counts for the participant list', () => {
     expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nisn_tidak_sesuai BOOLEAN NOT NULL DEFAULT false;');
-    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS berkas_tindak_lanjut SMALLINT NOT NULL DEFAULT 0;');
     expect(compactSchema).toContain('ADD COLUMN IF NOT EXISTS berkas_belum_tersedia SMALLINT GENERATED ALWAYS AS');
     // Changing the NISN clears the mark unless the same update sets it explicitly.
     expect(compactSchema).toContain('IF NEW.nisn IS DISTINCT FROM OLD.nisn AND NEW.nisn_tidak_sesuai IS NOT DISTINCT FROM OLD.nisn_tidak_sesuai THEN NEW.nisn_tidak_sesuai := false;');
     expect(compactSchema).toContain('BEFORE UPDATE OF nisn ON public.pendaftar FOR EACH ROW EXECUTE FUNCTION public.clear_nisn_flag_on_change();');
-    // Follow-up counts follow every review change, including the reset done by a replacement upload.
-    expect(compactSchema).toContain('AFTER INSERT OR UPDATE OR DELETE ON public.verifikasi_dokumen FOR EACH ROW EXECUTE FUNCTION public.sync_berkas_tindak_lanjut();');
-    expect(compactSchema).toContain("WHERE pendaftar_id = v_id AND status = 'follow_up'");
-    expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.sync_berkas_tindak_lanjut() FROM PUBLIC, anon, authenticated;');
+    // The follow-up count is gone together with Perlu Tindak Lanjut.
+    expect(compactSchema).toContain('DROP TRIGGER IF EXISTS trg_sync_berkas_tindak_lanjut ON public.verifikasi_dokumen;');
+    expect(compactSchema).toContain('DROP FUNCTION IF EXISTS public.sync_berkas_tindak_lanjut();');
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar DROP COLUMN IF EXISTS berkas_tindak_lanjut;');
   });
 
   it('lets admins change class choice only when the destination class has a free seat', () => {

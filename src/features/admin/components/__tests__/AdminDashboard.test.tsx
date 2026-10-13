@@ -9,7 +9,7 @@ const summary: AdminDashboardSummary = {
   awaitingVerification: 12,
   completedRegistrations: 28,
   incompleteUploads: 4,
-  attention: { any: 5, nisn: 3, followUp: 2 },
+  attention: { any: 5, nisn: 3 },
   classDistribution: [
     { label: 'Reguler', count: 16, percentage: 50 },
     { label: 'Bilingual', count: 10, percentage: 31 },
@@ -31,7 +31,7 @@ describe('AdminDashboard', () => {
     render(<AdminDashboard summary={summary} />);
     expect(screen.getByRole('link', { name: /5 peserta perlu ditangani/ }).getAttribute('href')).toBe('/admin/pendaftar?perhatian=semua');
     expect(screen.getByRole('link', { name: /3\s*NISN tidak sesuai/ }).getAttribute('href')).toBe('/admin/pendaftar?perhatian=nisn');
-    expect(screen.getByRole('link', { name: /2\s*Berkas perlu tindak lanjut/ }).getAttribute('href')).toBe('/admin/pendaftar?perhatian=tindak-lanjut');
+    expect(screen.queryByText(/tindak lanjut/i)).toBeNull();
   });
 
   it('renders metrics, distributions, and recent applicants', () => {

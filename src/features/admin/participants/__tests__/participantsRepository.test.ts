@@ -41,8 +41,7 @@ describe('participants repository', () => {
   it('filters Perlu Perhatian and never includes withdrawn or rejected applicants', async () => {
     for (const [value, check] of [
       ['nisn', (q: ReturnType<typeof fixture>['q']) => expect(q.eq).toHaveBeenCalledWith('nisn_tidak_sesuai', true)],
-      ['tindak-lanjut', (q: ReturnType<typeof fixture>['q']) => expect(q.gt).toHaveBeenCalledWith('berkas_tindak_lanjut', 0)],
-      ['semua', (q: ReturnType<typeof fixture>['q']) => expect(q.or).toHaveBeenCalledWith('nisn_tidak_sesuai.is.true,berkas_tindak_lanjut.gt.0,berkas_belum_tersedia.gt.0')],
+      ['semua', (q: ReturnType<typeof fixture>['q']) => expect(q.or).toHaveBeenCalledWith('nisn_tidak_sesuai.is.true,berkas_belum_tersedia.gt.0')],
     ] as const) {
       const { q, repo } = fixture();
       q.range.mockResolvedValueOnce({ data: [], count: 0, error: null });
@@ -52,17 +51,17 @@ describe('participants repository', () => {
     }
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [], count: 0, error: null });
-    await repo.list(parseParticipantListQuery(new URLSearchParams('perhatian=lainnya')));
+    await repo.list(parseParticipantListQuery(new URLSearchParams('perhatian=tindak-lanjut')));
     expect(q.not).not.toHaveBeenCalled();
   });
 
   it('maps Perlu Perhatian per row and hides it for withdrawn or rejected applicants', async () => {
     const { q, repo } = fixture();
-    const flagged = { nisn_tidak_sesuai: true, berkas_tindak_lanjut: 1, berkas_belum_tersedia: 2 };
+    const flagged = { nisn_tidak_sesuai: true, berkas_belum_tersedia: 2 };
     q.range.mockResolvedValueOnce({ data: [{ id: 'a', status: 'Terjadwal OKB', ...flagged }, { id: 'b', status: 'Dibatalkan', ...flagged }], count: 2, error: null });
     const result = await repo.list(parseParticipantListQuery(new URLSearchParams()));
-    expect(result.items[0].attention).toEqual({ nisnMismatch: true, followUpDocuments: 1, missingDocuments: 2 });
-    expect(result.items[1].attention).toEqual({ nisnMismatch: false, followUpDocuments: 0, missingDocuments: 0 });
+    expect(result.items[0].attention).toEqual({ nisnMismatch: true, missingDocuments: 2 });
+    expect(result.items[1].attention).toEqual({ nisnMismatch: false, missingDocuments: 0 });
     expect(PARTICIPANT_LIST_COLUMNS).toContain('nisn_tidak_sesuai');
     expect(PARTICIPANT_DETAIL_COLUMNS).toContain('nisn_tidak_sesuai');
   });
@@ -125,11 +124,11 @@ describe('participants repository', () => {
   it('maps internal document review metadata without mixing it into participant status', async () => {
     const { q, repo } = fixture();
     q.maybeSingle.mockResolvedValue({ data: { id: 'a', status: 'Menunggu Verifikasi', catatan_admin: 'Hubungi orang tua' }, error: null });
-    q.range.mockResolvedValue({ data: [{ dokumen_id: 'aktaKelahiran', status: 'follow_up', diperiksa_pada: '2026-10-11T00:00:00Z', diperiksa_oleh: 'Admin' }], error: null });
+    q.range.mockResolvedValue({ data: [{ dokumen_id: 'aktaKelahiran', status: 'verified', diperiksa_pada: '2026-10-11T00:00:00Z', diperiksa_oleh: 'Admin' }], error: null });
     const result = await repo.getById('a');
     expect(result?.status).toBe('Menunggu Verifikasi');
     expect(result?.adminNote).toBe('Hubungi orang tua');
-    expect(result?.documentReviews.aktaKelahiran).toEqual({ status: 'follow_up', reviewedAt: '2026-10-11T00:00:00Z', reviewedBy: 'Admin' });
+    expect(result?.documentReviews.aktaKelahiran).toEqual({ status: 'verified', reviewedAt: '2026-10-11T00:00:00Z', reviewedBy: 'Admin' });
   });
   it('reads the applicant and their document reviews in parallel', async () => {
     let resolveRow: (value: unknown) => void = () => {};

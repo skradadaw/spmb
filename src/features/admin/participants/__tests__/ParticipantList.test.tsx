@@ -6,13 +6,13 @@ import { AdminShell } from '../../components/AdminShell';
 import { parseParticipantListQuery } from '../query';
 vi.mock('@/features/auth/logout-action', () => ({ logoutAdminAction: vi.fn() }));
 const query = parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler&page=2'));
-const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z', attention: { nisnMismatch: false, followUpDocuments: 0, missingDocuments: 0 } };
+const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z', attention: { nisnMismatch: false, missingDocuments: 0 } };
 
 describe('Data Peserta UI', () => {
   it('shows Perlu Perhatian under the status only when something needs handling', () => {
-    const attention = { nisnMismatch: true, followUpDocuments: 1, missingDocuments: 2 };
+    const attention = { nisnMismatch: true, missingDocuments: 2 };
     render(<ParticipantList query={query} result={{ items: [{ ...row, status: 'Terjadwal OKB', attention }, { ...row, id: 'b', status: 'Diterima' }], total: 2, page: 1, pageSize: 20, totalPages: 1 }} />);
-    const notes = screen.getAllByText('NISN tidak sesuai · 1 berkas perlu tindak lanjut · 2 berkas belum tersedia');
+    const notes = screen.getAllByText('NISN tidak sesuai · 2 berkas belum tersedia');
     expect(notes).toHaveLength(2);
     expect(notes[0].className).toContain('text-amber-700');
     expect(document.querySelectorAll('[data-attention]')).toHaveLength(2);

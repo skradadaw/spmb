@@ -11,7 +11,7 @@ const payload = {
   total: 3,
   awaiting: 1,
   incomplete: 1,
-  attention: { any: 2, nisn: 1, followUp: 1 },
+  attention: { any: 2, nisn: 1 },
   classes: [{ label: 'Reguler', count: 1 }, { label: 'Bilingual', count: 1 }, { label: 'Tahfizh', count: 1 }],
   types: [{ label: 'Siswa Baru', count: 2 }, { label: 'Pindahan', count: 1 }],
   recent,
@@ -33,7 +33,7 @@ describe('admin dashboard repository', () => {
     expect(summary.awaitingVerification).toBe(1);
     expect(summary.completedRegistrations).toBe(2);
     expect(summary.incompleteUploads).toBe(1);
-    expect(summary.attention).toEqual({ any: 2, nisn: 1, followUp: 1 });
+    expect(summary.attention).toEqual({ any: 2, nisn: 1 });
     expect(summary.classDistribution.map(({ label, count }) => ({ label, count }))).toEqual([
       { label: 'Reguler', count: 1 }, { label: 'Bilingual', count: 1 }, { label: 'Tahfizh', count: 1 },
     ]);
@@ -51,7 +51,7 @@ describe('admin dashboard repository', () => {
     expect(summary.classDistribution.every((item) => item.percentage === 0)).toBe(true);
     expect(summary.recentApplicants).toEqual([]);
     // An older database function without attention counts still renders zeros.
-    expect(summary.attention).toEqual({ any: 0, nisn: 0, followUp: 0 });
+    expect(summary.attention).toEqual({ any: 0, nisn: 0 });
   });
 
   it('groups unknown and null categories under Lainnya', async () => {

@@ -58,6 +58,7 @@ Program kelas yang ditetapkan Panitia untuk Pendaftar yang Diterima; dapat berbe
 
 **Berkas** (*Document*):
 Salah satu dari empat dokumen wajib Pendaftar: Akta Kelahiran, Kartu Keluarga, Pas Foto, dan Bukti Pembayaran OKB.
+Setiap Berkas berstatus belum diperiksa atau terverifikasi. Admin dapat membatalkan verifikasi; Status Pendaftar tidak ikut mundur. Berkas yang bermasalah dicatat di catatan admin lalu diganti dengan Berkas Pengganti.
 _Avoid_: dokumen, file (di teks untuk pengguna)
 
 **Afiliasi Direktorat 2** (*Directorate 2 Affiliation*):
@@ -90,10 +91,6 @@ Penetapan Panitia bahwa seorang Pendaftar Diterima atau Ditolak, beserta Kelas P
 **Scan Kehadiran** (*Attendance Scan*):
 Pemindaian QR pada Bukti Pendaftaran oleh admin di hari OKB, yang langsung mencatat Pendaftar hadir (Terjadwal OKB → Sudah OKB). Hanya berlaku bagi Pendaftar Terjadwal OKB pada tanggal Jadwal OKB-nya; selain itu tidak ada yang dicatat dan admin menjadwalkan ulang bila perlu.
 
-**Perlu Tindak Lanjut** (*Follow-up Required*):
-Penanda admin pada satu Berkas yang belum dapat diterima. Admin menghubungi orang tua dan menerima berkas pengganti di luar sistem, lalu mengunggahnya sebagai Berkas Pengganti dan memverifikasinya.
-_Avoid_: follow_up, ditolak (untuk berkas)
-
 **Berkas Pengganti** (*Replacement Document*):
 File yang diunggah admin untuk menggantikan salah satu Berkas Pendaftar, kapan pun dan pada status apa pun. File lama dihapus, Berkas kembali berstatus belum diperiksa, dan status Pendaftar tidak berubah.
 _Avoid_: upload ulang, revisi berkas
@@ -103,4 +100,4 @@ Penanda admin pada Pendaftar yang NISN-nya diduga salah atau asal diisi orang tu
 _Avoid_: NISN salah, NISN invalid, status NISN
 
 **Perlu Perhatian** (*Needs Attention*):
-Ringkasan masalah yang masih harus ditangani admin pada seorang Pendaftar: NISN Tidak Sesuai, Berkas Perlu Tindak Lanjut, atau Berkas yang belum tersedia. Berkas yang sekadar belum diperiksa tidak termasuk. Pendaftar Dibatalkan dan Ditolak tidak pernah Perlu Perhatian.
+Ringkasan masalah yang masih harus ditangani admin pada seorang Pendaftar: NISN Tidak Sesuai atau Berkas yang belum tersedia. Berkas yang sekadar belum diperiksa tidak termasuk. Pendaftar Dibatalkan dan Ditolak tidak pernah Perlu Perhatian.

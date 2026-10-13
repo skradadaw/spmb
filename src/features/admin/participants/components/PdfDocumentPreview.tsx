@@ -6,7 +6,8 @@ import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from 'pdfjs
 
 type LoadState = 'loading' | 'ready' | 'error';
 
-export function PdfDocumentPreview({ href, title = 'dokumen' }: { href: string; title?: string }) {
+/** Renders already-downloaded PDF bytes; the viewer fetches them (with progress and caching) beforehand. */
+export function PdfDocumentPreview({ href, title = 'dokumen', data }: { href: string; title?: string; data: Uint8Array }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const documentRef = useRef<PDFDocumentProxy | null>(null);
@@ -38,14 +39,10 @@ export function PdfDocumentPreview({ href, title = 'dokumen' }: { href: string; 
     let loadingTask: PDFDocumentLoadingTask | null = null;
     const load = async () => {
       try {
-        const url = new URL(href, window.location.origin);
-        url.searchParams.set('preview', 'pdfjs');
-        const response = await fetch(`${url.pathname}${url.search}`, { cache: 'no-store', credentials: 'same-origin', signal: controller.signal });
-        if (!response.ok) throw new Error('PDF tidak dapat dimuat');
-        const data = new Uint8Array(await response.arrayBuffer());
         const pdfjs = await import('pdfjs-dist');
         pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
-        loadingTask = pdfjs.getDocument({ data });
+        // PDF.js may transfer the buffer to its worker, so it gets a copy and a retry still has the original.
+        loadingTask = pdfjs.getDocument({ data: data.slice() });
         const pdf = await loadingTask.promise;
         if (controller.signal.aborted) {
           await loadingTask.destroy();
@@ -67,7 +64,7 @@ export function PdfDocumentPreview({ href, title = 'dokumen' }: { href: string; 
       documentRef.current = null;
       if (loadingTask) void loadingTask.destroy();
     };
-  }, [attempt, href]);
+  }, [attempt, data]);
 
   useEffect(() => {
     const pdf = documentRef.current;

@@ -17,7 +17,7 @@ type SummaryPayload = {
   total: number;
   awaiting: number;
   incomplete: number;
-  attention?: { any?: number; nisn?: number; followUp?: number } | null;
+  attention?: { any?: number; nisn?: number } | null;
   classes: GroupCount[];
   types: GroupCount[];
   recent: RecentRow[];
@@ -80,7 +80,7 @@ export function createAdminDashboardRepository(client: DashboardClient) {
         awaitingVerification: Number(data.awaiting) || 0,
         incompleteUploads,
         completedRegistrations: totalRegistrations - incompleteUploads,
-        attention: { any: Number(data.attention?.any) || 0, nisn: Number(data.attention?.nisn) || 0, followUp: Number(data.attention?.followUp) || 0 },
+        attention: { any: Number(data.attention?.any) || 0, nisn: Number(data.attention?.nisn) || 0 },
         classDistribution: distribution(data.classes, CLASS_LABELS, totalRegistrations),
         typeDistribution: distribution(data.types, TYPE_LABELS, totalRegistrations),
         recentApplicants: data.recent.map((row) => ({

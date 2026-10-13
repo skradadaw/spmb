@@ -46,6 +46,21 @@ describe('participant document route', () => {
     fetchMock.mockRestore();
   });
 
+  it('lets only the admin browser cache a URL that names the current file version', async () => {
+    const path = `registrations/${id}/pasFoto-r1760400000000.jpg`;
+    const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: { id, submission_id: id, dokumen_pas_foto: path }, error: null }) };
+    const createSignedUrl = vi.fn().mockResolvedValue({ data: { signedUrl: 'https://storage.example/signed-secret' }, error: null });
+    mocks.getSupabaseAdmin.mockReturnValue({ from: vi.fn(() => query), storage: { from: vi.fn(() => ({ createSignedUrl })) } });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('image-content', { status: 200, headers: { 'content-length': '13' } }));
+    const current = await GET(new Request(`https://example.test/admin/pendaftar/${id}/dokumen/pasFoto?v=1760400000000`), context());
+    expect(current.headers.get('cache-control')).toBe('private, max-age=3600, immutable');
+    expect(current.headers.get('content-length')).toBe('13');
+    // An outdated version (the file was replaced since) is served but never cached.
+    const stale = await GET(new Request(`https://example.test/admin/pendaftar/${id}/dokumen/pasFoto?v=o`), context());
+    expect(stale.headers.get('cache-control')).toContain('no-store');
+    fetchMock.mockRestore();
+  });
+
   it('returns not found when document row has no safe path', async () => {
     const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: { id, dokumen_pas_foto: 'https://evil.test/file.png' }, error: null }) };
     const createSignedUrl = vi.fn();

@@ -23,7 +23,6 @@ const participant: ParticipantDetailData = {
   mother: { nama: 'Siti', nik: '456', pendidikan: 'SMP', pekerjaan: 'Ibu rumah tangga', penghasilan: null, telepon: '085678', alamat: null },
   documentReviews: {
     aktaKelahiran: { status: 'verified', reviewedAt: '2026-10-10T01:00:00Z', reviewedBy: 'Admin' },
-    kartuKeluarga: { status: 'follow_up', reviewedAt: '2026-10-10T02:00:00Z', reviewedBy: 'Admin' },
   },
   adminNote: null,
   nisnMismatch: false,
@@ -90,8 +89,9 @@ describe('ParticipantDetail', () => {
     expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_33rem]');
     expect(documentsCard?.parentElement?.className).toContain('xl:sticky');
     // A tall right column scrolls by itself so its lower cards are reachable without scrolling the whole page.
-    expect(documentsCard?.parentElement?.className).toContain('xl:overflow-y-auto');
-    expect(documentsCard?.parentElement?.className).toContain('xl:max-h-[calc(100dvh-2rem)]');
+    // No nested scrollbar: the column sticks by its bottom edge instead of scrolling on its own.
+    expect(documentsCard?.parentElement?.className).not.toContain('overflow-y-auto');
+    expect(documentsCard?.parentElement?.getAttribute('style')).toContain('--aside-top');
     expect(detailsCard?.querySelector('[data-detail-groups]')?.className).not.toContain('xl:grid-cols-3');
     expect(detailsCard?.querySelector('[data-detail-group]')?.className).not.toContain('lg:grid-cols-[10rem_minmax(0,1fr)]');
     expect(detailsCard?.querySelector('[data-detail-group]')?.firstElementChild?.firstElementChild?.tagName).toBe('H3');
@@ -148,7 +148,7 @@ describe('ParticipantDetail', () => {
     expect(screen.queryAllByRole('link', { name: /lewat WhatsApp Web/ })).toHaveLength(0);
   });
 
-  it('keeps neutral card surfaces and marks review state on the marker and badge', () => {
+  it('gives every document card the same structure and marks review state on the marker', () => {
     render(<ParticipantDetail participant={participant} />);
     const verified = screen.getByText('Akta Kelahiran').closest('article');
     const pending = screen.getByText('Bukti Pembayaran OKB').closest('article');
@@ -158,14 +158,19 @@ describe('ParticipantDetail', () => {
     expect(pending?.className).toContain('bg-white');
     expect(verified?.querySelector('[data-document-index]')?.className).toContain('bg-emerald-600');
     expect(verified?.querySelector('[data-document-index]')?.textContent).toBe('');
-    expect(pending?.querySelector('[data-document-index]')?.textContent).toBe('04');
-    expect(pending?.textContent).toContain('Belum diperiksa');
+    expect(pending?.querySelector('[data-document-index]')?.className).toContain('border-slate-300');
+    // No status badge on any card; the second line is always where the file came from.
+    expect(pending?.querySelector('[data-document-source]')?.textContent).toBe('Dari pendaftaran');
+    expect(verified?.querySelector('[data-document-source]')?.textContent).toBe('Dari pendaftaran');
+    expect(pending?.textContent).not.toContain('Belum diperiksa');
+    expect(pending?.className).toContain('h-full');
+    expect(pending?.querySelector('form')?.className).toContain('mt-auto');
   });
 
-  it('keeps both document actions inside the card on equal columns', () => {
+  it('keeps both document actions inside the card with room for the verify label', () => {
     render(<ParticipantDetail participant={participant} />);
     const actions = screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).closest('form');
-    expect(actions?.className).toContain('grid-cols-2');
+    expect(actions?.className).toContain('grid-cols-[minmax(0,1fr)_auto]');
     expect(actions?.parentElement?.tagName).toBe('ARTICLE');
   });
 

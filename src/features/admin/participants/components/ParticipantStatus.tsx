@@ -43,7 +43,6 @@ export function ParticipantStatus({ status }: { status: string }) {
 export function attentionItems(attention: ParticipantAttention) {
   return [
     attention.nisnMismatch && 'NISN tidak sesuai',
-    attention.followUpDocuments > 0 && `${attention.followUpDocuments} berkas perlu tindak lanjut`,
     attention.missingDocuments > 0 && `${attention.missingDocuments} berkas belum tersedia`,
   ].filter((item): item is string => Boolean(item));
 }

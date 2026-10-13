@@ -1,6 +1,7 @@
 import { getAdminSession } from '@/features/auth/session';
 import { createParticipantsRepository } from '@/features/admin/participants/server/participantsRepository';
 import { createParticipantDocumentUrl } from '@/features/admin/participants/server/participantDocumentService';
+import { documentVersion } from '@/features/admin/participants/documentVersion';
 import { DOCUMENT_DEFINITIONS, type RegistrationDocumentId } from '@/features/registration/contracts';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
 
@@ -11,6 +12,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 const DOCUMENT_IDS = new Set<string>(DOCUMENT_DEFINITIONS.map(document => document.id));
 const MIME_TYPES: Record<string, string> = { pdf: 'application/pdf', jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
 const PRIVATE_HEADERS = { 'Cache-Control': 'private, no-store, max-age=0', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
+/**
+ * A URL carrying the current file's version always maps to the same bytes (a Berkas Pengganti gets a new
+ * version), so only the admin's own browser may keep it for a while. Shared caches never store it.
+ */
+const VERSIONED_CACHE_CONTROL = 'private, max-age=3600, immutable';
 
 type Context = { params: Promise<{ id: string; documentId: string }> };
 
@@ -43,13 +49,16 @@ export async function GET(request: Request, { params }: Context) {
     const searchParams = new URL(request.url).searchParams;
     const download = searchParams.get('download') === '1';
     const pdfJsPreview = searchParams.get('preview') === 'pdfjs' && extension === 'pdf';
-    const buffer = await upstream.arrayBuffer();
-    return new Response(buffer, {
+    const cacheable = searchParams.get('v') === documentVersion(document.path);
+    const contentLength = upstream.headers.get('content-length');
+    // Streamed straight through so the browser starts receiving bytes before the whole file reaches the server.
+    return new Response(upstream.body, {
       status: 200,
       headers: {
         ...PRIVATE_HEADERS,
+        ...(cacheable ? { 'Cache-Control': VERSIONED_CACHE_CONTROL } : {}),
         'Content-Type': pdfJsPreview ? 'application/octet-stream' : MIME_TYPES[extension],
-        'Content-Length': String(buffer.byteLength),
+        ...(contentLength && /^\d+$/.test(contentLength) ? { 'Content-Length': contentLength } : {}),
         'X-Content-Type-Options': 'nosniff',
         ...(pdfJsPreview ? {} : { 'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename="${id}-${documentId}.${extension}"` }),
       },

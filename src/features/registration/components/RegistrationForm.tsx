@@ -21,6 +21,7 @@ import {
   releaseSubmissionLock,
 } from '../clientSubmission';
 import { uploadSignedDocuments } from '../signedUploadClient';
+import { compressFiles } from '../imageCompression';
 import { DocumentUploadCard } from './DocumentUploadCard';
 import { ConfirmationModal } from './ConfirmationModal';
 import { DownloadProofButton } from './DownloadProofButton';
@@ -330,9 +331,12 @@ export default function RegistrationForm({ fullClasses = [] }: RegistrationFormP
     const credentialInput = buildSubmissionCredentials(credentials);
 
     try {
+      setUploadStatusMessage('Mengecilkan ukuran foto...');
+      // Compressed before preparing so the declared size and type match what is uploaded.
+      const filesToUpload = await compressFiles(uploadedFiles);
       const preparation = buildRegistrationPreparation(
         pendingFormData,
-        uploadedFiles,
+        filesToUpload,
         honeypotRef.current?.value ?? '',
         credentials,
       );
@@ -348,7 +352,7 @@ export default function RegistrationForm({ fullClasses = [] }: RegistrationFormP
       }
 
       setUploadStatusMessage('Mengunggah dokumen 0 dari 4...');
-      await uploadSignedDocuments(prepared.uploads, uploadedFiles, (completed, total) => {
+      await uploadSignedDocuments(prepared.uploads, filesToUpload, (completed, total) => {
         setUploadStatusMessage(`Mengunggah dokumen ${completed} dari ${total}...`);
       });
       setUploadStatusMessage('Memeriksa dokumen dan menyelesaikan pendaftaran...');

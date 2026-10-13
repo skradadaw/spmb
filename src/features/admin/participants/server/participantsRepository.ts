@@ -11,7 +11,6 @@ type Result<T> = PromiseLike<{ data: T | null; error: unknown; count?: number | 
 type Query = {
   ilike: (column: string, value: string) => Query;
   eq: (column: string, value: string | boolean) => Query;
-  gt: (column: string, value: number) => Query;
   not: (column: string, operator: string, value: string) => Query;
   or: (filters: string) => Query;
   order: (column: string, options?: { ascending?: boolean }) => Query;
@@ -28,8 +27,8 @@ const count = (value: unknown) => Math.max(0, Number(value) || 0);
 const EXCLUDED_STATUS_LIST = `(${ATTENTION_EXCLUDED_STATUSES.map(status => `"${status}"`).join(',')})`;
 
 function mapAttention(row: Record<string, unknown>, status: string): ParticipantAttention {
-  if ((ATTENTION_EXCLUDED_STATUSES as readonly string[]).includes(status)) return { nisnMismatch: false, followUpDocuments: 0, missingDocuments: 0 };
-  return { nisnMismatch: row.nisn_tidak_sesuai === true, followUpDocuments: count(row.berkas_tindak_lanjut), missingDocuments: count(row.berkas_belum_tersedia) };
+  if ((ATTENTION_EXCLUDED_STATUSES as readonly string[]).includes(status)) return { nisnMismatch: false, missingDocuments: 0 };
+  return { nisnMismatch: row.nisn_tidak_sesuai === true, missingDocuments: count(row.berkas_belum_tersedia) };
 }
 
 function applyFilters(request: Query, query: ParticipantListQuery) {
@@ -40,8 +39,7 @@ function applyFilters(request: Query, query: ParticipantListQuery) {
   if (query.attentionFilter) {
     request = request.not('status', 'in', EXCLUDED_STATUS_LIST);
     if (query.attentionFilter === 'nisn') request = request.eq('nisn_tidak_sesuai', true);
-    else if (query.attentionFilter === 'tindak-lanjut') request = request.gt('berkas_tindak_lanjut', 0);
-    else request = request.or('nisn_tidak_sesuai.is.true,berkas_tindak_lanjut.gt.0,berkas_belum_tersedia.gt.0');
+    else request = request.or('nisn_tidak_sesuai.is.true,berkas_belum_tersedia.gt.0');
   }
   return request;
 }
