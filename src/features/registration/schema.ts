@@ -17,6 +17,16 @@ export const DIRECTORATE_2_UNITS = [
   'SMA Fullday Al-Muhajirin',
 ] as const;
 
+// Pilihan isian dipakai bersama oleh form pendaftaran dan form edit admin.
+export const REGISTRATION_TYPE_OPTIONS = ['Siswa Baru', 'Pindahan'] as const;
+export const CLASS_CHOICE_OPTIONS = ['Reguler', 'Bilingual', 'Tahfizh'] as const;
+export const GENDER_OPTIONS = ['Laki-laki', 'Perempuan'] as const;
+export const YES_NO_OPTIONS = ['Ya', 'Tidak'] as const;
+export const ACHIEVEMENT_LEVEL_OPTIONS = ['Sekolah', 'Kecamatan', 'Kabupaten/Kota', 'Provinsi', 'Nasional'] as const;
+export const EDUCATION_OPTIONS = ['SD', 'SMP', 'SMA', 'D1-D3', 'S1', 'S2', 'S3'] as const;
+export const FATHER_INCOME_OPTIONS = ['< 2 Juta', '2-5 Juta', '5-10 Juta', '> 10 Juta'] as const;
+export const MOTHER_INCOME_OPTIONS = ['Tidak Berpenghasilan', ...FATHER_INCOME_OPTIONS] as const;
+
 /** Tingkat kelas yang dapat dituju Pendaftar Pindahan. */
 export const KELAS_TUJUAN_OPTIONS = ['2', '3', '4', '5', '6'] as const;
 
@@ -34,11 +44,11 @@ const optionalUnit = z.string().trim().refine(
 
 export const step1BaseSchema = z.object({
   // Data Murid
-  jenisPendaftaran: oneOf('Jenis pendaftaran wajib dipilih', ['Siswa Baru', 'Pindahan']),
-  pilihanKelas: oneOf('Pilihan kelas wajib dipilih', ['Reguler', 'Bilingual', 'Tahfizh']),
+  jenisPendaftaran: oneOf('Jenis pendaftaran wajib dipilih', REGISTRATION_TYPE_OPTIONS),
+  pilihanKelas: oneOf('Pilihan kelas wajib dipilih', CLASS_CHOICE_OPTIONS),
   kelasTujuan: z.string().trim().optional(),
   namaLengkap: reqStr('Nama lengkap wajib diisi', 3),
-  jenisKelamin: oneOf('Jenis kelamin wajib dipilih', ['Laki-laki', 'Perempuan']),
+  jenisKelamin: oneOf('Jenis kelamin wajib dipilih', GENDER_OPTIONS),
   tempatLahir: reqStr('Tempat lahir wajib diisi', 3, 100),
   tanggalLahir: z.iso.date({ message: 'Tanggal lahir tidak valid' }).refine(
     (value) => new Date(`${value}T00:00:00Z`) <= new Date(),
@@ -47,16 +57,16 @@ export const step1BaseSchema = z.object({
   nik: z.string({ message: 'NIK wajib diisi' })
     .regex(/^\d{16}$/, 'NIK harus 16 digit angka'),
   nisn: z.string({ message: 'NISN wajib diisi' }).regex(/^\d{4,10}$/, 'NISN harus 4–10 digit angka'),
-  bekerjaDiDirektorat2: oneOf('Wajib dipilih', ['Ya', 'Tidak']),
+  bekerjaDiDirektorat2: oneOf('Wajib dipilih', YES_NO_OPTIONS),
   namaOrangtuaDirektorat2: optionalStr(255),
   unitOrangtuaDirektorat2: optionalUnit,
-  saudaraDiDirektorat2: oneOf('Wajib dipilih', ['Ya', 'Tidak']),
+  saudaraDiDirektorat2: oneOf('Wajib dipilih', YES_NO_OPTIONS),
   namaSaudaraDirektorat2: optionalStr(255),
   unitSaudaraDirektorat2: optionalUnit,
   asalSekolah: reqStr('Asal sekolah wajib diisi', 2),
   prestasiAnak: optionalStr(1000),
   tingkatPrestasi: z.string().trim().refine(
-    (value) => ['', 'Sekolah', 'Kecamatan', 'Kabupaten/Kota', 'Provinsi', 'Nasional'].includes(value),
+    (value) => value === '' || (ACHIEVEMENT_LEVEL_OPTIONS as readonly string[]).includes(value),
     'Tingkat prestasi tidak valid',
   ).optional(),
   jarakKeSekolah: reqStr('Jarak ke sekolah wajib diisi', 1, 20),
@@ -69,7 +79,7 @@ export const step1BaseSchema = z.object({
   kecamatan: reqStr('Kecamatan wajib dipilih', 1, 100),
   kota: reqStr('Kota/Kabupaten wajib dipilih', 1, 100),
   provinsi: reqStr('Provinsi wajib dipilih', 1, 100),
-  adaPengusul: oneOf('Wajib dipilih', ['Ya', 'Tidak']),
+  adaPengusul: oneOf('Wajib dipilih', YES_NO_OPTIONS),
   tipePengusul: z.string().trim().refine(
     (value) => value === '' || REFERRAL_TYPES.includes(value as ReferralType),
     'Kategori pengusul tidak valid',
@@ -173,9 +183,9 @@ export const step2Schema = z.object({
   namaAyah: reqStr('Nama Ayah wajib diisi', 3),
   nikAyah: z.string({ message: 'NIK Ayah wajib diisi' })
     .regex(/^\d{16}$/, 'NIK Ayah harus 16 digit angka'),
-  pendidikanAyah: oneOf('Pendidikan Ayah wajib dipilih', ['SD', 'SMP', 'SMA', 'D1-D3', 'S1', 'S2', 'S3']),
+  pendidikanAyah: oneOf('Pendidikan Ayah wajib dipilih', EDUCATION_OPTIONS),
   pekerjaanAyah: reqStr('Pekerjaan Ayah wajib diisi', 2, 100),
-  penghasilanAyah: oneOf('Penghasilan Ayah wajib dipilih', ['< 2 Juta', '2-5 Juta', '5-10 Juta', '> 10 Juta']),
+  penghasilanAyah: oneOf('Penghasilan Ayah wajib dipilih', FATHER_INCOME_OPTIONS),
   teleponAyah: z.string({ message: 'Nomor WhatsApp Ayah wajib diisi' })
     .regex(/^(^\+62|62|^08)\d{8,12}$/, 'Nomor telepon tidak valid'),
   alamatAyah: reqStr('Alamat Ayah wajib diisi', 5, 1000),
@@ -184,9 +194,9 @@ export const step2Schema = z.object({
   namaIbu: reqStr('Nama Ibu wajib diisi', 3),
   nikIbu: z.string({ message: 'NIK Ibu wajib diisi' })
     .regex(/^\d{16}$/, 'NIK Ibu harus 16 digit angka'),
-  pendidikanIbu: oneOf('Pendidikan Ibu wajib dipilih', ['SD', 'SMP', 'SMA', 'D1-D3', 'S1', 'S2', 'S3']),
+  pendidikanIbu: oneOf('Pendidikan Ibu wajib dipilih', EDUCATION_OPTIONS),
   pekerjaanIbu: reqStr('Pekerjaan Ibu wajib diisi', 2, 100),
-  penghasilanIbu: oneOf('Penghasilan Ibu wajib dipilih', ['Tidak Berpenghasilan', '< 2 Juta', '2-5 Juta', '5-10 Juta', '> 10 Juta']),
+  penghasilanIbu: oneOf('Penghasilan Ibu wajib dipilih', MOTHER_INCOME_OPTIONS),
   teleponIbu: z.string({ message: 'Nomor WhatsApp Ibu wajib diisi' })
     .regex(/^(^\+62|62|^08)\d{8,12}$/, 'Nomor telepon tidak valid'),
   alamatIbu: reqStr('Alamat Ibu wajib diisi', 5, 1000),

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { within } from '@testing-library/react';
 import { ParticipantDetail } from '../components/ParticipantDetail';
@@ -17,6 +17,7 @@ const participant: ParticipantDetailData = {
   okb: { jadwalTanggal: null, jadwalSesi: null },
   decision: { kelasPenempatan: null },
   previousStatus: null,
+  formValues: { namaLengkap: 'RANI PUTRI', jenisKelamin: 'Perempuan', jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Reguler', nik: '1234567890123456' },
   address: { alamatJalan: 'KP KRAJAN maracang', rt: '8', rw: '001', kelurahan: 'Mawar', kecamatan: 'Purwakarta', kota: 'Purwakarta', provinsi: 'Jawa Barat', alamatRumah: null },
   father: { nama: 'BUDI SANTOSO', nik: '123', pendidikan: 'SMA', pekerjaan: 'KARYAWAN SWASTA', penghasilan: null, telepon: '081234', alamat: null },
   mother: { nama: 'Siti', nik: '456', pendidikan: 'SMP', pekerjaan: 'Ibu rumah tangga', penghasilan: null, telepon: '085678', alamat: null },
@@ -39,8 +40,8 @@ describe('ParticipantDetail', () => {
     const identityHeading = screen.getByRole('heading', { name: 'Identitas anak' });
     const schoolHeading = screen.getByRole('heading', { name: 'Sekolah dan prestasi' });
     const documentsHeading = screen.getByRole('heading', { name: 'Dokumen terunggah' });
-    const detailsCard = identityHeading.parentElement?.parentElement?.parentElement;
-    const schoolCard = schoolHeading.parentElement?.parentElement?.parentElement;
+    const detailsCard = identityHeading.closest('[data-detail-group]')?.parentElement?.parentElement;
+    const schoolCard = schoolHeading.closest('[data-detail-group]')?.parentElement?.parentElement;
     const documentsCard = documentsHeading.parentElement?.parentElement?.parentElement?.parentElement;
     expect(detailsCard).toBe(schoolCard);
     expect(detailsCard?.querySelector('[data-detail-group]')?.className).toContain('border-slate-200/70');
@@ -74,7 +75,7 @@ describe('ParticipantDetail', () => {
     expect(documentsCard?.parentElement?.className).toContain('xl:sticky');
     expect(detailsCard?.querySelector('[data-detail-groups]')?.className).not.toContain('xl:grid-cols-3');
     expect(detailsCard?.querySelector('[data-detail-group]')?.className).not.toContain('lg:grid-cols-[10rem_minmax(0,1fr)]');
-    expect(detailsCard?.querySelector('[data-detail-group]')?.firstElementChild?.tagName).toBe('H3');
+    expect(detailsCard?.querySelector('[data-detail-group]')?.firstElementChild?.firstElementChild?.tagName).toBe('H3');
     expect(detailsCard?.querySelector('dl')?.className).not.toMatch(/sm:grid-cols-2|xl:grid-cols-3/);
   });
 
@@ -150,5 +151,23 @@ describe('ParticipantDetail', () => {
     }} />);
     expect(screen.getByText('(Pilihan Kelas: Tahfizh)', { exact: false })).toBeDefined();
     expect(screen.getByText('Ubah Keputusan Penerimaan')).toBeDefined();
+  });
+
+  it('turns a detail group into a prefilled edit form and back', () => {
+    render(<ParticipantDetail participant={participant} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Identitas anak' }));
+    expect((screen.getByLabelText('Nama lengkap') as HTMLInputElement).value).toBe('RANI PUTRI');
+    expect((screen.getByLabelText('NIK') as HTMLInputElement).value).toBe('1234567890123456');
+    expect(screen.getByRole('button', { name: 'Simpan' })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Batal' }));
+    expect(screen.queryByRole('button', { name: 'Simpan' })).toBeNull();
+  });
+
+  it('shows the target grade field only when Pindahan is selected', () => {
+    render(<ParticipantDetail participant={participant} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Pendaftaran' }));
+    expect(screen.queryByLabelText('Kelas tujuan')).toBeNull();
+    fireEvent.change(screen.getByLabelText('Jenis pendaftaran'), { target: { value: 'Pindahan' } });
+    expect(screen.getByLabelText('Kelas tujuan')).toBeDefined();
   });
 });

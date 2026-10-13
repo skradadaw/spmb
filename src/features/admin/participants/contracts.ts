@@ -23,6 +23,8 @@ export type ParticipantDetail = {
   okb: Record<string, string | null>;
   decision: Record<string, string | null>;
   previousStatus: string | null;
+  /** Current values keyed like the registration form, used to prefill the admin edit forms. */
+  formValues: Record<string, string>;
   address: Record<string, string | null>; father: Record<string, string | null>; mother: Record<string, string | null>;
   documents: ParticipantDocument[];
   documentReviews: ParticipantDocumentReviews;

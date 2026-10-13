@@ -4,6 +4,7 @@ import type { ParticipantDetail, ParticipantDocumentReviews, ParticipantExportRe
 import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS, PARTICIPANT_PAGE_SIZE } from '../contracts';
 import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
 import { escapeSearch } from '../query';
+import { fromPendaftarRow } from '../editing';
 import { DOCUMENT_DEFINITIONS } from '@/features/registration/contracts';
 
 type Result<T> = PromiseLike<{ data: T | null; error: unknown; count?: number | null }>;
@@ -116,7 +117,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
       return {
         id, createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi',
         identity: group('identity'), registration: group('registration'), school: group('school'), affiliation: group('affiliation'),
-        referral: group('referral'), okb: group('okb'), decision: group('decision'), previousStatus: text(row.status_sebelum_dibatalkan),
+        referral: group('referral'), okb: group('okb'), decision: group('decision'), formValues: fromPendaftarRow(row), previousStatus: text(row.status_sebelum_dibatalkan),
         address: group('address'), father: group('father'), mother: group('mother'),
         documents: DOCUMENT_DEFINITIONS.map(doc => ({ id: doc.id, title: doc.title, path: text(row[doc.dbColumn]) })), documentReviews, adminNote: text(row.catatan_admin),
       };

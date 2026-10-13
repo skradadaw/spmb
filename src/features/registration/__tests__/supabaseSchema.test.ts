@@ -299,4 +299,16 @@ describe('Supabase registration security schema', () => {
     expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.get_admin_dashboard_summary() FROM PUBLIC, anon, authenticated;');
     expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.get_admin_dashboard_summary() TO service_role;');
   });
+
+  it('lets admins change class choice only when the destination class has a free seat', () => {
+    const functionSql = compactSql(schema.match(
+      /CREATE OR REPLACE FUNCTION public\.update_applicant_registration\([\s\S]*?\$\$;/,
+    )?.[0] ?? '');
+
+    expect(functionSql).toContain('LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;');
+    expect(functionSql).toContain("AND (v_jenis IS DISTINCT FROM 'Siswa Baru' OR v_kelas IS DISTINCT FROM p_kelas) THEN");
+    expect(functionSql).toContain("IF NOT FOUND OR v_terpakai >= v_kuota THEN RETURN 'full';");
+    expect(functionSql).toContain("kelas_tujuan = CASE WHEN p_jenis = 'Pindahan' THEN p_kelas_tujuan ELSE NULL END");
+    expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.update_applicant_registration(UUID, TEXT, TEXT, TEXT) TO service_role;');
+  });
 });

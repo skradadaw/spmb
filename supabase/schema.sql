@@ -415,6 +415,67 @@ $$;
 REVOKE ALL ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) TO service_role;
 
+-- Admin mengubah Jenis Pendaftaran / Pilihan Kelas; kursi baru hanya diberikan bila kuota kelas tujuan masih ada.
+CREATE OR REPLACE FUNCTION public.update_applicant_registration(
+  p_pendaftar_id UUID,
+  p_jenis TEXT,
+  p_kelas TEXT,
+  p_kelas_tujuan TEXT
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_status TEXT;
+  v_jenis TEXT;
+  v_kelas TEXT;
+  v_kuota INTEGER;
+  v_terpakai INTEGER;
+BEGIN
+  IF p_jenis NOT IN ('Siswa Baru', 'Pindahan')
+    OR p_kelas NOT IN ('Reguler', 'Bilingual', 'Tahfizh')
+    OR (p_jenis = 'Pindahan' AND (p_kelas_tujuan IS NULL OR p_kelas_tujuan NOT IN ('2', '3', '4', '5', '6'))) THEN
+    RETURN 'invalid';
+  END IF;
+
+  LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
+
+  SELECT status, jenis_pendaftaran, pilihan_kelas INTO v_status, v_jenis, v_kelas
+  FROM public.pendaftar
+  WHERE id = p_pendaftar_id;
+
+  IF NOT FOUND THEN
+    RETURN 'invalid';
+  END IF;
+
+  -- Kursi baru dibutuhkan bila hasilnya Siswa Baru yang memakai kursi di kelas yang belum ditempatinya.
+  IF p_jenis = 'Siswa Baru'
+    AND v_status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')
+    AND (v_jenis IS DISTINCT FROM 'Siswa Baru' OR v_kelas IS DISTINCT FROM p_kelas) THEN
+    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage
+    WHERE usage.pilihan_kelas = p_kelas;
+
+    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+      RETURN 'full';
+    END IF;
+  END IF;
+
+  UPDATE public.pendaftar
+  SET jenis_pendaftaran = p_jenis,
+      pilihan_kelas = p_kelas,
+      kelas_tujuan = CASE WHEN p_jenis = 'Pindahan' THEN p_kelas_tujuan ELSE NULL END
+  WHERE id = p_pendaftar_id;
+
+  RETURN 'ok';
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.update_applicant_registration(UUID, TEXT, TEXT, TEXT) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.update_applicant_registration(UUID, TEXT, TEXT, TEXT) TO service_role;
+
 -- Ringkasan dashboard admin dihitung di database: hanya angka agregat dan 8 pendaftar terbaru yang dikirim.
 CREATE OR REPLACE FUNCTION public.get_admin_dashboard_summary()
 RETURNS JSONB

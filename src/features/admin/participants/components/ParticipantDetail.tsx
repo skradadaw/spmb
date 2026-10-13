@@ -3,13 +3,13 @@ import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminN
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
 import { DocumentPreviewButton } from './DocumentPreviewButton';
 import { ParticipantStatusPanel } from './ParticipantStatusPanel';
+import { ParticipantEditableGroup } from './ParticipantEditableGroup';
 import { DownloadProofButton } from '@/features/registration/components/DownloadProofButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DocumentReviewStatus, ParticipantDetail as ParticipantDetailData } from '../contracts';
-import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
 import { formatParticipantFieldValue } from '../presentation';
 
 function getDocumentContentType(path: string) {
@@ -18,34 +18,6 @@ function getDocumentContentType(path: string) {
   if (extension === 'jpg' || extension === 'jpeg') return 'image/jpeg';
   if (extension === 'png' || extension === 'webp') return 'image/' + extension;
   return 'application/octet-stream';
-}
-
-type GroupProps = {
-  title: string;
-  name: ParticipantFieldGroupName;
-  values?: Record<string, string | null>;
-  hiddenFields?: string[];
-  fullWidthFields?: string[];
-};
-
-function Group({ title, name, values = {}, hiddenFields = [], fullWidthFields = [] }: GroupProps) {
-  const entries = PARTICIPANT_FIELDS[name]
-    .filter(([key]) => !hiddenFields.includes(key))
-    .map(([key, , label]) => [key, label, values?.[key] ?? null] as const);
-
-  return (
-    <section aria-labelledby={`participant-${name}-heading`} data-detail-group className="grid min-w-0 gap-2 border-b border-slate-200/70 pb-4 last:border-b-0 last:pb-0">
-      <h3 id={`participant-${name}-heading`} className="text-sm font-semibold">{title}</h3>
-      <dl className="grid min-w-0 grid-cols-2 divide-x divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200/80 bg-white/80 sm:grid-cols-3">
-        {entries.map(([key, label, value]) => (
-          <div key={key} className={`min-w-0 px-3 py-2.5 ${fullWidthFields.includes(key) ? 'col-span-full' : ''}`}>
-            <dt className="text-xs font-medium leading-5 text-[var(--admin-muted)]">{label}</dt>
-            <dd className="mt-1 break-words text-sm font-medium leading-6 text-slate-900">{formatParticipantFieldValue(name, key, value)}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
 }
 
 export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }: { participant: ParticipantDetailData; backHref?: string }) {
@@ -85,14 +57,14 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
         <Card className="min-w-0 rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
           <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Informasi siswa</CardTitle></CardHeader>
           <CardContent className="space-y-3 px-4 pb-5 pt-0 sm:px-5" data-detail-groups>
-            <Group title="Identitas anak" name="identity" values={participant.identity} />
-            <Group title="Pendaftaran" name="registration" values={participant.registration} hiddenFields={participant.registration.jenisPendaftaran === 'Pindahan' ? [] : ['kelasTujuan']} />
-            <Group title="Sekolah dan prestasi" name="school" values={participant.school} />
-            <Group title="Informasi alamat" name="address" values={participant.address} hiddenFields={['provinsi', 'alamatRumah']} />
-            <Group title="Data ayah" name="father" values={participant.father} fullWidthFields={['alamat']} />
-            <Group title="Data ibu" name="mother" values={participant.mother} fullWidthFields={['alamat']} />
-            <Group title="Afiliasi Direktorat 2" name="affiliation" values={participant.affiliation} />
-            <Group title="Pengusul / rujukan murid" name="referral" values={participant.referral} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Identitas anak" name="identity" values={participant.identity} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Pendaftaran" name="registration" values={participant.registration} hiddenFields={participant.registration.jenisPendaftaran === 'Pindahan' ? [] : ['kelasTujuan']} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Sekolah dan prestasi" name="school" values={participant.school} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Informasi alamat" name="address" values={participant.address} hiddenFields={['provinsi', 'alamatRumah']} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Data ayah" name="father" values={participant.father} fullWidthFields={['alamat']} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Data ibu" name="mother" values={participant.mother} fullWidthFields={['alamat']} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Afiliasi Direktorat 2" name="affiliation" values={participant.affiliation} />
+            <ParticipantEditableGroup participantId={participant.id} formValues={participant.formValues} title="Pengusul / rujukan murid" name="referral" values={participant.referral} />
           </CardContent>
         </Card>
         <div className="grid min-w-0 gap-4 xl:sticky xl:top-4">
