@@ -13,34 +13,33 @@ vi.mock('next/navigation', () => ({
 import LoginPage from '../page';
 
 describe('LoginPage (/login)', () => {
-  it('renders split screen with LoginHero and AdminLoginForm', () => {
+  it('renders the desktop hero, the mobile header, and the PIN form', () => {
     render(<LoginPage />);
 
-    // Dari LoginHero dan AdminLoginForm
-    expect(screen.getAllByText(/SD Plus 3 Al-Muhajirin/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Panel Administrasi SPMB')).toBeDefined();
-
-    // Dari AdminLoginForm
-    expect(screen.getByText('Masuk Panel Admin')).toBeDefined();
-    expect(screen.getByPlaceholderText(/masukkan pin/i)).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'Masuk Panel Admin' })).toBeDefined();
+    expect(screen.getByLabelText('PIN Admin')).toBeDefined();
   });
 
-  it('keeps mobile scrolling while preventing desktop form-panel scrolling', () => {
+  it('gives mobile a green header with a back arrow above the form sheet', () => {
     render(<LoginPage />);
 
-    const section = screen.getByRole('region', { name: 'Form masuk administrator' });
-    const main = section.closest('main');
-    const card = screen.getByPlaceholderText(/masukkan pin/i).closest('[data-login-card]');
+    const header = screen.getByTestId('mobile-login-header');
+    expect(header.className).toContain('lg:hidden');
+    expect(header.className).toContain('bg-[#064A18]');
+    expect(screen.getByRole('link', { name: 'Kembali ke beranda SPMB' }).getAttribute('href')).toBe('/');
 
-    expect(main?.className).toContain('h-dvh');
-    expect(section.className).toContain('overflow-y-auto');
-    expect(section.className).toContain('lg:overflow-hidden');
-    expect(section.className).toContain('h-dvh');
-    expect(card?.className).toContain('w-full');
-    expect(card?.className).toContain('max-w-[31rem]');
-    expect(card?.className).toContain('min-h-[80dvh]');
-    expect(card?.className).toContain('sm:min-h-0');
-    expect(card?.className).toContain('lg:max-h-[calc(100dvh-3rem)]');
-    expect(card?.parentElement?.className).toContain('items-center');
+    const sheet = screen.getByLabelText('PIN Admin').closest('[data-login-card]');
+    expect(sheet?.className).toContain('-mt-6');
+    expect(sheet?.className).toContain('rounded-t-[1.75rem]');
+    expect(sheet?.className).not.toContain('min-h-[80dvh]');
+  });
+
+  it('lets mobile scroll while keeping the desktop panel fixed', () => {
+    render(<LoginPage />);
+
+    const main = screen.getByRole('region', { name: 'Form masuk administrator' }).closest('main');
+    expect(main?.className).toContain('min-h-dvh');
+    expect(main?.className).toContain('lg:overflow-hidden');
   });
 });

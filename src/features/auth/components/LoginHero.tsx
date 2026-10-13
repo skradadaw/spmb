@@ -57,7 +57,7 @@ export function LoginHero() {
                 Panel Administrasi SPMB
               </h1>
               <p className="mt-4 max-w-md text-sm leading-6 text-white/78 xl:text-[15px] xl:leading-7">
-                Digunakan panitia untuk meninjau data pendaftar dan kelengkapan berkas calon murid.
+                Digunakan Admin sekolah untuk meninjau data Pendaftar dan kelengkapan Berkas calon murid.
               </p>
             </div>
           </div>
@@ -68,9 +68,9 @@ export function LoginHero() {
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <div>
-              <h2 className="text-xs font-bold text-white">Akses khusus panitia</h2>
+              <h2 className="text-xs font-bold text-white">Akses khusus Admin</h2>
               <p className="mt-1 text-[11px] leading-5 text-white/70">
-                Jangan bagikan PIN akses kepada pihak lain demi menjaga keamanan data calon siswa.
+                Jangan bagikan PIN Admin kepada siapa pun demi menjaga keamanan data calon murid.
               </p>
               </div>
             </div>

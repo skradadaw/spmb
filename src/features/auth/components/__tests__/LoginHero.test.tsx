@@ -13,8 +13,8 @@ describe('LoginHero Component', () => {
 
   it('renders administrator access information', () => {
     render(<LoginHero />);
-    expect(screen.getByText(/Akses khusus panitia/i)).toBeDefined();
-    expect(screen.getByText(/Jangan bagikan PIN akses/i)).toBeDefined();
+    expect(screen.getByText(/Akses khusus Admin/i)).toBeDefined();
+    expect(screen.getByText(/Jangan bagikan PIN Admin/i)).toBeDefined();
   });
 
   it('presents the desktop school identity without a card while keeping its separator', () => {
