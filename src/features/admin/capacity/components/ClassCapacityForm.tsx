@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { ClassCapacity, ClassOption } from '@/features/registration/classCapacity';
 import { saveClassCapacitiesAction, type SaveClassCapacitiesState } from '../actions/saveClassCapacitiesAction';
 
@@ -19,9 +20,10 @@ export function ClassCapacityForm({ capacities, total }: { capacities: ClassCapa
     <form action={formAction} className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-3">
         {capacities.map(({ pilihanKelas, terpakai }) => (
-          <label key={pilihanKelas} className="block space-y-1.5">
-            <span className="text-sm font-semibold">{pilihanKelas}</span>
+          <div key={pilihanKelas} className="space-y-1.5">
+            <Label htmlFor={`kuota-${pilihanKelas}`} className="font-semibold">{pilihanKelas}</Label>
             <Input
+              id={`kuota-${pilihanKelas}`}
               type="number"
               name={pilihanKelas}
               min={terpakai}
@@ -31,7 +33,7 @@ export function ClassCapacityForm({ capacities, total }: { capacities: ClassCapa
               onChange={(event) => setValues((current) => ({ ...current, [pilihanKelas]: event.target.value }))}
             />
             <span className="block text-xs text-[var(--admin-muted)]">{terpakai} kursi terpakai</span>
-          </label>
+          </div>
         ))}
       </div>
       <p className={sum === total ? 'text-sm text-[var(--admin-muted)]' : 'text-sm font-semibold text-rose-700'}>

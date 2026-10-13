@@ -75,7 +75,7 @@ describe('participants repository', () => {
     expect(result?.documents).toEqual([
       { id: 'aktaKelahiran', title: 'Akta Kelahiran', path: 'registrations/a/aktaKelahiran.pdf' },
       { id: 'kartuKeluarga', title: 'Kartu Keluarga', path: 'registrations/a/kartuKeluarga.jpg' },
-      { id: 'pasFoto', title: 'Pas Foto Anak (Terbaru)', path: 'registrations/a/pasFoto.png' },
+      { id: 'pasFoto', title: 'Pas Foto Anak', path: 'registrations/a/pasFoto.png' },
       { id: 'buktiPembayaran', title: 'Bukti Pembayaran OKB', path: 'registrations/a/buktiPembayaran.webp' },
     ]);
     expect(JSON.stringify(result)).not.toContain('secret');

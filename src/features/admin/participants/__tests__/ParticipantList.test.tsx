@@ -9,6 +9,16 @@ const query = parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler
 const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z' };
 
 describe('Data Peserta UI', () => {
+  it('shows the registration number under the name and status as colored text, not a badge', () => {
+    render(<ParticipantList query={query} result={{ items: [{ ...row, status: 'Diterima' }], total: 1, page: 1, pageSize: 20, totalPages: 1 }} />);
+    expect(screen.queryByRole('columnheader', { name: /pendaftaran/i })).toBeNull();
+    const nameCell = screen.getAllByText('Ani Putri')[0].closest('td');
+    expect(nameCell?.textContent).toContain('OB-2027-007');
+    const statuses = screen.getAllByText('Diterima');
+    expect(statuses.every((element) => element.className.includes('text-emerald-700'))).toBe(true);
+    expect(statuses.every((element) => element.tagName === 'SPAN' && !/rounded|border/.test(element.className))).toBe(true);
+  });
+
   it('renders desktop and mobile detail links preserving list query', () => {
     render(<ParticipantList query={query} result={{ items: [row], total: 21, page: 2, pageSize: 20, totalPages: 2 }} />);
     expect(screen.getByRole('table')).toBeDefined();

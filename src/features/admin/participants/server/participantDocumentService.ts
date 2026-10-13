@@ -3,7 +3,8 @@ import { DOCUMENT_DEFINITIONS, type RegistrationDocumentId } from '@/features/re
 
 const documentById = new Map(DOCUMENT_DEFINITIONS.map(document => [document.id, document]));
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const PATH_PATTERN = /^registrations\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(aktaKelahiran|kartuKeluarga|pasFoto|buktiPembayaran)\.(pdf|jpg|png|webp)$/i;
+// Admin replacements carry a `-r<timestamp>` suffix so the old file survives until the new one is validated.
+const PATH_PATTERN = /^registrations\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(aktaKelahiran|kartuKeluarga|pasFoto|buktiPembayaran)(?:-r\d{10,16})?\.(pdf|jpg|png|webp)$/i;
 
 export function isSafeDocumentPath(path: string, submissionId?: string, documentId?: RegistrationDocumentId) {
   const match = PATH_PATTERN.exec(path);
@@ -11,6 +12,15 @@ export function isSafeDocumentPath(path: string, submissionId?: string, document
   if (submissionId && (!UUID_PATTERN.test(submissionId) || match[1].toLowerCase() !== submissionId.toLowerCase())) return false;
   if (documentId && match[2].toLowerCase() !== documentId.toLowerCase()) return false;
   return true;
+}
+
+/** New object path for an admin Berkas Pengganti; the timestamp keeps it distinct from the current file. */
+export function replacementDocumentPath(submissionId: string, documentId: RegistrationDocumentId, extension: string, now = Date.now()) {
+  return `registrations/${submissionId}/${documentId}-r${now}.${extension}`;
+}
+
+export function isReplacementDocumentPath(path: string, submissionId: string, documentId: RegistrationDocumentId) {
+  return /-r\d{10,16}\.[a-z]+$/i.test(path) && isSafeDocumentPath(path, submissionId, documentId);
 }
 
 export function getDocumentPath(row: Record<string, unknown>, documentId: RegistrationDocumentId) {

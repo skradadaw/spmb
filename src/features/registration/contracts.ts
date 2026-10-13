@@ -3,7 +3,7 @@ import type { FormData as RegistrationData } from './schema';
 export const DOCUMENT_DEFINITIONS = [
   { id: 'aktaKelahiran', title: 'Akta Kelahiran', desc: 'PDF, JPG, PNG, atau WebP (Maks. 5MB)', dbColumn: 'dokumen_akta_kelahiran' },
   { id: 'kartuKeluarga', title: 'Kartu Keluarga', desc: 'PDF, JPG, PNG, atau WebP (Maks. 5MB)', dbColumn: 'dokumen_kartu_keluarga' },
-  { id: 'pasFoto', title: 'Pas Foto Anak (Terbaru)', desc: 'Foto formal anak (Maks. 5MB)', dbColumn: 'dokumen_pas_foto' },
+  { id: 'pasFoto', title: 'Pas Foto Anak', desc: 'Foto formal anak terbaru (Maks. 5MB)', dbColumn: 'dokumen_pas_foto' },
   { id: 'buktiPembayaran', title: 'Bukti Pembayaran OKB', desc: 'Struk transfer / pembayaran (Maks. 5MB)', dbColumn: 'dokumen_bukti_pembayaran' },
 ] as const;
 

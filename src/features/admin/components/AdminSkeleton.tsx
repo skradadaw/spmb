@@ -1,7 +1,8 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export function SkeletonBlock({ className }: { className?: string }) {
-  return <div aria-hidden="true" className={cn('animate-pulse rounded-xl bg-slate-200/70', className)} />;
+  return <Skeleton aria-hidden="true" className={cn('rounded-xl bg-slate-200/70', className)} />;
 }
 
 /** Page heading placeholder shared by admin loading states. */

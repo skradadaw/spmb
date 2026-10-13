@@ -29,7 +29,7 @@ const participant: ParticipantDetailData = {
   documents: [
     { id: 'aktaKelahiran', title: 'Akta Kelahiran', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/aktaKelahiran.pdf' },
     { id: 'kartuKeluarga', title: 'Kartu Keluarga', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/kartuKeluarga.jpg' },
-    { id: 'pasFoto', title: 'Pas Foto Anak (Terbaru)', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/pasFoto.png' },
+    { id: 'pasFoto', title: 'Pas Foto Anak', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/pasFoto.png' },
     { id: 'buktiPembayaran', title: 'Bukti Pembayaran OKB', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/buktiPembayaran.webp' },
   ],
 };
@@ -68,7 +68,7 @@ describe('ParticipantDetail', () => {
     expect(screen.queryByText('Alamat rumah')).toBeNull();
     expect(documentsCard?.contains(screen.getByText('Akta Kelahiran'))).toBe(true);
     expect(documentsCard?.contains(screen.getByText('Kartu Keluarga'))).toBe(true);
-    expect(documentsCard?.contains(screen.getByText('Pas Foto Anak (Terbaru)'))).toBe(true);
+    expect(documentsCard?.contains(screen.getByText('Pas Foto Anak'))).toBe(true);
     expect(documentsCard?.contains(screen.getByText('Bukti Pembayaran OKB'))).toBe(true);
     expect(documentsCard).not.toBe(detailsCard);
     expect(detailsCard?.parentElement?.className).toContain('xl:grid-cols-[minmax(0,1fr)_33rem]');
@@ -88,33 +88,51 @@ describe('ParticipantDetail', () => {
     expect(within(documentGrid).queryByText('Pratinjau PDF')).toBeNull();
     expect(screen.getAllByRole('button', { name: /^Lihat berkas / })).toHaveLength(3);
     expect(screen.getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' })).toBeDefined();
-    expect(screen.getAllByRole('button', { name: /^Verifikasi / })).toHaveLength(4);
+    expect(screen.getAllByRole('button', { name: /^(Verifikasi|Terverifikasi) / })).toHaveLength(4);
+    expect(screen.getAllByRole('button', { name: /^Terverifikasi / })).toHaveLength(1);
     expect(screen.queryByRole('button', { name: /^Tindak lanjut / })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Verifikasi Akta Kelahiran' }).getAttribute('aria-pressed')).toBe('true');
-    const aktaActions = screen.getByRole('button', { name: 'Verifikasi Akta Kelahiran' }).closest('form');
+    expect(screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).getAttribute('aria-pressed')).toBe('true');
+    // The verified state lives on the button; no separate badge repeats it.
+    expect(screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).closest('article')?.querySelector('span.inline-flex')).toBeNull();
+    const aktaActions = screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).closest('form');
     expect(aktaActions).not.toBeNull();
     expect(within(aktaActions as HTMLFormElement).getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' })).toBeDefined();
     expect(Array.from((aktaActions as HTMLFormElement).querySelectorAll('button')).map(button => button.getAttribute('aria-label'))).toEqual([
-      'Verifikasi Akta Kelahiran',
+      'Terverifikasi Akta Kelahiran',
       'Lihat pratinjau PDF Akta Kelahiran',
     ]);
     expect(screen.getAllByLabelText('Catatan admin')).toHaveLength(1);
   });
 
-  it('uses clearly different surfaces for verified and pending documents', () => {
+  it('keeps neutral card surfaces and marks review state on the marker and badge', () => {
     render(<ParticipantDetail participant={participant} />);
     const verified = screen.getByText('Akta Kelahiran').closest('article');
     const pending = screen.getByText('Bukti Pembayaran OKB').closest('article');
     expect(verified?.getAttribute('data-review-state')).toBe('verified');
-    expect(verified?.className).toContain('bg-emerald-100');
     expect(pending?.getAttribute('data-review-state')).toBe('pending');
-    expect(pending?.className).toContain('bg-blue-50');
+    expect(verified?.className).toContain('bg-white');
+    expect(pending?.className).toContain('bg-white');
+    expect(verified?.querySelector('[data-document-index]')?.className).toContain('bg-emerald-600');
+    expect(verified?.querySelector('[data-document-index]')?.textContent).toBe('');
+    expect(pending?.querySelector('[data-document-index]')?.textContent).toBe('04');
+    expect(pending?.textContent).toContain('Belum diperiksa');
+  });
+
+  it('keeps both document actions inside the card on equal columns', () => {
+    render(<ParticipantDetail participant={participant} />);
+    const actions = screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).closest('form');
+    expect(actions?.className).toContain('grid-cols-2');
+    expect(actions?.parentElement?.tagName).toBe('ARTICLE');
   });
 
   it('offers only a cancel action while documents still await verification', () => {
     render(<ParticipantDetail participant={participant} />);
     expect(screen.getByText('Verifikasi keempat berkas agar OKB dapat dijadwalkan.')).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Simpan jadwal' })).toBeNull();
+    // Cancelling asks for confirmation in a dialog first.
+    expect(screen.queryByRole('button', { name: /ya, batalkan pendaftar/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Batalkan pendaftar' }));
+    expect(screen.getByRole('alertdialog')).toBeDefined();
     expect(screen.getByRole('button', { name: /ya, batalkan pendaftar/i })).toBeDefined();
   });
 
@@ -126,19 +144,27 @@ describe('ParticipantDetail', () => {
     }} />);
     expect(screen.getByText('7 November 2026')).toBeDefined();
     expect(screen.getByRole('button', { name: /tandai hadir okb/i })).toBeDefined();
+    // Rescheduling stays tucked away until requested, so the next step (attendance) is the obvious action.
+    expect(screen.queryByText('Jadwalkan ulang OKB')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Jadwalkan ulang' }));
     expect(screen.getByText('Jadwalkan ulang OKB')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Simpan jadwal' })).toBeDefined();
+    // Step indicator: berkas and jadwal done, attendance is the current step.
+    const steps = screen.getByRole('list', { name: 'Tahapan pendaftaran' });
+    expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Hadir OKB');
   });
 
   it('offers restoring a cancelled applicant to the status it was cancelled from', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Dibatalkan', previousStatus: 'Sudah OKB' }} />);
     expect(screen.getByRole('button', { name: /pulihkan ke sudah okb/i })).toBeDefined();
-    expect(screen.queryByRole('button', { name: /ya, batalkan pendaftar/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Batalkan pendaftar' })).toBeNull();
   });
 
   it('records the admission decision after OKB with the chosen class preselected as placement', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Sudah OKB', registration: { jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Tahfizh' } }} />);
     expect(screen.getByText('Keputusan Penerimaan')).toBeDefined();
-    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('Tahfizh');
+    expect((document.querySelector('input[name="kelasPenempatan"]') as HTMLInputElement).value).toBe('Tahfizh');
+    expect(screen.getByLabelText('Kelas Penempatan (wajib jika Diterima)').textContent).toContain('Tahfizh (Pilihan Kelas)');
     expect(screen.getByRole('button', { name: 'Simpan keputusan' })).toBeDefined();
   });
 
@@ -163,11 +189,31 @@ describe('ParticipantDetail', () => {
     expect(screen.queryByRole('button', { name: 'Simpan' })).toBeNull();
   });
 
-  it('shows the target grade field only when Pindahan is selected', () => {
-    render(<ParticipantDetail participant={participant} />);
+  it('shows the target grade field only for Pindahan', () => {
+    const { unmount } = render(<ParticipantDetail participant={participant} />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit Pendaftaran' }));
     expect(screen.queryByLabelText('Kelas tujuan')).toBeNull();
-    fireEvent.change(screen.getByLabelText('Jenis pendaftaran'), { target: { value: 'Pindahan' } });
-    expect(screen.getByLabelText('Kelas tujuan')).toBeDefined();
+    unmount();
+
+    render(<ParticipantDetail participant={{ ...participant, formValues: { ...participant.formValues, jenisPendaftaran: 'Pindahan', kelasTujuan: '3' } }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Pendaftaran' }));
+    expect(screen.getByLabelText('Kelas tujuan').textContent).toContain('Kelas 3');
+    expect((document.querySelector('input[name="kelasTujuan"]') as HTMLInputElement).value).toBe('3');
+  });
+
+  it('offers a replacement upload on every document card', () => {
+    render(<ParticipantDetail participant={{
+      ...participant,
+      documents: participant.documents.map((document) => document.id === 'pasFoto' ? { ...document, path: null } : document),
+    }} />);
+    expect(screen.getByRole('button', { name: 'Ganti Kartu Keluarga' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Unggah berkas Pas Foto Anak' })).toBeDefined();
+  });
+
+  it('places the documents card above the status panel', () => {
+    render(<ParticipantDetail participant={participant} />);
+    const documents = screen.getByRole('heading', { name: 'Dokumen terunggah' });
+    const status = screen.getByText('Status & OKB');
+    expect(documents.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

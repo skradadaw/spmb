@@ -14,6 +14,9 @@ describe('participant document service', () => {
     expect(isSafeDocumentPath('https://evil.test/a')).toBe(false);
     expect(isSafeDocumentPath('../secret')).toBe(false);
     expect(isSafeDocumentPath('registrations/not-a-uuid/pasFoto.png')).toBe(false);
+    expect(isSafeDocumentPath(path.replace('pasFoto.png', 'pasFoto-r1760400000000.webp'), submissionId, 'pasFoto')).toBe(true);
+    expect(isSafeDocumentPath(path.replace('pasFoto.png', 'pasFoto-rx.webp'), submissionId, 'pasFoto')).toBe(false);
+    expect(isSafeDocumentPath(path.replace('pasFoto.png', 'pasFoto-r1760400000000/../x.webp'), submissionId, 'pasFoto')).toBe(false);
   });
 
   it('maps allowlisted document IDs to safe row paths', () => {

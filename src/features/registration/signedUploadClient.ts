@@ -36,3 +36,12 @@ export async function uploadSignedDocuments(
     onProgress(completed, targets.length);
   }
 }
+
+/** Uploads one file to a signed path, e.g. an admin Berkas Pengganti. */
+export async function uploadToSignedTarget(path: string, token: string, file: File) {
+  const { error } = await getUploadClient().storage.from('dokumen_pendaftaran').uploadToSignedUrl(path, token, file, {
+    contentType: file.type,
+    cacheControl: '3600',
+  });
+  if (error) throw new Error('Dokumen gagal diunggah.');
+}

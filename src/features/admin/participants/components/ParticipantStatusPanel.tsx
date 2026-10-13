@@ -1,16 +1,32 @@
 'use client';
 
-import { useActionState } from 'react';
-import { CalendarClock, Gavel, RotateCcw, UserCheck, XCircle } from 'lucide-react';
+import { useActionState, useState } from 'react';
+import { CalendarClock, Check, RotateCcw, UserCheck, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
+import { FormSelect } from '@/features/admin/components/FormSelect';
+import { ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
 import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
 import { CANCELLABLE_STATUSES } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
 import { updateParticipantStatusAction, type UpdateParticipantStatusState } from '../actions/updateParticipantStatusAction';
 
 const initialState: UpdateParticipantStatusState = { status: 'idle', message: '' };
+type FormAction = (formData: FormData) => void;
 
 type Props = {
   participantId: string;
@@ -22,16 +38,30 @@ type Props = {
   kelasPenempatan: string | null;
 };
 
+const STEPS = ['Berkas', 'Jadwal OKB', 'Hadir OKB', 'Keputusan'] as const;
+
+/** Index of the step currently being worked on; STEPS.length means every step is done. */
+function currentStep(status: string) {
+  switch (status) {
+    case 'Terverifikasi': return 1;
+    case 'Terjadwal OKB': return 2;
+    case 'Sudah OKB': return 3;
+    case 'Diterima':
+    case 'Ditolak': return STEPS.length;
+    default: return 0;
+  }
+}
+
 export function ParticipantStatusPanel({ participantId, status, previousStatus, jadwalTanggal, jadwalSesi, pilihanKelas, kelasPenempatan }: Props) {
   const [state, formAction, pending] = useActionState(updateParticipantStatusAction, initialState);
-  const canSchedule = status === 'Terverifikasi' || status === 'Terjadwal OKB';
+  const [rescheduling, setRescheduling] = useState(false);
+  const cancelled = status === 'Dibatalkan';
   const canCancel = (CANCELLABLE_STATUSES as readonly string[]).includes(status);
   const hasSchedule = Boolean(jadwalTanggal || jadwalSesi);
   const canDecide = status === 'Sudah OKB' || status === 'Diterima' || status === 'Ditolak';
-  const defaultPlacement = kelasPenempatan ?? (CLASS_OPTIONS as readonly string[]).find((kelas) => kelas === pilihanKelas) ?? '';
 
   return (
-    <Card className="min-w-0 rounded-2xl border-slate-200 bg-white shadow-sm">
+    <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
       <CardHeader className="border-b border-slate-200 bg-slate-50/80 p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -41,109 +71,213 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800"><CalendarClock aria-hidden="true" className="size-4" /></span>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 p-4">
+      <CardContent className="space-y-4 p-3 sm:p-4">
+        <StepIndicator current={currentStep(status)} muted={cancelled} />
+
         {hasSchedule && (
-          <dl className="grid grid-cols-2 divide-x divide-slate-100 overflow-hidden rounded-xl border border-slate-200/80 bg-white/80">
-            <div className="px-3 py-2.5">
-              <dt className="text-xs font-medium text-[var(--admin-muted)]">Tanggal OKB</dt>
-              <dd className="mt-1 text-sm font-medium">{formatParticipantFieldValue('okb', 'jadwalTanggal', jadwalTanggal)}</dd>
-            </div>
-            <div className="px-3 py-2.5">
-              <dt className="text-xs font-medium text-[var(--admin-muted)]">Sesi OKB</dt>
-              <dd className="mt-1 break-words text-sm font-medium">{jadwalSesi ?? 'Belum diisi'}</dd>
-            </div>
-          </dl>
+          <section className="space-y-2">
+            <h3 className={ADMIN_SECTION_TITLE}>Jadwal OKB</h3>
+            <dl className="grid grid-cols-2 divide-x divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="px-3 py-2">
+                <dt className="text-[11px] font-medium text-slate-500">Tanggal</dt>
+                <dd className="mt-0.5 text-sm font-medium text-slate-950">{formatParticipantFieldValue('okb', 'jadwalTanggal', jadwalTanggal)}</dd>
+              </div>
+              <div className="px-3 py-2">
+                <dt className="text-[11px] font-medium text-slate-500">Sesi</dt>
+                <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{jadwalSesi ?? 'Belum diisi'}</dd>
+              </div>
+            </dl>
+          </section>
         )}
 
         {status === 'Terjadwal OKB' && (
-          <form action={formAction}>
+          <form action={formAction} className="flex flex-wrap gap-2">
             <input type="hidden" name="participantId" value={participantId} />
-            <Button type="submit" name="intent" value="attend" disabled={pending} size="sm" className="h-9 gap-1.5 rounded-lg bg-emerald-700 px-3 text-xs font-semibold text-white hover:bg-emerald-800">
+            <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
               <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
             </Button>
+            {!rescheduling && (
+              <Button type="button" onClick={() => setRescheduling(true)} className={ADMIN_SECONDARY_BUTTON}>
+                <CalendarClock aria-hidden="true" className="size-3.5" />Jadwalkan ulang
+              </Button>
+            )}
           </form>
         )}
 
-        {canSchedule && (
-          <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
-            <input type="hidden" name="participantId" value={participantId} />
-            <p className="text-sm font-semibold">{status === 'Terjadwal OKB' ? 'Jadwalkan ulang OKB' : 'Jadwalkan OKB'}</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block space-y-1">
-                <span className="text-xs font-medium text-slate-700">Tanggal</span>
-                <Input type="date" name="jadwalTanggal" required defaultValue={jadwalTanggal ?? ''} />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs font-medium text-slate-700">Sesi</span>
-                <Input type="text" name="jadwalSesi" required maxLength={100} placeholder="Contoh: Sesi 1 (08.00–10.00)" defaultValue={jadwalSesi ?? ''} />
-              </label>
-            </div>
-            <Button type="submit" name="intent" value="schedule" disabled={pending} size="sm" className="h-8 rounded-lg bg-slate-900 px-3 text-xs text-white hover:bg-slate-700">Simpan jadwal</Button>
-          </form>
+        {(status === 'Terverifikasi' || rescheduling) && (
+          <ScheduleForm
+            participantId={participantId}
+            title={rescheduling ? 'Jadwalkan ulang OKB' : 'Jadwalkan OKB'}
+            jadwalTanggal={jadwalTanggal}
+            jadwalSesi={jadwalSesi}
+            pending={pending}
+            formAction={formAction}
+            onCancel={rescheduling ? () => setRescheduling(false) : undefined}
+          />
         )}
 
         {status === 'Diterima' && kelasPenempatan && (
-          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900">
+          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900">
             Kelas Penempatan: <span className="font-semibold">{kelasPenempatan}</span>
             {pilihanKelas && pilihanKelas !== kelasPenempatan && <span className="text-emerald-900/70"> (Pilihan Kelas: {pilihanKelas})</span>}
           </p>
         )}
 
         {canDecide && (
-          <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
-            <input type="hidden" name="participantId" value={participantId} />
-            <p className="flex items-center gap-1.5 text-sm font-semibold"><Gavel aria-hidden="true" className="size-3.5" />{status === 'Sudah OKB' ? 'Keputusan Penerimaan' : 'Ubah Keputusan Penerimaan'}</p>
-            <fieldset className="flex flex-wrap gap-4">
-              <legend className="sr-only">Keputusan</legend>
-              {(['Diterima', 'Ditolak'] as const).map((keputusan) => (
-                <label key={keputusan} className="flex items-center gap-2 text-sm">
-                  <input type="radio" name="keputusan" value={keputusan} required defaultChecked={status === keputusan} className="size-4 accent-emerald-700" />
-                  {keputusan}
-                </label>
-              ))}
-            </fieldset>
-            <label className="block space-y-1">
-              <span className="text-xs font-medium text-slate-700">Kelas Penempatan (wajib jika Diterima)</span>
-              <select name="kelasPenempatan" defaultValue={defaultPlacement} className="flex h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007A10]">
-                <option value="">Pilih kelas</option>
-                {CLASS_OPTIONS.map((kelas) => <option key={kelas} value={kelas}>{kelas}{kelas === pilihanKelas ? ' (Pilihan Kelas)' : ''}</option>)}
-              </select>
-            </label>
-            <Button type="submit" name="intent" value="decide" disabled={pending} size="sm" className="h-8 rounded-lg bg-slate-900 px-3 text-xs text-white hover:bg-slate-700">Simpan keputusan</Button>
-          </form>
+          <DecisionForm
+            participantId={participantId}
+            status={status}
+            pilihanKelas={pilihanKelas}
+            kelasPenempatan={kelasPenempatan}
+            pending={pending}
+            formAction={formAction}
+          />
         )}
 
-        {status === 'Dibatalkan' && (
+        {cancelled && (
           <form action={formAction}>
             <input type="hidden" name="participantId" value={participantId} />
-            <Button type="submit" name="intent" value="restore" disabled={pending} variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg px-3 text-xs font-semibold">
+            <Button type="submit" name="intent" value="restore" disabled={pending} className={ADMIN_SECONDARY_BUTTON}>
               <RotateCcw aria-hidden="true" className="size-3.5" />Pulihkan ke {previousStatus ?? 'Menunggu Verifikasi'}
             </Button>
           </form>
         )}
 
-        {canCancel && (
-          <details className="rounded-xl border border-rose-200 bg-rose-50/50 p-3">
-            <summary className="cursor-pointer text-sm font-semibold text-rose-800">Batalkan pendaftar</summary>
-            <p className="mt-2 text-xs leading-5 text-rose-900/80">
-              Gunakan untuk berkas palsu, tidak hadir OKB tanpa dijadwalkan ulang, atau mengundurkan diri. Kursi pendaftar akan dibebaskan; tulis alasannya di catatan admin.
-            </p>
-            <form action={formAction} className="mt-3">
-              <input type="hidden" name="participantId" value={participantId} />
-              <Button type="submit" name="intent" value="cancel" disabled={pending} size="sm" className="h-8 gap-1.5 rounded-lg bg-rose-700 px-3 text-xs font-semibold text-white hover:bg-rose-800">
-                <XCircle aria-hidden="true" className="size-3.5" />Ya, batalkan pendaftar
-              </Button>
-            </form>
-          </details>
-        )}
-
         {state.message && (
-          <p aria-live="polite" className={state.status === 'success' ? 'text-sm font-semibold text-emerald-700' : 'text-sm font-semibold text-rose-700'}>
+          <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>
             {state.message}
           </p>
         )}
+
+        {canCancel && (
+          <div className="border-t border-slate-200 pt-3">
+            <CancelDialog participantId={participantId} pending={pending} formAction={formAction} />
+          </div>
+        )}
       </CardContent>
     </Card>
+  );
+}
+
+function StepIndicator({ current, muted }: { current: number; muted: boolean }) {
+  return (
+    <ol aria-label="Tahapan pendaftaran" className={cn('grid grid-cols-4 gap-1', muted && 'opacity-50')}>
+      {STEPS.map((label, index) => {
+        const done = index < current;
+        const active = index === current && !muted;
+        return (
+          <li key={label} aria-current={active ? 'step' : undefined} className="flex min-w-0 flex-col items-center gap-1.5 text-center">
+            <span
+              className={cn(
+                'flex size-6 items-center justify-center rounded-full text-[11px] font-bold',
+                done ? 'bg-emerald-600 text-white' : active ? 'bg-emerald-50 text-emerald-800 ring-2 ring-emerald-600' : 'bg-slate-100 text-slate-500',
+              )}
+            >
+              {done ? <Check aria-hidden="true" className="size-3.5" strokeWidth={3} /> : index + 1}
+            </span>
+            <span className={cn('text-[11px] leading-4', active ? 'font-semibold text-slate-950' : done ? 'font-medium text-slate-700' : 'text-slate-500')}>{label}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function ScheduleForm({ participantId, title, jadwalTanggal, jadwalSesi, pending, formAction, onCancel }: {
+  participantId: string;
+  title: string;
+  jadwalTanggal: string | null;
+  jadwalSesi: string | null;
+  pending: boolean;
+  formAction: FormAction;
+  onCancel?: () => void;
+}) {
+  return (
+    <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
+      <input type="hidden" name="participantId" value={participantId} />
+      <h3 className={ADMIN_SECTION_TITLE}>{title}</h3>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="okb-tanggal" className={ADMIN_LABEL}>Tanggal</Label>
+          <Input id="okb-tanggal" type="date" name="jadwalTanggal" required defaultValue={jadwalTanggal ?? ''} className={ADMIN_FIELD} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="okb-sesi" className={ADMIN_LABEL}>Sesi</Label>
+          <Input id="okb-sesi" type="text" name="jadwalSesi" required maxLength={100} placeholder="Contoh: Sesi 1 (08.00–10.00)" defaultValue={jadwalSesi ?? ''} className={ADMIN_FIELD} />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" name="intent" value="schedule" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>Simpan jadwal</Button>
+        {onCancel && <Button type="button" onClick={onCancel} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>}
+      </div>
+    </form>
+  );
+}
+
+function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, pending, formAction }: {
+  participantId: string;
+  status: string;
+  pilihanKelas: string | null;
+  kelasPenempatan: string | null;
+  pending: boolean;
+  formAction: FormAction;
+}) {
+  const [keputusan, setKeputusan] = useState(status === 'Diterima' || status === 'Ditolak' ? status : '');
+  const [kelas, setKelas] = useState(kelasPenempatan ?? (CLASS_OPTIONS as readonly string[]).find((option) => option === pilihanKelas) ?? '');
+
+  return (
+    <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
+      <input type="hidden" name="participantId" value={participantId} />
+      <input type="hidden" name="keputusan" value={keputusan} />
+      <h3 className={ADMIN_SECTION_TITLE}>{status === 'Sudah OKB' ? 'Keputusan Penerimaan' : 'Ubah Keputusan Penerimaan'}</h3>
+      <RadioGroup value={keputusan} onValueChange={(value) => setKeputusan(String(value))} aria-label="Keputusan" className="flex flex-wrap gap-5">
+        {(['Diterima', 'Ditolak'] as const).map((option) => (
+          <Label key={option} className="cursor-pointer gap-2 text-sm font-normal text-slate-800">
+            <RadioGroupItem value={option} />
+            {option}
+          </Label>
+        ))}
+      </RadioGroup>
+      <div className="space-y-1.5">
+        <Label htmlFor="kelas-penempatan" className={ADMIN_LABEL}>Kelas Penempatan (wajib jika Diterima)</Label>
+        <FormSelect
+          id="kelas-penempatan"
+          name="kelasPenempatan"
+          value={kelas}
+          placeholder="Pilih kelas"
+          options={CLASS_OPTIONS.map((option) => ({ value: option, label: option === pilihanKelas ? `${option} (Pilihan Kelas)` : option }))}
+          onChange={setKelas}
+          className={ADMIN_FIELD}
+        />
+      </div>
+      <Button type="submit" name="intent" value="decide" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON}>Simpan keputusan</Button>
+    </form>
+  );
+}
+
+function CancelDialog({ participantId, pending, formAction }: { participantId: string; pending: boolean; formAction: FormAction }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger render={<Button type="button" variant="ghost" className={cn(ADMIN_SECONDARY_BUTTON, 'border-transparent bg-transparent px-2 text-rose-700 hover:bg-rose-50 hover:text-rose-800')} />}>
+        <XCircle aria-hidden="true" className="size-3.5" />Batalkan pendaftar
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Batalkan pendaftar ini?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Gunakan untuk berkas palsu, tidak hadir OKB tanpa dijadwalkan ulang, atau mengundurkan diri. Kursinya akan dibebaskan untuk pendaftar lain. Tulis alasannya di catatan admin.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <form action={formAction} onSubmit={() => setOpen(false)}>
+          <input type="hidden" name="participantId" value={participantId} />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Kembali</AlertDialogCancel>
+            <Button type="submit" name="intent" value="cancel" disabled={pending} className="bg-rose-700 text-white hover:bg-rose-800">Ya, batalkan pendaftar</Button>
+          </AlertDialogFooter>
+        </form>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

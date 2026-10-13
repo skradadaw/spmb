@@ -3,6 +3,11 @@
 import { useActionState, useEffect, useState, type ReactNode } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { FormSelect } from '@/features/admin/components/FormSelect';
+import { ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON } from '@/features/admin/components/adminStyles';
 import { useWilayahIndonesia, type Region } from '@/hooks/useWilayahIndonesia';
 import { cn } from '@/lib/utils';
 import { updateParticipantDataAction, type UpdateParticipantDataState } from '../actions/updateParticipantDataAction';
@@ -10,7 +15,6 @@ import { EDIT_FIELDS, REGION_KEYS, type EditField, type EditGroup, type EditValu
 import { ParticipantFieldGroup, type ParticipantFieldGroupProps } from './ParticipantFieldGroup';
 
 const initialState: UpdateParticipantDataState = { status: 'idle', message: '' };
-const controlClass = 'flex w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007A10]';
 
 type Props = Omit<ParticipantFieldGroupProps, 'name' | 'action' | 'children'> & {
   name: EditGroup;
@@ -76,8 +80,8 @@ function GroupEditForm({ group, participantId, initialValues, onCancel, onSaved 
       </div>
       {state.status === 'error' && <p role="alert" className="text-sm font-semibold text-rose-700">{state.message}</p>}
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={pending} className="h-8 text-xs">Batal</Button>
-        <Button type="submit" size="sm" disabled={pending} className="h-8 bg-slate-900 text-xs text-white hover:bg-slate-700">{pending ? 'Menyimpan...' : 'Simpan'}</Button>
+        <Button type="button" onClick={onCancel} disabled={pending} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>
+        <Button type="submit" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>{pending ? 'Menyimpan...' : 'Simpan'}</Button>
       </div>
     </form>
   );
@@ -85,8 +89,8 @@ function GroupEditForm({ group, participantId, initialValues, onCancel, onSaved 
 
 function FieldShell({ id, label, error, wide, children }: { id: string; label: string; error?: string; wide?: boolean; children: ReactNode }) {
   return (
-    <div className={cn('space-y-1', wide && 'sm:col-span-2')}>
-      <label htmlFor={id} className="text-xs font-medium text-slate-700">{label}</label>
+    <div className={cn('space-y-1.5', wide && 'sm:col-span-2')}>
+      <Label htmlFor={id} className={ADMIN_LABEL}>{label}</Label>
       {children}
       {error && <p className="text-xs text-rose-700">{error}</p>}
     </div>
@@ -95,28 +99,24 @@ function FieldShell({ id, label, error, wide, children }: { id: string; label: s
 
 function FieldControl({ field, value, error, onChange }: { field: EditField; value: string; error?: string; onChange: (value: string) => void }) {
   const id = `edit-${field.key}`;
-  const invalid = error ? 'border-rose-400' : '';
+  const invalid = error ? 'border-rose-400' : undefined;
   if (field.type === 'select') {
-    const known = field.options?.some((option) => option.value === value) ?? false;
     return (
       <FieldShell id={id} label={field.label} error={error}>
-        <select id={id} name={field.key} value={value} onChange={(event) => onChange(event.target.value)} aria-invalid={Boolean(error)} className={cn(controlClass, 'h-10', invalid)}>
-          {!known && <option value={value}>{value || 'Pilih'}</option>}
-          {field.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
+        <FormSelect id={id} name={field.key} value={value} options={field.options ?? []} invalid={Boolean(error)} onChange={onChange} className={ADMIN_FIELD} />
       </FieldShell>
     );
   }
   if (field.type === 'textarea') {
     return (
       <FieldShell id={id} label={field.label} error={error} wide>
-        <textarea id={id} name={field.key} value={value} maxLength={field.maxLength} rows={2} onChange={(event) => onChange(event.target.value)} aria-invalid={Boolean(error)} className={cn(controlClass, 'py-2', invalid)} />
+        <Textarea id={id} name={field.key} value={value} maxLength={field.maxLength} rows={2} onChange={(event) => onChange(event.target.value)} aria-invalid={Boolean(error)} className={cn('bg-white', invalid)} />
       </FieldShell>
     );
   }
   return (
     <FieldShell id={id} label={field.label} error={error}>
-      <input
+      <Input
         id={id}
         name={field.key}
         type={field.type === 'date' ? 'date' : 'text'}
@@ -125,7 +125,7 @@ function FieldControl({ field, value, error, onChange }: { field: EditField; val
         maxLength={field.maxLength}
         onChange={(event) => onChange(field.type === 'digits' ? event.target.value.replace(/\D/g, '') : event.target.value)}
         aria-invalid={Boolean(error)}
-        className={cn(controlClass, 'h-10', invalid)}
+        className={cn(ADMIN_FIELD, invalid)}
       />
     </FieldShell>
   );
@@ -159,22 +159,19 @@ function RegionSelects({ values, setValue, errors }: {
   ] as const;
 
   return levels.map(({ key, list, busy, clears }) => {
-    const value = values[key] ?? '';
-    const known = list.some((item) => item.name === value);
     const id = `edit-${key}`;
     return (
       <FieldShell key={key} id={id} label={REGION_LABELS[key]} error={errors?.[key]}>
-        <select
+        <FormSelect
           id={id}
           name={key}
-          value={value}
-          onChange={(event) => { setValue(key, event.target.value); clears.forEach((child) => setValue(child, '')); }}
-          aria-invalid={Boolean(errors?.[key])}
-          className={cn(controlClass, 'h-10', errors?.[key] && 'border-rose-400')}
-        >
-          {!known && <option value={value}>{busy ? 'Memuat...' : value || 'Pilih'}</option>}
-          {list.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}
-        </select>
+          value={values[key] ?? ''}
+          options={list.map((item) => ({ value: item.name, label: item.name }))}
+          placeholder={busy ? 'Memuat...' : 'Pilih'}
+          invalid={Boolean(errors?.[key])}
+          className={ADMIN_FIELD}
+          onChange={(next) => { setValue(key, next); clears.forEach((child) => setValue(child, '')); }}
+        />
       </FieldShell>
     );
   });

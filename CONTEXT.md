@@ -91,5 +91,9 @@ Penetapan Panitia bahwa seorang Pendaftar Diterima atau Ditolak, beserta Kelas P
 Pemindaian QR pada Bukti Pendaftaran oleh admin di hari OKB, yang langsung mencatat Pendaftar hadir (Terjadwal OKB → Sudah OKB). Hanya berlaku bagi Pendaftar Terjadwal OKB pada tanggal Jadwal OKB-nya; selain itu tidak ada yang dicatat dan admin menjadwalkan ulang bila perlu.
 
 **Perlu Tindak Lanjut** (*Follow-up Required*):
-Penanda admin pada satu Berkas yang belum dapat diterima; penyelesaiannya (menghubungi orang tua, mendapatkan berkas pengganti) terjadi di luar sistem, lalu admin menandainya terverifikasi.
+Penanda admin pada satu Berkas yang belum dapat diterima. Admin menghubungi orang tua dan menerima berkas pengganti di luar sistem, lalu mengunggahnya sebagai Berkas Pengganti dan memverifikasinya.
 _Avoid_: follow_up, ditolak (untuk berkas)
+
+**Berkas Pengganti** (*Replacement Document*):
+File yang diunggah admin untuk menggantikan salah satu Berkas Pendaftar, kapan pun dan pada status apa pun. File lama dihapus, Berkas kembali berstatus belum diperiksa, dan status Pendaftar tidak berubah.
+_Avoid_: upload ulang, revisi berkas

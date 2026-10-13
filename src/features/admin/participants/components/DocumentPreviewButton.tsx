@@ -28,7 +28,7 @@ function getExtension(href: string) {
   return contentType?.startsWith('image/') ? 'jpg' : 'pdf';
 }
 
-export function DocumentPreviewButton({ href, title, compact = false }: { href: string; title: string; compact?: boolean }) {
+export function DocumentPreviewButton({ href, title, compact = false, className = '' }: { href: string; title: string; compact?: boolean; className?: string }) {
   const previewType = getPreviewType(href);
   const [view, setView] = useState<ViewState>({ scale: 1, x: 0, y: 0, rotation: 0 });
   const [dragging, setDragging] = useState(false);
@@ -106,7 +106,7 @@ export function DocumentPreviewButton({ href, title, compact = false }: { href: 
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
-      <Dialog.Trigger aria-label={previewType === 'pdf' ? `Lihat pratinjau PDF ${title}` : `Lihat berkas ${title}`} className={`inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${compact ? 'gap-1 px-2 text-[11px]' : 'gap-1.5 px-2.5 text-xs'}`}>
+      <Dialog.Trigger aria-label={previewType === 'pdf' ? `Lihat pratinjau PDF ${title}` : `Lihat berkas ${title}`} className={`inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${compact ? 'gap-1.5 px-2 text-xs' : 'gap-1.5 px-2.5 text-xs'} ${className}`}>
         <Eye aria-hidden="true" className="size-3.5" />Lihat berkas
       </Dialog.Trigger>
       <Dialog.Portal>
