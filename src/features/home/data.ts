@@ -12,6 +12,7 @@ export const registrationInfo = {
     fee: 'Rp375.000',
     bank: 'Bank Muamalat',
     accountNumber: '1060017434',
+    accountName: 'SD Plus 3 Al-Muhajirin',
   },
   capacity: REGISTRATION_CAPACITY,
   feeDocument: '/rincian-biaya-2027-2028.pdf',
@@ -24,14 +25,14 @@ export const registrationFlow = [
     description: `Transfer ${registrationInfo.okb.fee} ke rekening resmi sekolah, lalu simpan bukti pembayarannya.`,
   },
   {
-    title: 'Isi formulir & unggah Berkas',
+    title: 'Isi formulir dan unggah Berkas',
     description:
       'Lengkapi data anak dan orang tua, lalu unggah keempat Berkas. Bukti Pendaftaran langsung bisa diunduh.',
   },
   {
     title: 'Verifikasi Berkas',
     description:
-      'Admin memeriksa setiap Berkas dan menghubungi Ayah/Bunda bila ada yang perlu diganti.',
+      'Admin memeriksa setiap Berkas dan menghubungi Ayah dan Bunda bila ada yang perlu diganti.',
   },
   {
     title: 'Ikuti OKB',
@@ -50,16 +51,33 @@ export const schoolProfile = {
 
 export const classProgramDescriptions: Record<ClassOption, string> = {
   Reguler:
-    'Kurikulum nasional dipadukan dengan pendidikan Islam: pembiasaan ibadah, akhlak, dan pengenalan kitab.',
+    'Kurikulum nasional dipadukan dengan pendidikan Islam, meliputi pembiasaan ibadah, akhlak, dan pengenalan kitab.',
   Bilingual:
     'Penguatan bahasa Inggris dalam pembelajaran untuk membekali anak berwawasan global.',
   Tahfizh:
     'Menghafal Al-Qur’an sejak dini dengan bimbingan guru, termasuk kegiatan Tahfizh Camp.',
 };
 
+export const classHighlights: Record<ClassOption, readonly string[]> = {
+  Reguler: ['Target hafal Juz 30', 'Membaca Al-Qur’an dengan tartil', 'Dasar Bahasa Arab dan Inggris'],
+  Bilingual: ['Belajar bersama native speaker', 'English Camp', 'Grand Outing Class'],
+  Tahfizh: ['Target hafalan 4–5 Juz', 'Tahfizh Camp', 'Grand Outing Class'],
+};
+
+/** Programs every Pilihan Kelas shares. */
+export const schoolHighlights = [
+  'Hafal doa harian, surat pilihan, dan 20 hadits',
+  'Pembelajaran berbasis kepesantrenan',
+  'Pembiasaan shalat dan adab salam',
+  'Dasar teknologi informasi',
+  'Pengembangan bakat seni, olahraga, dan ekskul',
+  'Lingkungan Islami, pendidik profesional',
+] as const;
+
 export const contactInfo = {
   whatsappLabel: '0819-9831-1470',
   whatsappUrl: 'https://wa.me/6281998311470',
+  serviceDays: 'Senin–Sabtu',
   serviceHours: '07.00–17.00',
   address: 'Jl. Ipik Gandamanah No. 33, Ciseureuh, Purwakarta, Jawa Barat',
   mapsUrl:
@@ -69,12 +87,12 @@ export const contactInfo = {
 export const faqs = [
   {
     question: 'Berapa biaya OKB dan ke mana membayarnya?',
-    answer: `Biaya OKB ${registrationInfo.okb.fee}, ditransfer ke rekening ${registrationInfo.okb.bank} ${registrationInfo.okb.accountNumber}. Simpan bukti pembayarannya untuk diunggah sebagai Berkas.`,
+    answer: `Biaya OKB ${registrationInfo.okb.fee}, ditransfer ke rekening ${registrationInfo.okb.bank} ${registrationInfo.okb.accountNumber} atas nama ${registrationInfo.okb.accountName}. Simpan bukti pembayarannya untuk diunggah sebagai Berkas.`,
   },
   {
     question: 'Kelas apa saja yang bisa dipilih, dan bagaimana kalau kelasnya penuh?',
     answer:
-      'Tersedia Pilihan Kelas Reguler, Bilingual, dan Tahfizh. Pilihan Kelas yang kuotanya penuh tidak dapat dipilih di formulir; lihat statusnya di bagian Pilihan Kelas.',
+      'Tersedia Pilihan Kelas Reguler, Bilingual, dan Tahfizh. Pilihan Kelas yang kuotanya penuh tidak dapat dipilih di formulir. Lihat statusnya di bagian Pilihan Kelas.',
   },
   {
     question: 'Apakah kelas yang ditempatkan pasti sama dengan pilihan?',

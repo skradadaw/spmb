@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Clock3, MapPin, Navigation } from 'lucide-react';
 import { contactInfo, registrationInfo } from '@/features/home/data';
 import { AccreditationBadge, WhatsAppLink } from './ContactLinks';
+import { actionClass } from './actionStyles';
 
 export default function SiteFooter() {
   return (
@@ -14,7 +15,7 @@ export default function SiteFooter() {
             </span>
             <div>
               <p className="text-base font-bold text-white">SD Plus 3 Al-Muhajirin</p>
-              <p className="mt-0.5">Open Booking · Tahun Pelajaran {registrationInfo.academicYear}</p>
+              <p className="mt-0.5">Open Booking Tahun Pelajaran {registrationInfo.academicYear}</p>
             </div>
           </div>
           <AccreditationBadge className="mt-5 bg-white/10 px-3.5 py-1.5 text-white ring-1 ring-inset ring-white/15" />
@@ -30,9 +31,9 @@ export default function SiteFooter() {
             href={contactInfo.mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-4 font-bold text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className={actionClass('outlineOnDeep', 'sm', 'mt-4')}
           >
-            <Navigation aria-hidden="true" className="size-4" />
+            <Navigation aria-hidden="true" />
             Buka di Google Maps
           </a>
         </div>
@@ -47,7 +48,7 @@ export default function SiteFooter() {
           </WhatsAppLink>
           <p className="mt-2 flex items-center gap-2.5">
             <Clock3 aria-hidden="true" className="size-4 shrink-0 text-public-mint" />
-            Jam layanan {contactInfo.serviceHours}
+            Layanan {contactInfo.serviceDays}, {contactInfo.serviceHours}
           </p>
         </div>
       </div>

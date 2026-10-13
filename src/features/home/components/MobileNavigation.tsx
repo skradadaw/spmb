@@ -15,7 +15,8 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ButtonLink } from '@/components/ui/button-link';
+import Link from 'next/link';
+import { actionClass } from './actionStyles';
 
 type MobileNavigationProps = {
   items: ReadonlyArray<readonly [label: string, href: string]>;
@@ -28,7 +29,7 @@ const navigationIcons: Record<
   Jadwal: CalendarDays,
   Alur: BookOpen,
   Kelas: School,
-  'Biaya & Berkas': WalletCards,
+  'Biaya dan Berkas': WalletCards,
   FAQ: MessageCircleQuestion,
 };
 
@@ -130,25 +131,24 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
 
               {/* Action Buttons */}
               <div className="mt-6 grid gap-2.5 border-t border-slate-200/80 pt-4 sm:grid-cols-2">
-                <ButtonLink
-                  variant="outline"
+                <Link
                   href="/login"
                   aria-label="Login Panitia"
                   onClick={closeMenu}
-                  className="h-12 justify-center gap-2 rounded-xl border-public-deep/15 bg-white font-semibold text-slate-700 hover:bg-public-tint hover:text-public-deep"
+                  className={actionClass('outline')}
                 >
-                  <LockKeyhole aria-hidden="true" className="size-4" />
+                  <LockKeyhole aria-hidden="true" />
                   Login Panitia
-                </ButtonLink>
-                <ButtonLink
+                </Link>
+                <Link
                   href="/pendaftaran"
                   aria-label="Daftar Sekarang"
                   onClick={closeMenu}
-                  className="h-12 justify-center gap-2 rounded-xl bg-public-green font-bold text-white shadow-sm tap-press hover:bg-public-green-hover hover:text-white active:bg-public-green-hover"
+                  className={actionClass('primary')}
                 >
-                  <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" />
+                  <CircleArrowRight aria-hidden="true" className="text-amber-100" />
                   Daftar Sekarang
-                </ButtonLink>
+                </Link>
               </div>
             </div>
           </nav>

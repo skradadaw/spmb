@@ -1,7 +1,27 @@
-import { Camera, Download, FileCheck2, Hash, Landmark } from 'lucide-react';
+import {
+  CircleCheck,
+  Download,
+  FileBadge,
+  FolderCheck,
+  Hash,
+  Landmark,
+  ReceiptText,
+  ScanLine,
+  SquareUserRound,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import { registrationInfo } from '@/features/home/data';
 import CopyAccountButton from './CopyAccountButton';
 import SectionHeading from './SectionHeading';
+import { actionClass } from './actionStyles';
+
+const berkasIcons: Record<(typeof registrationInfo.berkas)[number], LucideIcon> = {
+  'Akta Kelahiran': FileBadge,
+  'Kartu Keluarga': Users,
+  'Pas Foto': SquareUserRound,
+  'Bukti Pembayaran OKB': ReceiptText,
+};
 
 function StepLabel({ step, tone }: { step: number; tone: 'light' | 'dark' }) {
   return (
@@ -26,7 +46,7 @@ export default function RegistrationPreparation() {
         <SectionHeading
           id="persiapan-title"
           eyebrow="Persiapan pendaftaran"
-          title="Biaya & Berkas"
+          title="Biaya dan Berkas"
           description="Bayar biaya OKB lebih dulu, lalu siapkan keempat Berkas sebelum mulai mengisi formulir."
         />
 
@@ -52,6 +72,9 @@ export default function RegistrationPreparation() {
                 </p>
                 <CopyAccountButton accountNumber={registrationInfo.okb.accountNumber} />
               </div>
+              <p className="mt-3 border-t border-white/15 pt-3 text-sm text-public-mint">
+                a.n. <span className="font-bold text-white">{registrationInfo.okb.accountName}</span>
+              </p>
             </div>
 
             <div className="mt-5 flex items-baseline justify-between gap-4">
@@ -66,9 +89,9 @@ export default function RegistrationPreparation() {
               <a
                 href={registrationInfo.feeDocument}
                 download
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3 text-base font-bold text-public-deep tap-press hover:bg-public-tint active:bg-public-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className={actionClass('solidOnDeep', 'lg', 'w-full')}
               >
-                <Download aria-hidden="true" size={19} /> Unduh Rincian Biaya PDF
+                <Download aria-hidden="true" /> Unduh Rincian Biaya PDF
               </a>
               <p className="mt-2 text-center text-xs text-public-mint/70">
                 Rincian biaya pendidikan Tahun Pelajaran {registrationInfo.academicYear} dalam PDF resmi.
@@ -78,39 +101,63 @@ export default function RegistrationPreparation() {
 
           <article
             aria-labelledby="berkas-title"
-            className="flex flex-col rounded-3xl border border-public-deep/10 bg-public-canvas p-6 sm:p-8"
+            className="relative isolate flex flex-col overflow-hidden rounded-3xl border border-public-deep/10 bg-public-canvas p-6 shadow-sm shadow-public-deep/5 sm:p-8"
           >
+            <div aria-hidden="true" className="texture-dots absolute inset-x-0 top-0 -z-10 h-48" />
+            <div aria-hidden="true" className="absolute -right-16 -top-16 -z-10 h-56 w-56 rounded-full bg-public-line/40 blur-3xl" />
+            <FolderCheck
+              aria-hidden="true"
+              size={150}
+              strokeWidth={1.2}
+              className="absolute -right-8 -top-6 -z-10 rotate-12 text-public-green/[0.07]"
+            />
+
             <StepLabel step={2} tone="light" />
-            <h3 id="berkas-title" className="mt-4 text-2xl font-bold text-slate-950">
-              Berkas yang Disiapkan
-            </h3>
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h3 id="berkas-title" className="text-2xl font-bold text-slate-950">
+                Berkas yang Disiapkan
+              </h3>
+              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900 ring-1 ring-inset ring-amber-300">
+                {registrationInfo.berkas.length} Berkas wajib
+              </span>
+            </div>
 
             <ol aria-label="Daftar Berkas" className="mt-6 grid gap-3 sm:grid-cols-2">
-              {registrationInfo.berkas.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-3 rounded-2xl border border-public-deep/10 bg-white p-4"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-public-tint text-public-green"
+              {registrationInfo.berkas.map((item) => {
+                const BerkasIcon = berkasIcons[item];
+                return (
+                  <li
+                    key={item}
+                    className="group flex items-center gap-3.5 rounded-2xl border border-public-deep/10 bg-white p-4 shadow-sm shadow-public-deep/5 transition duration-200 hover:-translate-y-0.5 hover:border-public-green/30 hover:shadow-md motion-reduce:hover:translate-y-0"
                   >
-                    <FileCheck2 size={20} />
-                  </span>
-                  <span className="text-[0.95rem] font-bold text-slate-950">{item}</span>
-                </li>
-              ))}
+                    <span
+                      aria-hidden="true"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-public-tint text-public-green ring-1 ring-inset ring-public-line transition-colors group-hover:bg-public-green group-hover:text-white"
+                    >
+                      <BerkasIcon size={21} />
+                    </span>
+                    <span className="min-w-0 flex-1 text-[0.95rem] font-bold leading-snug text-slate-950">{item}</span>
+                    <CircleCheck aria-hidden="true" size={18} className="shrink-0 text-public-green/30" />
+                  </li>
+                );
+              })}
             </ol>
 
-            <div className="mt-auto space-y-3 pt-6">
-              <p className="flex items-start gap-3 text-[0.95rem] leading-7 text-slate-700">
-                <Camera aria-hidden="true" className="mt-1 shrink-0 text-public-green" size={18} />
-                Berupa foto atau scan yang jelas dan terbaca.
-              </p>
-              <p className="flex items-start gap-3 text-[0.95rem] leading-7 text-slate-700">
-                <Hash aria-hidden="true" className="mt-1 shrink-0 text-amber-600" size={18} />
-                NISN diisi langsung di formulir, tidak perlu diunggah.
-              </p>
+            <div className="mt-auto pt-6">
+              <div className="divide-y divide-public-deep/10 rounded-2xl border border-public-deep/10 bg-white/70 backdrop-blur-sm">
+                <p className="flex items-start gap-3 p-4 text-sm leading-6 text-slate-700">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-public-tint text-public-green">
+                    <ScanLine aria-hidden="true" size={17} />
+                  </span>
+                  <span className="pt-1">Berupa foto atau scan yang jelas dan terbaca.</span>
+                </p>
+                <p className="flex items-start gap-3 p-4 text-sm leading-6 text-slate-700">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                    <Hash aria-hidden="true" size={17} />
+                  </span>
+                  <span className="pt-1">NISN diisi langsung di formulir, tidak perlu diunggah.</span>
+                </p>
+              </div>
             </div>
           </article>
         </div>

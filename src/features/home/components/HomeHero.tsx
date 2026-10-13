@@ -15,17 +15,15 @@ import { registrationInfo } from '@/features/home/data';
 import { ButtonLink } from '@/components/ui/button-link';
 import MobileNavigation from './MobileNavigation';
 import SectionWave from './SectionWave';
+import { actionClass } from './actionStyles';
 
 const navigationItems = [
   ['Jadwal', '#jadwal'],
   ['Alur', '#alur'],
   ['Kelas', '#kelas'],
-  ['Biaya & Berkas', '#persiapan'],
+  ['Biaya dan Berkas', '#persiapan'],
   ['FAQ', '#faq'],
 ] as const;
-
-const primaryActionClass =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-public-green px-6 py-3 text-base font-extrabold text-white shadow-lg shadow-public-deep/20 tap-press hover:bg-public-green-hover active:bg-public-green-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 export function HomeHeader() {
   return (
@@ -74,20 +72,15 @@ export function HomeHeader() {
             variant="ghost"
             href="/login"
             aria-label="Login Panitia"
-            className="h-[42px] min-w-11 gap-2 rounded-none border-transparent bg-transparent px-2.5 font-semibold whitespace-nowrap text-slate-600 shadow-none hover:border-transparent hover:bg-transparent hover:text-slate-950 focus-visible:border-transparent focus-visible:ring-slate-400/25 sm:ml-1 sm:border-l sm:border-l-slate-200 sm:pl-5 sm:pr-3"
+            className="h-11 min-w-11 gap-2 rounded-none border-transparent bg-transparent px-2.5 font-semibold whitespace-nowrap text-slate-600 shadow-none hover:border-transparent hover:bg-transparent hover:text-slate-950 focus-visible:border-transparent focus-visible:ring-slate-400/25 sm:ml-1 sm:border-l sm:border-l-slate-200 sm:pl-5 sm:pr-3"
           >
             <LockKeyhole aria-hidden="true" className="size-4 text-slate-600" strokeWidth={2.2} />
             <span className="hidden sm:inline">Login Panitia</span>
           </ButtonLink>
-          <ButtonLink
-            href="/pendaftaran"
-            aria-label="Daftar Sekarang"
-            className="h-[42px] gap-2 rounded-full border border-public-deep/10 bg-public-green px-4.5 font-bold whitespace-nowrap text-white shadow-sm shadow-public-green-hover/25 tap-press hover:bg-public-green-hover active:bg-public-green-hover hover:text-white hover:shadow-md hover:shadow-public-green-hover/25 focus-visible:border-public-green focus-visible:ring-public-green/25 sm:px-5"
-          >
-            <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" strokeWidth={2.4} />
-            <span className="hidden sm:inline">Daftar Sekarang</span>
-            <span className="sm:hidden">Daftar</span>
-          </ButtonLink>
+          <Link href="/pendaftaran" aria-label="Daftar Sekarang" className={actionClass('primary', 'sm')}>
+            <CircleArrowRight aria-hidden="true" className="text-amber-100" strokeWidth={2.4} />
+            Daftar Sekarang
+          </Link>
         </div>
 
         <MobileNavigation items={navigationItems} />
@@ -165,7 +158,7 @@ function BookingProgress({ usedSeats }: { usedSeats: number | null }) {
         />
       </div>
       <p className="mt-3 text-xs font-medium leading-relaxed text-public-deep/80">
-        Kuota terbatas! Segera daftarkan putra-putri Ayah & Bunda dan lengkapi Berkas sebelum kuota penuh.
+        Kuota terbatas. Segera daftarkan putra-putri Ayah dan Bunda, lalu lengkapi Berkas sebelum kuota penuh.
       </p>
     </section>
   );
@@ -241,12 +234,12 @@ export default function HomeHero({ usedSeats }: { usedSeats: number | null }) {
           </p>
 
           <div className="mt-7 flex flex-col justify-center gap-3 sm:mt-8 sm:flex-row lg:justify-start">
-            <Link href="/pendaftaran" className={primaryActionClass}>
-              Mulai Pendaftaran <ArrowRight aria-hidden="true" size={19} />
+            <Link href="/pendaftaran" className={actionClass('primary', 'lg', 'focus-visible:outline-white')}>
+              Mulai Pendaftaran <ArrowRight aria-hidden="true" />
             </Link>
             <a
               href="#jadwal"
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-white/30 bg-white/10 px-6 py-3 text-base font-extrabold text-white backdrop-blur-sm tap-press hover:bg-white/20 active:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className={actionClass('outlineOnDeep')}
             >
               Lihat jadwal penting
             </a>

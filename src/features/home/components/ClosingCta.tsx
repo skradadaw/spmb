@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { registrationInfo } from '@/features/home/data';
+import { ArrowRight, Clock3 } from 'lucide-react';
+import { contactInfo, registrationInfo } from '@/features/home/data';
 import { WhatsAppLink } from './ContactLinks';
 import Eyebrow from './Eyebrow';
+import { actionClass } from './actionStyles';
 
 export default function ClosingCta() {
   return (
@@ -18,7 +19,7 @@ export default function ClosingCta() {
         <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto] lg:gap-12">
           <div>
             <Eyebrow tone="dark">
-              {registrationInfo.wave.name} · {registrationInfo.academicYear}
+              {registrationInfo.wave.name} Tahun Pelajaran {registrationInfo.academicYear}
             </Eyebrow>
             <h2
               id="cta-title"
@@ -34,13 +35,21 @@ export default function ClosingCta() {
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
             <Link
               href="/pendaftaran"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-amber-300 px-6 py-3 text-base font-extrabold text-public-deep shadow-lg shadow-public-deep/30 tap-press hover:bg-amber-200 active:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              className={actionClass('accent')}
             >
-              Mulai Pendaftaran <ArrowRight aria-hidden="true" size={19} />
+              Mulai Pendaftaran <ArrowRight aria-hidden="true" />
             </Link>
-            <WhatsAppLink className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white backdrop-blur-sm tap-press hover:bg-white/20 active:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+            <WhatsAppLink className={actionClass('outlineOnDeep')}>
               Tanya via WhatsApp
             </WhatsAppLink>
+          </div>
+          {/* Stands in for the FAQ contact card, which is hidden below lg */}
+          <div className="border-t border-white/15 pt-5 lg:hidden">
+            <p className="font-bold">Masih ada pertanyaan?</p>
+            <p className="mt-1 flex items-center gap-2 text-sm text-public-mint">
+              <Clock3 aria-hidden="true" size={16} className="shrink-0 text-amber-300" />
+              Layanan panitia {contactInfo.serviceDays}, pukul {contactInfo.serviceHours}
+            </p>
           </div>
         </div>
       </div>

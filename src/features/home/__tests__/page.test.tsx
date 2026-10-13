@@ -63,7 +63,7 @@ describe('Open Booking landing page', () => {
       ['Jadwal', '#jadwal'],
       ['Alur', '#alur'],
       ['Kelas', '#kelas'],
-      ['Biaya & Berkas', '#persiapan'],
+      ['Biaya dan Berkas', '#persiapan'],
       ['FAQ', '#faq'],
     ]);
   });
@@ -89,7 +89,7 @@ describe('Open Booking landing page', () => {
       'border-l',
     );
     const headerRegistrationLink = within(header).getByRole('link', { name: 'Daftar Sekarang' });
-    expect(headerRegistrationLink.className).toContain('rounded-full');
+    expect(headerRegistrationLink.className).toContain('rounded-xl');
     expect(headerRegistrationLink.className).toContain('bg-public-green');
     expect(within(header).getByRole('link', { name: 'Login Panitia' }).className).toContain(
       'sm:border-l-slate-200',
@@ -148,7 +148,7 @@ describe('Open Booking landing page', () => {
       within(schedule).getByRole('region', { name: 'Progress pendaftar' }).className,
     ).toContain('border-t');
     expect(
-      within(schedule).getByText(/kuota terbatas! segera daftarkan putra-putri ayah & bunda/i),
+      within(schedule).getByText(/kuota terbatas. segera daftarkan putra-putri ayah dan bunda/i),
     ).toBeDefined();
   });
 
@@ -194,7 +194,7 @@ describe('Open Booking landing page', () => {
       within(steps).getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent),
     ).toEqual([
       'Bayar biaya OKB',
-      'Isi formulir & unggah Berkas',
+      'Isi formulir dan unggah Berkas',
       'Verifikasi Berkas',
       'Ikuti OKB',
       'Keputusan Penerimaan',
@@ -204,7 +204,7 @@ describe('Open Booking landing page', () => {
     ).toBeDefined();
   });
 
-  it('presents the three Pilihan Kelas with accreditation, Pindahan, and Kelas Penempatan notes', () => {
+  it('presents the three Pilihan Kelas with accreditation', () => {
     renderHome();
 
     const section = screen.getByRole('region', { name: 'Pilihan Kelas' });
@@ -213,9 +213,6 @@ describe('Open Booking landing page', () => {
     for (const kelas of ['Reguler', 'Bilingual', 'Tahfizh']) {
       expect(within(section).getByRole('article', { name: kelas })).toBeDefined();
     }
-    expect(within(section).getByText(/Pindahan ke kelas 2–6\?/)).toBeDefined();
-    expect(within(section).getByText(/pilih Jenis Pendaftaran Pindahan/)).toBeDefined();
-    expect(within(section).getByText(/Kelas Penempatan ditetapkan Panitia setelah OKB/)).toBeDefined();
   });
 
   it('labels each Pilihan Kelas Tersedia, Hampir penuh, or Penuh from its remaining seats', () => {
@@ -229,8 +226,40 @@ describe('Open Booking landing page', () => {
     expect(within(card('Reguler')).getByText('Hampir penuh')).toBeDefined();
     expect(within(card('Bilingual')).getByText('Tersedia')).toBeDefined();
     expect(within(card('Tahfizh')).getByText('Penuh')).toBeDefined();
-    expect(within(card('Tahfizh')).getByText('Pilihan Kelas ini sudah penuh')).toBeDefined();
-    expect(within(card('Reguler')).queryByText('Pilihan Kelas ini sudah penuh')).toBeNull();
+    expect(within(card('Reguler')).getByText('Sisa 6 dari 30 kursi')).toBeDefined();
+    expect(within(card('Bilingual')).getByText('Sisa 7 dari 30 kursi')).toBeDefined();
+    expect(within(card('Tahfizh')).getByText('Kuota terisi penuh')).toBeDefined();
+  });
+
+  it('links each open Pilihan Kelas to a preselected form and closes full ones to Siswa Baru', () => {
+    renderHome([
+      { pilihanKelas: 'Reguler', kuota: 28, terpakai: 10 },
+      { pilihanKelas: 'Bilingual', kuota: 56, terpakai: 20 },
+      { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: 28 },
+    ]);
+
+    const card = (kelas: string) => screen.getByRole('article', { name: kelas });
+    expect(
+      within(card('Reguler')).getByRole('link', { name: 'Daftar Reguler' }).getAttribute('href'),
+    ).toBe('/pendaftaran?kelas=Reguler');
+    expect(
+      within(card('Bilingual')).getByRole('link', { name: 'Daftar Bilingual' }).getAttribute('href'),
+    ).toBe('/pendaftaran?kelas=Bilingual');
+    expect(within(card('Tahfizh')).queryByRole('link')).toBeNull();
+    expect(within(card('Tahfizh')).getByText('Kuota Siswa Baru penuh')).toBeDefined();
+  });
+
+  it('lists program highlights per Pilihan Kelas and the shared school highlights', () => {
+    renderHome();
+
+    const card = (kelas: string) => screen.getByRole('article', { name: kelas });
+    expect(within(card('Reguler')).getByText('Target hafal Juz 30')).toBeDefined();
+    expect(within(card('Bilingual')).getByText('English Camp')).toBeDefined();
+    expect(within(card('Bilingual')).queryByText(/Juz/)).toBeNull();
+    expect(within(card('Tahfizh')).getByText('Target hafalan 4–5 Juz')).toBeDefined();
+
+    const shared = screen.getByRole('region', { name: 'Di semua Pilihan Kelas' });
+    expect(within(shared).getAllByRole('listitem')).toHaveLength(6);
   });
 
   it('hides class quota status when capacity data is unavailable', () => {
@@ -241,12 +270,13 @@ describe('Open Booking landing page', () => {
     for (const status of ['Tersedia', 'Hampir penuh', 'Penuh']) {
       expect(within(section).queryByText(status)).toBeNull();
     }
+    expect(within(section).queryByText(/kursi/)).toBeNull();
   });
 
   it('lists the four Berkas exactly as the form asks, with NISN mentioned once', () => {
     const { container } = renderHome();
 
-    const section = screen.getByRole('region', { name: 'Biaya & Berkas' });
+    const section = screen.getByRole('region', { name: 'Biaya dan Berkas' });
     expect(section.getAttribute('id')).toBe('persiapan');
     expect(
       within(section).getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent),
@@ -259,6 +289,8 @@ describe('Open Booking landing page', () => {
       'Bukti Pembayaran OKB',
     ]);
     expect(within(section).getByText(/foto atau scan/i)).toBeDefined();
+    expect(within(section).getByText('SD Plus 3 Al-Muhajirin')).toBeDefined();
+    expect(within(section).getByText(/^a\.n\./)).toBeDefined();
     expect(container.textContent?.match(/NISN/g)).toHaveLength(1);
     expect(container.textContent).not.toMatch(/fotokopi/i);
     expect(screen.queryByText('Mengapa Al-Muhajirin?')).toBeNull();
@@ -298,7 +330,7 @@ describe('Open Booking landing page', () => {
       'Jadwal penting',
       'Alur Pendaftaran',
       'Pilihan Kelas',
-      'Biaya & Berkas',
+      'Biaya dan Berkas',
       'Pertanyaan yang Sering Diajukan',
       'Siap melanjutkan Open Booking Pendaftaran?',
     ]);

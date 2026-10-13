@@ -2,6 +2,7 @@ import { ChevronDown, Clock3 } from 'lucide-react';
 import { contactInfo, faqs } from '@/features/home/data';
 import { WhatsAppLink } from './ContactLinks';
 import SectionHeading from './SectionHeading';
+import { actionClass } from './actionStyles';
 
 export default function FrequentQuestions() {
   return (
@@ -35,15 +36,16 @@ export default function FrequentQuestions() {
           ))}
         </div>
 
-        <div className="rounded-3xl bg-public-deep p-6 text-white shadow-xl shadow-public-deep/15">
+        {/* Below lg the closing CTA right after this section carries the same contact */}
+        <div className="hidden rounded-3xl bg-public-deep p-6 text-white shadow-xl shadow-public-deep/15 lg:block">
           <p className="text-lg font-bold">Masih ada pertanyaan?</p>
           <p className="mt-2 flex items-center gap-2 text-sm text-public-mint">
             <Clock3 aria-hidden="true" size={16} className="text-amber-300" />
-            Layanan panitia pukul {contactInfo.serviceHours}
+            Layanan panitia {contactInfo.serviceDays}, pukul {contactInfo.serviceHours}
           </p>
           <WhatsAppLink
-            iconClassName="size-5 text-public-green"
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-bold text-public-deep tap-press hover:bg-public-tint active:bg-public-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto"
+            iconClassName="text-public-green"
+            className={actionClass('solidOnDeep', 'lg', 'mt-5 w-full sm:w-auto')}
           >
             Chat WhatsApp Panitia
           </WhatsAppLink>

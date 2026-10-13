@@ -26,6 +26,15 @@
   --public-tint: #eaf6e8;
   --public-line: #c4e3c8;
   --public-mint: #d8eedb;
+  /* Pilihan Kelas identity: hue steps either side of the brand green (Reguler uses the brand scale) */
+  --class-bilingual: #0b5d5b;
+  --class-bilingual-accent: #99f6e4;
+  --class-bilingual-tint: #e6f5f3;
+  --class-bilingual-line: #b8e3dd;
+  --class-tahfizh: #3f5a14;
+  --class-tahfizh-accent: #fbbf24;
+  --class-tahfizh-tint: #f3f5e1;
+  --class-tahfizh-line: #dde3b8;
 
   /* Admin dashboard semantic surfaces */
   --admin-canvas: #f5f7f6;
@@ -84,6 +93,14 @@
   --color-public-tint: var(--public-tint);
   --color-public-line: var(--public-line);
   --color-public-mint: var(--public-mint);
+  --color-class-bilingual: var(--class-bilingual);
+  --color-class-bilingual-accent: var(--class-bilingual-accent);
+  --color-class-bilingual-tint: var(--class-bilingual-tint);
+  --color-class-bilingual-line: var(--class-bilingual-line);
+  --color-class-tahfizh: var(--class-tahfizh);
+  --color-class-tahfizh-accent: var(--class-tahfizh-accent);
+  --color-class-tahfizh-tint: var(--class-tahfizh-tint);
+  --color-class-tahfizh-line: var(--class-tahfizh-line);
   --font-sans: var(--font-plus-jakarta);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-heading: var(--font-plus-jakarta);
