@@ -12,12 +12,7 @@ export const registrationInfo = {
   },
   capacity: REGISTRATION_CAPACITY,
   feeDocument: '/rincian-biaya-2027-2028.pdf',
-  requirements: [
-    'Fotokopi akta lahir',
-    'Fotokopi kartu keluarga',
-    'Nomor NISN',
-    'Pas foto ukuran 3×4',
-  ],
+  berkas: ['Akta Kelahiran', 'Kartu Keluarga', 'Pas Foto', 'Bukti Pembayaran OKB'],
 } as const;
 
 export const registrationFlow = [

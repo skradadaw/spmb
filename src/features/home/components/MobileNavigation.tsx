@@ -29,7 +29,7 @@ const navigationIcons: Record<
   Alur: BookOpen,
   Kelas: School,
   Biaya: WalletCards,
-  Persyaratan: ClipboardCheck,
+  Berkas: ClipboardCheck,
 };
 
 export default function MobileNavigation({ items }: MobileNavigationProps) {

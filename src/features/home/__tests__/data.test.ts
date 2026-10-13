@@ -17,13 +17,4 @@ describe('Open Booking landing data', () => {
       feeDocument: '/rincian-biaya-2027-2028.pdf',
     });
   });
-
-  it('contains every preparation requirement', () => {
-    expect(registrationInfo.requirements).toEqual([
-      'Fotokopi akta lahir',
-      'Fotokopi kartu keluarga',
-      'Nomor NISN',
-      'Pas foto ukuran 3×4',
-    ]);
-  });
 });

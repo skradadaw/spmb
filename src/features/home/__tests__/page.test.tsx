@@ -64,7 +64,7 @@ describe('Open Booking landing page', () => {
       ['Alur', '#alur'],
       ['Kelas', '#kelas'],
       ['Biaya', '#biaya'],
-      ['Persyaratan', '#persyaratan'],
+      ['Berkas', '#berkas'],
     ]);
   });
 
@@ -241,6 +241,24 @@ describe('Open Booking landing page', () => {
     for (const status of ['Tersedia', 'Hampir penuh', 'Penuh']) {
       expect(within(section).queryByText(status)).toBeNull();
     }
+  });
+
+  it('lists the four Berkas exactly as the form asks, with NISN mentioned once', () => {
+    const { container } = renderHome();
+
+    const section = screen.getByRole('region', { name: 'Berkas yang Disiapkan' });
+    expect(section.getAttribute('id')).toBe('berkas');
+    const berkas = within(section).getByRole('list', { name: 'Daftar Berkas' });
+    expect(within(berkas).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Akta Kelahiran',
+      'Kartu Keluarga',
+      'Pas Foto',
+      'Bukti Pembayaran OKB',
+    ]);
+    expect(within(section).getByText(/foto atau scan/i)).toBeDefined();
+    expect(container.textContent?.match(/NISN/g)).toHaveLength(1);
+    expect(container.textContent).not.toMatch(/fotokopi/i);
+    expect(screen.queryByText('Mengapa Al-Muhajirin?')).toBeNull();
   });
 
   it('never uses the word seleksi', () => {

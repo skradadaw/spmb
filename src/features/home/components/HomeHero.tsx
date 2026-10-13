@@ -20,7 +20,7 @@ const navigationItems = [
   ['Alur', '#alur'],
   ['Kelas', '#kelas'],
   ['Biaya', '#biaya'],
-  ['Persyaratan', '#persyaratan'],
+  ['Berkas', '#berkas'],
 ] as const;
 
 const primaryActionClass =
