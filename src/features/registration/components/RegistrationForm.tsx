@@ -136,28 +136,10 @@ export default function RegistrationForm() {
   const kotaVal = useWatch({ control, name: 'kota' });
   const kecamatanVal = useWatch({ control, name: 'kecamatan' });
 
-  const bekerjaDiDirektorat2 = useWatch({ control, name: 'bekerjaDiDirektorat2' });
-  const saudaraDiDirektorat2 = useWatch({ control, name: 'saudaraDiDirektorat2' });
-
-  const [adaAfiliasiDirektorat2, setAdaAfiliasiDirektorat2] = useState<'Ya' | 'Tidak'>(() => {
-    return (bekerjaDiDirektorat2 === 'Ya' || saudaraDiDirektorat2 === 'Ya') ? 'Ya' : 'Tidak';
-  });
-  const [tipeAfiliasiDirektorat2, setTipeAfiliasiDirektorat2] = useState<'Orang Tua' | 'Saudara' | ''>(() => {
-    if (bekerjaDiDirektorat2 === 'Ya') return 'Orang Tua';
-    if (saudaraDiDirektorat2 === 'Ya') return 'Saudara';
-    return '';
-  });
+  const [adaAfiliasiDirektorat2, setAdaAfiliasiDirektorat2] = useState<'Ya' | 'Tidak'>('Tidak');
+  const [tipeAfiliasiDirektorat2, setTipeAfiliasiDirektorat2] = useState<'Orang Tua' | 'Saudara' | ''>('');
   const [afiliasiDirektorat2Error, setAfiliasiDirektorat2Error] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (bekerjaDiDirektorat2 === 'Ya') {
-      setAdaAfiliasiDirektorat2('Ya');
-      setTipeAfiliasiDirektorat2('Orang Tua');
-    } else if (saudaraDiDirektorat2 === 'Ya') {
-      setAdaAfiliasiDirektorat2('Ya');
-      setTipeAfiliasiDirektorat2('Saudara');
-    }
-  }, [bekerjaDiDirektorat2, saudaraDiDirektorat2]);
   const adaPengusul = useWatch({ control, name: 'adaPengusul' });
   const tipePengusul = useWatch({ control, name: 'tipePengusul' });
   const tanggalLahir = useWatch({ control, name: 'tanggalLahir' });

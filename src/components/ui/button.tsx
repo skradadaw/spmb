@@ -40,59 +40,32 @@ const buttonVariants = cva(
   }
 )
 
+type ButtonProps = Omit<ButtonPrimitive.Props, "className"> &
+  VariantProps<typeof buttonVariants> & {
+    className?: string
+  }
+
 const Button = React.forwardRef<
   HTMLElement,
-  ButtonPrimitive.Props & VariantProps<typeof buttonVariants>
+  ButtonProps
 >(function Button(
   {
     className,
     variant = "default",
     size = "default",
-    render,
-    children,
     ...props
   },
   ref
 ) {
-  if (React.isValidElement(render)) {
-    const renderProps = render.props as Record<string, any>;
-    const mergedOnClick = (props as any)?.onClick || renderProps?.onClick
-      ? (e: React.MouseEvent) => {
-          (props as any)?.onClick?.(e);
-          renderProps?.onClick?.(e);
-        }
-      : undefined;
-
-    return React.cloneElement(
-      render as React.ReactElement<any>,
-      {
-        'data-slot': 'button',
-        ...props,
-        ...renderProps,
-        ...(mergedOnClick ? { onClick: mergedOnClick } : {}),
-        className: cn(
-          buttonVariants({ variant, size, className }),
-          renderProps?.className,
-          (props as any)?.className
-        ),
-        ref: ref ?? (render as any).ref,
-      },
-      children ?? renderProps?.children
-    );
-  }
-
   return (
     <ButtonPrimitive
-      ref={ref as any}
+      ref={ref}
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      render={render}
       {...props}
-    >
-      {children}
-    </ButtonPrimitive>
-  );
-});
-Button.displayName = "Button";
+    />
+  )
+})
+Button.displayName = "Button"
 
 export { Button, buttonVariants }
