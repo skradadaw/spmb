@@ -76,4 +76,13 @@ describe('RegistrationForm validation feedback', () => {
     render(<RegistrationForm />);
     expect(screen.getByText(/Apakah mempunyai orang tua yang bekerja atau saudara yang bersekolah di Direktorat 2 Al-Muhajirin\?/i)).toBeDefined();
   });
+
+  it('starts with the Pilihan Kelas chosen on the landing page', () => {
+    const { unmount } = render(<RegistrationForm />);
+    expect(screen.getByText('Pilih Kelas')).toBeDefined();
+    unmount();
+
+    render(<RegistrationForm initialClass="Tahfizh" />);
+    expect(screen.queryByText('Pilih Kelas')).toBeNull();
+  });
 });

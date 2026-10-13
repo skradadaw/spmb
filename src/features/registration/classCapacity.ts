@@ -2,6 +2,10 @@ export const CLASS_OPTIONS = ['Reguler', 'Bilingual', 'Tahfizh'] as const;
 
 export type ClassOption = (typeof CLASS_OPTIONS)[number];
 
+export function parseClassOption(value: unknown): ClassOption | null {
+  return CLASS_OPTIONS.find((option) => option === value) ?? null;
+}
+
 export type ClassCapacity = {
   pilihanKelas: ClassOption;
   kuota: number;

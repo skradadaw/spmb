@@ -58,9 +58,11 @@ const parseDateString = (str?: string): Date | undefined => {
 
 type RegistrationFormProps = {
   fullClasses?: readonly ClassOption[];
+  /** Pilihan Kelas chosen on the landing page; parents can still change it. */
+  initialClass?: ClassOption;
 };
 
-export default function RegistrationForm({ fullClasses = [] }: RegistrationFormProps = {}) {
+export default function RegistrationForm({ fullClasses = [], initialClass }: RegistrationFormProps = {}) {
   const submissionLockRef = useRef(false);
   const honeypotRef = useRef<HTMLInputElement>(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -94,7 +96,7 @@ export default function RegistrationForm({ fullClasses = [] }: RegistrationFormP
     shouldUnregister: false,
     defaultValues: {
       jenisPendaftaran: '',
-      pilihanKelas: '',
+      pilihanKelas: initialClass ?? '',
       kelasTujuan: '',
       namaLengkap: '',
       jenisKelamin: '',

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
 import { fetchClassCapacities } from '@/features/registration/server/classCapacityRepository';
-import { fullClasses, type ClassOption } from '@/features/registration/classCapacity';
+import { fullClasses, parseClassOption, type ClassOption } from '@/features/registration/classCapacity';
 import { RegistrationForm } from '@/features/registration';
 
 export const metadata: Metadata = {
@@ -32,8 +32,16 @@ async function getFullClasses(): Promise<ClassOption[]> {
   }
 }
 
-export default async function PendaftaranPage() {
-  const unavailableClasses = await getFullClasses();
+export default async function PendaftaranPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [unavailableClasses, { kelas }] = await Promise.all([getFullClasses(), searchParams]);
+  // A Pilihan Kelas card links here with ?kelas=; a full class is never preselected
+  const requestedClass = parseClassOption(kelas);
+  const initialClass =
+    requestedClass && !unavailableClasses.includes(requestedClass) ? requestedClass : undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F3FAF4] via-[#F8FAF8] to-gray-50 py-10 sm:py-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -114,7 +122,7 @@ export default async function PendaftaranPage() {
             </div>
           }
         >
-          <RegistrationForm fullClasses={unavailableClasses} />
+          <RegistrationForm fullClasses={unavailableClasses} initialClass={initialClass} />
         </Suspense>
       </div>
     </div>
