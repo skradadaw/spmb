@@ -66,7 +66,7 @@ export default function RegistrationPreparation() {
               <a
                 href={registrationInfo.feeDocument}
                 download
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3 text-base font-bold text-public-deep transition-colors hover:bg-public-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3 text-base font-bold text-public-deep tap-press hover:bg-public-tint active:bg-public-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 <Download aria-hidden="true" size={19} /> Unduh Rincian Biaya PDF
               </a>

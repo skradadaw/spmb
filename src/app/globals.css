@@ -160,6 +160,23 @@ body {
   mask-image: linear-gradient(to bottom, black, transparent);
 }
 
+/* Press feedback for landing page actions; touch screens never trigger hover: */
+@utility tap-press {
+  -webkit-tap-highlight-color: transparent;
+  transition-property: color, background-color, border-color, box-shadow, transform;
+  transition-duration: 150ms;
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      transform: none;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

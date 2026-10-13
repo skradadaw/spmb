@@ -25,7 +25,7 @@ const navigationItems = [
 ] as const;
 
 const primaryActionClass =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-public-green px-6 py-3 text-base font-extrabold text-white shadow-lg shadow-public-deep/20 transition-colors hover:bg-public-green-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+  'inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-public-green px-6 py-3 text-base font-extrabold text-white shadow-lg shadow-public-deep/20 tap-press hover:bg-public-green-hover active:bg-public-green-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 export function HomeHeader() {
   return (
@@ -82,7 +82,7 @@ export function HomeHeader() {
           <ButtonLink
             href="/pendaftaran"
             aria-label="Daftar Sekarang"
-            className="h-[42px] gap-2 rounded-full border border-public-deep/10 bg-public-green px-4.5 font-bold whitespace-nowrap text-white shadow-sm shadow-public-green-hover/25 hover:bg-public-green-hover hover:text-white hover:shadow-md hover:shadow-public-green-hover/25 focus-visible:border-public-green focus-visible:ring-public-green/25 sm:px-5"
+            className="h-[42px] gap-2 rounded-full border border-public-deep/10 bg-public-green px-4.5 font-bold whitespace-nowrap text-white shadow-sm shadow-public-green-hover/25 tap-press hover:bg-public-green-hover active:bg-public-green-hover hover:text-white hover:shadow-md hover:shadow-public-green-hover/25 focus-visible:border-public-green focus-visible:ring-public-green/25 sm:px-5"
           >
             <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" strokeWidth={2.4} />
             <span className="hidden sm:inline">Daftar Sekarang</span>
@@ -96,14 +96,32 @@ export function HomeHeader() {
   );
 }
 
+const scheduleItems = [
+  {
+    icon: CalendarDays,
+    label: registrationInfo.wave.name,
+    value: registrationInfo.wave.period,
+    note: 'Periode Open Booking',
+  },
+  {
+    icon: ClipboardCheck,
+    label: 'Tes OKB',
+    value: registrationInfo.okb.date,
+    note: 'Jadwal observasi kesiapan belajar',
+  },
+  {
+    icon: WalletCards,
+    label: 'Biaya OKB',
+    value: registrationInfo.okb.fee,
+    note: 'Simpan bukti pembayaran untuk diunggah saat pendaftaran.',
+  },
+] as const;
+
 function BookingProgress({ usedSeats }: { usedSeats: number | null }) {
   if (usedSeats === null) {
     return (
-      <section
-        aria-labelledby="capacity-title"
-        className="rounded-xl border border-public-green/25 bg-gradient-to-r from-public-deep/15 via-public-green/10 to-public-green/15 p-3.5 shadow-sm shadow-public-deep/10 ring-1 ring-inset ring-white/25"
-      >
-        <p id="capacity-title" className="text-sm font-extrabold text-public-deep">
+      <section aria-labelledby="capacity-title" className="border-t border-public-deep/15 pt-4">
+        <p id="capacity-title" className="text-sm font-bold text-public-deep">
           Progress pendaftar
         </p>
         <p className="mt-1 text-sm font-bold leading-5 text-slate-800">
@@ -122,10 +140,7 @@ function BookingProgress({ usedSeats }: { usedSeats: number | null }) {
   const label = `${safeCount} dari ${registrationInfo.capacity} pendaftar telah menyelesaikan pendaftaran`;
 
   return (
-    <section
-      aria-labelledby="capacity-title"
-      className="rounded-xl border border-public-green/25 bg-gradient-to-r from-public-deep/15 via-public-green/10 to-public-green/15 p-3.5 shadow-sm shadow-public-deep/10 ring-1 ring-inset ring-white/25"
-    >
+    <section aria-labelledby="capacity-title" className="border-t border-public-deep/15 pt-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p id="capacity-title" className="text-sm font-bold text-public-deep">
           Progress pendaftar
@@ -138,18 +153,18 @@ function BookingProgress({ usedSeats }: { usedSeats: number | null }) {
           {safeCount} / {registrationInfo.capacity}
         </span>
       </div>
-      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-public-deep/20 ring-1 ring-inset ring-public-deep/5">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-public-deep/15">
         <div
           role="progressbar"
           aria-label={label}
           aria-valuemin={0}
           aria-valuemax={registrationInfo.capacity}
           aria-valuenow={progressValue}
-          className="h-full rounded-full bg-gradient-to-r from-public-green to-public-green transition-[width] duration-300 motion-reduce:transition-none"
+          className="h-full rounded-full bg-public-green transition-[width] duration-300 motion-reduce:transition-none"
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <p className="mt-2.5 text-xs font-medium leading-relaxed text-public-deep/80">
+      <p className="mt-3 text-xs font-medium leading-relaxed text-public-deep/80">
         Kuota terbatas! Segera daftarkan putra-putri Ayah & Bunda dan lengkapi Berkas sebelum kuota penuh.
       </p>
     </section>
@@ -198,17 +213,22 @@ export default function HomeHero({ usedSeats }: { usedSeats: number | null }) {
           </p>
 
           <h1 className="mx-auto mt-5 max-w-3xl text-balance text-4xl font-black leading-[1.06] tracking-[-0.03em] text-white sm:mt-6 sm:text-5xl lg:mx-0 lg:text-[3.5rem] xl:text-[3.75rem]">
-            Open Booking SD Plus 3 Al-Muhajirin{' '}
-            <span className="relative inline-block text-amber-300">
-              Telah Dibuka
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 260 18"
-                preserveAspectRatio="none"
-                className="absolute -bottom-2 left-0 h-3 w-full text-amber-300/70"
-              >
-                <path d="M4 12C72 2 178 2 256 10" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
-              </svg>
+            <span className="block sm:inline">Open Booking</span>{' '}
+            <span className="block sm:inline">
+              SD Plus 3 <span className="whitespace-nowrap">Al-Muhajirin</span>
+            </span>{' '}
+            <span className="block sm:inline">
+              <span className="relative inline-block text-amber-300">
+                Telah Dibuka
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 260 18"
+                  preserveAspectRatio="none"
+                  className="absolute -bottom-2 left-0 h-3 w-full text-amber-300/70"
+                >
+                  <path d="M4 12C72 2 178 2 256 10" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+                </svg>
+              </span>
             </span>
             <span className="mt-5 block text-xl font-extrabold leading-snug tracking-[-0.015em] text-public-mint sm:text-2xl">
               Tahun Pelajaran {registrationInfo.academicYear}
@@ -226,7 +246,7 @@ export default function HomeHero({ usedSeats }: { usedSeats: number | null }) {
             </Link>
             <a
               href="#jadwal"
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-white/30 bg-white/10 px-6 py-3 text-base font-extrabold text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-white/30 bg-white/10 px-6 py-3 text-base font-extrabold text-white backdrop-blur-sm tap-press hover:bg-white/20 active:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Lihat jadwal penting
             </a>
@@ -237,74 +257,38 @@ export default function HomeHero({ usedSeats }: { usedSeats: number | null }) {
         <aside
           id="jadwal"
           aria-labelledby="jadwal-title"
-          className="relative w-full scroll-mt-24 justify-self-center rounded-[2rem] border border-public-tint/25 bg-gradient-to-br from-public-line/25 via-public-tint/10 to-public-line/15 p-4 shadow-2xl shadow-public-deep/30 backdrop-blur-xl sm:p-5 lg:max-w-[34rem] lg:justify-self-end"
+          className="relative w-full scroll-mt-24 justify-self-center rounded-[1.75rem] border border-white/40 bg-public-tint p-5 text-slate-950 shadow-2xl shadow-black/25 ring-8 ring-white/10 sm:p-6 lg:max-w-[32rem] lg:justify-self-end"
         >
-          <span aria-hidden="true" className="absolute -right-3 -top-3 h-7 w-7 rounded-full border-[6px] border-amber-300 bg-public-deep shadow-lg" />
-          <span aria-hidden="true" className="absolute -bottom-4 -left-4 hidden h-12 w-12 rounded-2xl border border-white/20 bg-public-line/15 backdrop-blur-md sm:block" />
+          <span aria-hidden="true" className="absolute -right-2.5 -top-2.5 h-7 w-7 rounded-full border-[6px] border-amber-300 bg-public-deep shadow-lg" />
 
-          <div className="relative overflow-hidden rounded-[1.35rem] border border-public-line/80 bg-gradient-to-br from-public-tint via-public-tint to-public-tint p-4 text-slate-950 shadow-xl shadow-public-deep/20 ring-1 ring-public-deep/5 sm:p-5">
-            <span aria-hidden="true" className="absolute -right-14 -top-16 h-40 w-40 rounded-full bg-public-line/25 blur-3xl" />
-            <span aria-hidden="true" className="absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-public-green/25 blur-3xl" />
-
-            <div className="relative border-b border-public-deep/15 pb-3.5">
-              <div aria-hidden="true" className="mb-2.5 h-1 w-10 rounded-full bg-amber-400" />
-              <p className="text-xs font-bold uppercase leading-5 tracking-wider text-public-green">
-                Ringkasan Open Booking
-              </p>
-              <h2 id="jadwal-title" className="mt-1.5 text-2xl font-bold tracking-tight text-slate-950">
-                Jadwal penting
-              </h2>
-            </div>
-
-            <dl className="relative divide-y divide-public-deep/15">
-              <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 py-3.5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-public-line/70 text-public-green ring-1 ring-inset ring-public-line/70">
-                  <CalendarDays aria-hidden="true" size={19} strokeWidth={2.2} />
-                </span>
-                <div className="min-w-0">
-                  <dt className="text-sm font-medium text-public-deep/70">Gelombang 1</dt>
-                  <dd className="mt-0.5 text-base font-bold text-slate-900">
-                    1 Oktober – 17 November 2026
-                  </dd>
-                  <dd className="mt-1 text-sm text-slate-600">Periode Open Booking</dd>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 py-3.5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-200/70 text-amber-800 ring-1 ring-inset ring-amber-300/70">
-                  <ClipboardCheck aria-hidden="true" size={19} strokeWidth={2.2} />
-                </span>
-                <div className="min-w-0">
-                  <dt className="text-sm font-medium text-public-deep/70">Tes OKB</dt>
-                  <dd className="mt-0.5 text-base font-bold text-slate-900">
-                    21 November 2026
-                  </dd>
-                  <dd className="mt-1 text-sm text-slate-600">
-                    Jadwal observasi kesiapan belajar
-                  </dd>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 py-3.5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-public-line/70 text-public-deep ring-1 ring-inset ring-public-line/70">
-                  <WalletCards aria-hidden="true" size={19} strokeWidth={2.2} />
-                </span>
-                <div className="min-w-0">
-                  <dt className="text-sm font-medium text-public-deep/70">Biaya OKB</dt>
-                  <dd className="mt-0.5 text-base font-bold text-slate-900">
-                    Rp375.000
-                  </dd>
-                  <dd className="mt-1 text-sm text-slate-600">
-                    Simpan bukti pembayaran untuk diunggah saat pendaftaran.
-                  </dd>
-                </div>
-              </div>
-            </dl>
-
-            <div className="relative mt-3">
-              <BookingProgress usedSeats={usedSeats} />
-            </div>
+          <div className="border-b border-public-deep/15 pb-4">
+            <div aria-hidden="true" className="mb-3 h-1 w-10 rounded-full bg-amber-400" />
+            <p className="text-xs font-bold uppercase leading-5 tracking-wider text-public-green">
+              Ringkasan Open Booking
+            </p>
+            <h2 id="jadwal-title" className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+              Jadwal penting
+            </h2>
           </div>
+
+          <dl className="divide-y divide-public-deep/10">
+            {scheduleItems.map(({ icon: Icon, label, value, note }) => (
+              <div key={label} className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-3.5 py-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-public-green shadow-sm shadow-public-deep/10 ring-1 ring-inset ring-public-line">
+                  <Icon aria-hidden="true" size={20} strokeWidth={2.2} />
+                </span>
+                <div className="min-w-0">
+                  <dt className="text-xs font-bold uppercase tracking-wider text-public-deep/65">{label}</dt>
+                  <dd className="mt-1 text-lg font-extrabold leading-snug tracking-tight text-slate-950">
+                    {value}
+                  </dd>
+                  <dd className="mt-1 text-sm leading-5 text-slate-600">{note}</dd>
+                </div>
+              </div>
+            ))}
+          </dl>
+
+          <BookingProgress usedSeats={usedSeats} />
         </aside>
       </div>
 

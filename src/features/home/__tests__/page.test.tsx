@@ -146,7 +146,7 @@ describe('Open Booking landing page', () => {
     expect(within(schedule).getByText('86 / 112')).toBeDefined();
     expect(
       within(schedule).getByRole('region', { name: 'Progress pendaftar' }).className,
-    ).toContain('from-public-deep/15');
+    ).toContain('border-t');
     expect(
       within(schedule).getByText(/kuota terbatas! segera daftarkan putra-putri ayah & bunda/i),
     ).toBeDefined();

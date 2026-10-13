@@ -34,11 +34,11 @@ export default function ClosingCta() {
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
             <Link
               href="/pendaftaran"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-amber-300 px-6 py-3 text-base font-extrabold text-public-deep shadow-lg shadow-public-deep/30 transition-colors hover:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-amber-300 px-6 py-3 text-base font-extrabold text-public-deep shadow-lg shadow-public-deep/30 tap-press hover:bg-amber-200 active:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
             >
               Mulai Pendaftaran <ArrowRight aria-hidden="true" size={19} />
             </Link>
-            <WhatsAppLink className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+            <WhatsAppLink className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white backdrop-blur-sm tap-press hover:bg-white/20 active:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
               Tanya via WhatsApp
             </WhatsAppLink>
           </div>

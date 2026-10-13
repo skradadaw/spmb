@@ -43,7 +43,7 @@ export default function FrequentQuestions() {
           </p>
           <WhatsAppLink
             iconClassName="size-5 text-public-green"
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-bold text-public-deep transition-colors hover:bg-public-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto"
+            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-bold text-public-deep tap-press hover:bg-public-tint active:bg-public-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto"
           >
             Chat WhatsApp Panitia
           </WhatsAppLink>

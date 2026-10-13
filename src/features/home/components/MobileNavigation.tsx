@@ -144,7 +144,7 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
                   href="/pendaftaran"
                   aria-label="Daftar Sekarang"
                   onClick={closeMenu}
-                  className="h-12 justify-center gap-2 rounded-xl bg-public-green font-bold text-white shadow-sm hover:bg-public-green-hover hover:text-white"
+                  className="h-12 justify-center gap-2 rounded-xl bg-public-green font-bold text-white shadow-sm tap-press hover:bg-public-green-hover hover:text-white active:bg-public-green-hover"
                 >
                   <CircleArrowRight aria-hidden="true" className="size-[17px] text-amber-100" />
                   Daftar Sekarang

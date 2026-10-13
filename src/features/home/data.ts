@@ -5,8 +5,10 @@ export const registrationInfo = {
   academicYear: '2027/2028',
   wave: {
     name: 'Gelombang 1',
+    period: '1 Oktober – 17 November 2026',
   },
   okb: {
+    date: '21 November 2026',
     fee: 'Rp375.000',
     bank: 'Bank Muamalat',
     accountNumber: '1060017434',
