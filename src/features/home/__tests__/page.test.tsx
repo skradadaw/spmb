@@ -62,6 +62,7 @@ describe('Open Booking landing page', () => {
     ).toEqual([
       ['Jadwal', '#jadwal'],
       ['Alur', '#alur'],
+      ['Kelas', '#kelas'],
       ['Biaya', '#biaya'],
       ['Persyaratan', '#persyaratan'],
     ]);
@@ -109,7 +110,7 @@ describe('Open Booking landing page', () => {
     expect(mobileNavigation.className).toContain('bg-gradient-to-b');
     expect(within(mobileNavigation).getByText('Menu Utama')).toBeDefined();
     expect(within(mobileNavigation).getByText('Informasi Open Booking')).toBeDefined();
-    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(6);
+    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(7);
     expect(within(mobileNavigation).getByRole('link', { name: 'Daftar Sekarang' })).toBeDefined();
 
     fireEvent.click(within(mobileNavigation).getByRole('link', { name: 'Jadwal' }));
@@ -201,6 +202,45 @@ describe('Open Booking landing page', () => {
     expect(
       within(steps).getByText('Hasil diumumkan di website dan diinformasikan panitia melalui WhatsApp.'),
     ).toBeDefined();
+  });
+
+  it('presents the three Pilihan Kelas with accreditation, Pindahan, and Kelas Penempatan notes', () => {
+    renderHome();
+
+    const section = screen.getByRole('region', { name: 'Pilihan Kelas' });
+    expect(section.getAttribute('id')).toBe('kelas');
+    expect(within(section).getByText('Terakreditasi A')).toBeDefined();
+    for (const kelas of ['Reguler', 'Bilingual', 'Tahfizh']) {
+      expect(within(section).getByRole('article', { name: kelas })).toBeDefined();
+    }
+    expect(within(section).getByText(/Pindahan ke kelas 2–6\?/)).toBeDefined();
+    expect(within(section).getByText(/pilih Jenis Pendaftaran Pindahan/)).toBeDefined();
+    expect(within(section).getByText(/Kelas Penempatan ditetapkan Panitia setelah OKB/)).toBeDefined();
+  });
+
+  it('labels each Pilihan Kelas Tersedia, Hampir penuh, or Penuh from its remaining seats', () => {
+    renderHome([
+      { pilihanKelas: 'Reguler', kuota: 30, terpakai: 24 },
+      { pilihanKelas: 'Bilingual', kuota: 30, terpakai: 23 },
+      { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: 28 },
+    ]);
+
+    const card = (kelas: string) => screen.getByRole('article', { name: kelas });
+    expect(within(card('Reguler')).getByText('Hampir penuh')).toBeDefined();
+    expect(within(card('Bilingual')).getByText('Tersedia')).toBeDefined();
+    expect(within(card('Tahfizh')).getByText('Penuh')).toBeDefined();
+    expect(within(card('Tahfizh')).getByText('Pilihan kelas ini sudah penuh')).toBeDefined();
+    expect(within(card('Reguler')).queryByText('Pilihan kelas ini sudah penuh')).toBeNull();
+  });
+
+  it('hides class quota status when capacity data is unavailable', () => {
+    renderHome(null);
+
+    const section = screen.getByRole('region', { name: 'Pilihan Kelas' });
+    expect(within(section).getAllByRole('article')).toHaveLength(3);
+    for (const status of ['Tersedia', 'Hampir penuh', 'Penuh']) {
+      expect(within(section).queryByText(status)).toBeNull();
+    }
   });
 
   it('never uses the word seleksi', () => {

@@ -18,6 +18,7 @@ import MobileNavigation from './MobileNavigation';
 const navigationItems = [
   ['Jadwal', '#jadwal'],
   ['Alur', '#alur'],
+  ['Kelas', '#kelas'],
   ['Biaya', '#biaya'],
   ['Persyaratan', '#persyaratan'],
 ] as const;

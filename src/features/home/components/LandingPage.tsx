@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, FileCheck2 } from 'lucide-react';
+import ClassOptions from './ClassOptions';
 import HomeHero, { HomeHeader } from './HomeHero';
 import PaymentInformation from './PaymentInformation';
 import RegistrationPreparation from './RegistrationPreparation';
@@ -26,6 +27,7 @@ export default function LandingPage({
       <main id="konten-utama">
         <HomeHero completedCount={completedCount} />
         <RegistrationSteps />
+        <ClassOptions classCapacities={classCapacities} />
         <PaymentInformation />
         <RegistrationPreparation />
         <section className="bg-white px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">

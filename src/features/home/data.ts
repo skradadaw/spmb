@@ -45,3 +45,25 @@ export const registrationFlow = [
     description: 'Hasil diumumkan di website dan diinformasikan panitia melalui WhatsApp.',
   },
 ] as const;
+
+export const schoolProfile = {
+  accreditation: 'A',
+} as const;
+
+export const classPrograms = [
+  {
+    pilihanKelas: 'Reguler',
+    description:
+      'Kurikulum nasional dipadukan dengan pendidikan Islam: pembiasaan ibadah, akhlak, dan pengenalan kitab.',
+  },
+  {
+    pilihanKelas: 'Bilingual',
+    description:
+      'Penguatan bahasa Inggris dalam pembelajaran untuk membekali anak berwawasan global.',
+  },
+  {
+    pilihanKelas: 'Tahfizh',
+    description:
+      'Menghafal Al-Qur’an sejak dini dengan bimbingan guru, termasuk kegiatan Tahfizh Camp.',
+  },
+] as const;
