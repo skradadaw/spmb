@@ -5,8 +5,15 @@ import PaymentInformation from './PaymentInformation';
 import RegistrationPreparation from './RegistrationPreparation';
 import RegistrationSteps from './RegistrationSteps';
 import { registrationInfo } from '../data';
+import { totalUsedSeats, type ClassCapacity } from '@/features/registration/classCapacity';
 
-export default function LandingPage({ completedCount }: { completedCount: number | null }) {
+export default function LandingPage({
+  classCapacities,
+}: {
+  classCapacities: ClassCapacity[] | null;
+}) {
+  const completedCount = classCapacities === null ? null : totalUsedSeats(classCapacities);
+
   return (
     <div className="min-h-screen bg-[#F7F8F4] text-slate-950">
       <a

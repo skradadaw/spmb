@@ -3,9 +3,16 @@ import { join } from 'node:path';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { LandingPage } from '@/features/home';
+import type { ClassCapacity } from '@/features/registration/classCapacity';
 
-const renderHome = (completedCount: number | null = 86) =>
-  render(<LandingPage completedCount={completedCount} />);
+const capacities = (reguler: number, bilingual: number, tahfizh: number): ClassCapacity[] => [
+  { pilihanKelas: 'Reguler', kuota: 28, terpakai: reguler },
+  { pilihanKelas: 'Bilingual', kuota: 56, terpakai: bilingual },
+  { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: tahfizh },
+];
+
+const renderHome = (classCapacities: ClassCapacity[] | null = capacities(20, 50, 16)) =>
+  render(<LandingPage classCapacities={classCapacities} />);
 
 describe('Open Booking landing page', () => {
   it('uses the temporary Open Booking terminology only on the landing page', () => {
@@ -145,7 +152,7 @@ describe('Open Booking landing page', () => {
   });
 
   it('caps the visual progress at 100 percent when existing data exceeds capacity', () => {
-    renderHome(120);
+    renderHome(capacities(28, 64, 28));
 
     const progress = screen.getByRole('progressbar', {
       name: '120 dari 112 pendaftar telah menyelesaikan pendaftaran',

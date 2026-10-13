@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 
 export const revalidate = 60;
 
-async function getCompletedBookingCount() {
+async function getClassCapacities() {
   try {
-    return await createBookingProgressRepository(getSupabaseAdmin()).getCompletedCount();
+    return await createBookingProgressRepository(getSupabaseAdmin()).getClassCapacities();
   } catch (error) {
     const safeType =
       error instanceof BookingProgressLoadError || error instanceof SupabaseConfigurationError
@@ -31,5 +31,5 @@ async function getCompletedBookingCount() {
 }
 
 export default async function Home() {
-  return <LandingPage completedCount={await getCompletedBookingCount()} />;
+  return <LandingPage classCapacities={await getClassCapacities()} />;
 }

@@ -1,6 +1,5 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { totalUsedSeats } from '@/features/registration/classCapacity';
 import { fetchClassCapacities } from '@/features/registration/server/classCapacityRepository';
 
 const SAFE_ERROR = 'Progress Open Booking tidak dapat dimuat.';
@@ -14,9 +13,9 @@ export class BookingProgressLoadError extends Error {
 
 export function createBookingProgressRepository(client: Pick<SupabaseClient, 'rpc'>) {
   return {
-    async getCompletedCount() {
+    async getClassCapacities() {
       try {
-        return totalUsedSeats(await fetchClassCapacities(client));
+        return await fetchClassCapacities(client);
       } catch {
         throw new BookingProgressLoadError();
       }
