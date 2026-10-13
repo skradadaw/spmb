@@ -25,7 +25,7 @@ const navigationIcons: Record<
   React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>
 > = {
   Jadwal: CalendarDays,
-  'Cara Daftar': BookOpen,
+  Alur: BookOpen,
   Biaya: WalletCards,
   Persyaratan: ClipboardCheck,
 };

@@ -61,7 +61,7 @@ describe('Open Booking landing page', () => {
       ]),
     ).toEqual([
       ['Jadwal', '#jadwal'],
-      ['Cara Daftar', '#cara-daftar'],
+      ['Alur', '#alur'],
       ['Biaya', '#biaya'],
       ['Persyaratan', '#persyaratan'],
     ]);
@@ -183,23 +183,30 @@ describe('Open Booking landing page', () => {
     expect(existsSync(join(process.cwd(), 'public/rincian-biaya-2027-2028.pdf'))).toBe(true);
   });
 
-  it('shows the three registration steps and every preparation item', () => {
+  it('walks parents through the five-step Alur Pendaftaran up to the Keputusan Penerimaan', () => {
     renderHome();
 
-    const steps = screen.getByRole('list', { name: 'Langkah pendaftaran' });
-    expect(within(steps).getAllByRole('listitem')).toHaveLength(3);
-    expect(within(steps).getByText('Siapkan dokumen')).toBeDefined();
-    expect(within(steps).getByText('Isi formulir')).toBeDefined();
-    expect(within(steps).getByText('Ikuti Tes OKB')).toBeDefined();
+    const section = screen.getByRole('region', { name: 'Alur Pendaftaran' });
+    expect(section.getAttribute('id')).toBe('alur');
+    const steps = within(section).getByRole('list', { name: 'Langkah pendaftaran' });
+    expect(
+      within(steps).getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent),
+    ).toEqual([
+      'Bayar biaya OKB',
+      'Isi formulir & unggah Berkas',
+      'Verifikasi Berkas',
+      'Ikuti OKB',
+      'Keputusan Penerimaan',
+    ]);
+    expect(
+      within(steps).getByText('Hasil diumumkan di website dan diinformasikan panitia melalui WhatsApp.'),
+    ).toBeDefined();
+  });
 
-    for (const item of [
-      'Fotokopi akta lahir',
-      'Fotokopi kartu keluarga',
-      'Nomor NISN',
-      'Pas foto ukuran 3×4',
-    ]) {
-      expect(screen.getByText(item)).toBeDefined();
-    }
+  it('never uses the word seleksi', () => {
+    const { container } = renderHome();
+
+    expect(container.textContent).not.toMatch(/seleksi/i);
   });
 
   it('connects the generated Plus Jakarta font variable to Tailwind tokens', () => {
