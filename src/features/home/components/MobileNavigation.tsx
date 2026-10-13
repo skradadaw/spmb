@@ -65,7 +65,7 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
         aria-expanded={isOpen}
         aria-controls="mobile-navigation"
         onClick={() => setIsOpen((open) => !open)}
-        className="size-11 rounded-xl border-emerald-900/15 bg-white text-emerald-950 shadow-sm hover:bg-emerald-50 hover:text-public-green focus-visible:ring-public-green/20"
+        className="size-11 rounded-xl border-public-deep/15 bg-white text-public-deep shadow-sm hover:bg-public-tint hover:text-public-green focus-visible:ring-public-green/20"
       >
         {isOpen ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
       </Button>
@@ -80,14 +80,14 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
           <nav
             id="mobile-navigation"
             aria-label="Navigasi seluler"
-            className="h-full overflow-y-auto overscroll-contain border-t border-emerald-950/10 bg-gradient-to-b from-white via-white to-emerald-50/20 px-4 pt-4 shadow-xl shadow-emerald-950/15 sm:px-6"
+            className="h-full overflow-y-auto overscroll-contain border-t border-public-deep/10 bg-gradient-to-b from-white via-white to-public-tint/20 px-4 pt-4 shadow-xl shadow-public-deep/15 sm:px-6"
           >
             <div className="mx-auto flex min-h-full max-w-7xl flex-col justify-between pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <p className="px-1 text-xs font-bold uppercase tracking-wider text-emerald-900/70">Menu Utama</p>
+                  <p className="px-1 text-xs font-bold uppercase tracking-wider text-public-deep/70">Menu Utama</p>
                   {/* Menu items card with dividers */}
-                  <div className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-xs divide-y divide-slate-100">
+                  <div className="overflow-hidden rounded-2xl border border-public-deep/10 bg-white shadow-xs divide-y divide-slate-100">
                     {items.map(([label, href]) => {
                       const IconComponent = navigationIcons[label] || CircleArrowRight;
                       return (
@@ -95,22 +95,22 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
                           key={href}
                           href={href}
                           onClick={closeMenu}
-                          className="group flex min-h-[54px] items-center justify-between px-4 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-emerald-50/70 hover:text-emerald-950 active:bg-emerald-100/60 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-public-green"
+                          className="group flex min-h-[54px] items-center justify-between px-4 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-public-tint/70 hover:text-public-deep active:bg-public-tint/60 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-public-green"
                         >
                           <span className="flex items-center gap-3">
                             <span
                               aria-hidden="true"
-                              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-public-green transition-colors group-hover:bg-public-green group-hover:text-white"
+                              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-public-tint text-public-green transition-colors group-hover:bg-public-green group-hover:text-white"
                             >
                               <IconComponent aria-hidden="true" className="size-4" />
                             </span>
-                            <span className="font-semibold text-slate-800 transition-colors group-hover:text-emerald-950">
+                            <span className="font-semibold text-slate-800 transition-colors group-hover:text-public-deep">
                               {label}
                             </span>
                           </span>
                           <ChevronRight
                             aria-hidden="true"
-                            className="size-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-700"
+                            className="size-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-public-green"
                           />
                         </a>
                       );
@@ -119,9 +119,9 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
                 </div>
 
                 {/* Helpful registration announcement card */}
-                <div className="rounded-2xl border border-emerald-900/10 bg-gradient-to-br from-emerald-50/90 via-emerald-50/40 to-lime-50/50 p-4 text-xs text-emerald-950 shadow-xs">
-                  <div className="flex items-center gap-2 font-bold text-emerald-900">
-                    <Sparkles aria-hidden="true" className="size-4 text-emerald-700" />
+                <div className="rounded-2xl border border-public-deep/10 bg-gradient-to-br from-public-tint/90 via-public-tint/40 to-public-tint/50 p-4 text-xs text-public-deep shadow-xs">
+                  <div className="flex items-center gap-2 font-bold text-public-deep">
+                    <Sparkles aria-hidden="true" className="size-4 text-public-green" />
                     <span>Informasi Open Booking</span>
                   </div>
                   <p className="mt-1.5 leading-relaxed text-slate-600">
@@ -137,7 +137,7 @@ export default function MobileNavigation({ items }: MobileNavigationProps) {
                   href="/login"
                   aria-label="Login Panitia"
                   onClick={closeMenu}
-                  className="h-12 justify-center gap-2 rounded-xl border-emerald-900/15 bg-white font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-950"
+                  className="h-12 justify-center gap-2 rounded-xl border-public-deep/15 bg-white font-semibold text-slate-700 hover:bg-public-tint hover:text-public-deep"
                 >
                   <LockKeyhole aria-hidden="true" className="size-4" />
                   Login Panitia

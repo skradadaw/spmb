@@ -1,3 +1,4 @@
+import type { ClassOption } from '@/features/registration/classCapacity';
 import { REGISTRATION_CAPACITY } from '@/lib/registrationConfig';
 
 export const registrationInfo = {
@@ -45,23 +46,14 @@ export const schoolProfile = {
   accreditation: 'A',
 } as const;
 
-export const classPrograms = [
-  {
-    pilihanKelas: 'Reguler',
-    description:
-      'Kurikulum nasional dipadukan dengan pendidikan Islam: pembiasaan ibadah, akhlak, dan pengenalan kitab.',
-  },
-  {
-    pilihanKelas: 'Bilingual',
-    description:
-      'Penguatan bahasa Inggris dalam pembelajaran untuk membekali anak berwawasan global.',
-  },
-  {
-    pilihanKelas: 'Tahfizh',
-    description:
-      'Menghafal Al-Qur’an sejak dini dengan bimbingan guru, termasuk kegiatan Tahfizh Camp.',
-  },
-] as const;
+export const classProgramDescriptions: Record<ClassOption, string> = {
+  Reguler:
+    'Kurikulum nasional dipadukan dengan pendidikan Islam: pembiasaan ibadah, akhlak, dan pengenalan kitab.',
+  Bilingual:
+    'Penguatan bahasa Inggris dalam pembelajaran untuk membekali anak berwawasan global.',
+  Tahfizh:
+    'Menghafal Al-Qur’an sejak dini dengan bimbingan guru, termasuk kegiatan Tahfizh Camp.',
+};
 
 export const contactInfo = {
   whatsappLabel: '0819-9831-1470',

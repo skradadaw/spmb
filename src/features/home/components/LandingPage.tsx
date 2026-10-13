@@ -13,7 +13,7 @@ export default function LandingPage({
 }: {
   classCapacities: ClassCapacity[] | null;
 }) {
-  const completedCount = classCapacities === null ? null : totalUsedSeats(classCapacities);
+  const usedSeats = classCapacities === null ? null : totalUsedSeats(classCapacities);
 
   return (
     <div className="min-h-screen bg-public-canvas text-slate-950">
@@ -25,7 +25,7 @@ export default function LandingPage({
       </a>
       <HomeHeader />
       <main id="konten-utama">
-        <HomeHero completedCount={completedCount} />
+        <HomeHero usedSeats={usedSeats} />
         <RegistrationSteps />
         <ClassOptions classCapacities={classCapacities} />
         <PaymentInformation />

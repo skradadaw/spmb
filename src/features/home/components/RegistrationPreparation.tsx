@@ -18,7 +18,7 @@ export default function RegistrationPreparation() {
             description="Siapkan keempat Berkas sebelum mulai mengisi formulir agar proses unggah lebih cepat."
           />
           <div className="mt-6 space-y-3">
-            <p className="flex items-start gap-3 rounded-2xl bg-public-tint p-4 text-[0.95rem] leading-7 text-emerald-950">
+            <p className="flex items-start gap-3 rounded-2xl bg-public-tint p-4 text-[0.95rem] leading-7 text-public-deep">
               <Camera aria-hidden="true" className="mt-1 shrink-0 text-public-green" size={18} />
               Berupa foto atau scan yang jelas dan terbaca.
             </p>
@@ -33,11 +33,11 @@ export default function RegistrationPreparation() {
           {registrationInfo.berkas.map((item) => (
             <li
               key={item}
-              className="flex items-center gap-4 rounded-3xl border border-emerald-900/10 bg-public-canvas p-5 transition-colors hover:border-emerald-300 sm:p-6"
+              className="flex items-center gap-4 rounded-3xl border border-public-deep/10 bg-public-canvas p-5 transition-colors hover:border-public-line sm:p-6"
             >
               <span
                 aria-hidden="true"
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-public-green shadow-sm ring-1 ring-emerald-900/5"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-public-green shadow-sm ring-1 ring-public-deep/5"
               >
                 <FileCheck2 size={22} />
               </span>

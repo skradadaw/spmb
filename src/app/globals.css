@@ -24,6 +24,8 @@
   --public-green: #007a10;
   --public-green-hover: #00550b;
   --public-tint: #eaf6e8;
+  --public-line: #c4e3c8;
+  --public-mint: #d8eedb;
 
   /* Admin dashboard semantic surfaces */
   --admin-canvas: #f5f7f6;
@@ -80,6 +82,8 @@
   --color-public-green: var(--public-green);
   --color-public-green-hover: var(--public-green-hover);
   --color-public-tint: var(--public-tint);
+  --color-public-line: var(--public-line);
+  --color-public-mint: var(--public-mint);
   --font-sans: var(--font-plus-jakarta);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-heading: var(--font-plus-jakarta);
@@ -137,10 +141,23 @@ body {
 
 .hero-grid {
   background-image:
-    linear-gradient(rgb(0 85 11 / 4%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(0 85 11 / 4%) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--public-green-hover) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--public-green-hover) 4%, transparent) 1px, transparent 1px);
   background-size: 36px 36px;
   mask-image: linear-gradient(to bottom, black, transparent 90%);
+}
+
+/* Dot textures shared by the landing page: white dots on deep bands, deep dots on light sections */
+.texture-dots-on-deep {
+  background-image: radial-gradient(circle at center, rgb(255 255 255 / 35%) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, black, transparent 80%);
+}
+
+.texture-dots {
+  background-image: radial-gradient(circle at center, color-mix(in srgb, var(--public-deep) 12%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, black, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

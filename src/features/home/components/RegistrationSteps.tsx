@@ -10,7 +10,7 @@ export default function RegistrationSteps() {
     >
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-64 [background-image:radial-gradient(circle_at_center,rgb(6_78_27/0.12)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
+        className="texture-dots absolute inset-x-0 top-0 h-64"
       />
       <div className="relative mx-auto max-w-7xl">
         <SectionHeading
@@ -34,7 +34,7 @@ export default function RegistrationSteps() {
                 {!last && (
                   <span
                     aria-hidden="true"
-                    className="absolute bottom-0 left-6 top-12 w-0.5 -translate-x-1/2 bg-emerald-200 lg:bottom-auto lg:left-12 lg:right-[-1.5rem] lg:top-6 lg:h-0.5 lg:w-auto lg:translate-x-0 lg:bg-gradient-to-r lg:from-public-green lg:to-emerald-300"
+                    className="absolute bottom-0 left-6 top-12 w-0.5 -translate-x-1/2 bg-public-line lg:bottom-auto lg:left-12 lg:right-[-1.5rem] lg:top-6 lg:h-0.5 lg:w-auto lg:translate-x-0 lg:bg-gradient-to-r lg:from-public-green lg:to-public-line"
                   />
                 )}
                 <span
@@ -42,7 +42,7 @@ export default function RegistrationSteps() {
                   className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-black shadow-lg ring-4 ring-white ${
                     last
                       ? 'bg-amber-300 text-public-deep shadow-amber-900/15'
-                      : 'bg-public-deep text-white shadow-emerald-950/20'
+                      : 'bg-public-deep text-white shadow-public-deep/20'
                   }`}
                 >
                   {index + 1}

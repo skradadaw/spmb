@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { LandingPage } from '@/features/home';
 import {
-  BookingProgressLoadError,
-  createBookingProgressRepository,
-} from '@/features/home/server/bookingProgressRepository';
+  ClassCapacityLoadError,
+  fetchClassCapacities,
+} from '@/features/registration/server/classCapacityRepository';
 import {
   getSupabaseAdmin,
   SupabaseConfigurationError,
@@ -19,12 +19,12 @@ export const revalidate = 60;
 
 async function getClassCapacities() {
   try {
-    return await createBookingProgressRepository(getSupabaseAdmin()).getClassCapacities();
+    return await fetchClassCapacities(getSupabaseAdmin());
   } catch (error) {
     const safeType =
-      error instanceof BookingProgressLoadError || error instanceof SupabaseConfigurationError
+      error instanceof ClassCapacityLoadError || error instanceof SupabaseConfigurationError
         ? error.name
-        : 'UnexpectedBookingProgressError';
+        : 'UnexpectedClassCapacityError';
     console.error('Open Booking progress could not be loaded.', safeType);
     return null;
   }
