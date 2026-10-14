@@ -21,7 +21,13 @@ export async function saveDocumentReviewAction(formData: FormData): Promise<void
   if (!REVIEW_STATUSES.has(status)) throw new Error('Status pemeriksaan tidak valid.');
 
   const supabase = getSupabaseAdmin();
-  const participant = await createParticipantsRepository(supabase).getDocumentRow(participantId);
+  // Each query is a network round trip, so the two reads run together instead of one after another.
+  const [participant, reviewResult] = await Promise.all([
+    createParticipantsRepository(supabase).getDocumentRow(participantId),
+    status === 'verified'
+      ? supabase.from('verifikasi_dokumen').select('dokumen_id,status').eq('pendaftar_id', participantId)
+      : null,
+  ]);
   const definition = DOCUMENT_DEFINITIONS.find(document => document.id === documentId as RegistrationDocumentId);
   if (!participant || !definition || typeof participant[definition.dbColumn] !== 'string') {
     throw new Error('Berkas tidak ditemukan atau belum diunggah.');
@@ -47,9 +53,9 @@ export async function saveDocumentReviewAction(formData: FormData): Promise<void
 
   const allDocumentsUploaded = DOCUMENT_DEFINITIONS.every(document => typeof participant[document.dbColumn] === 'string' && (participant[document.dbColumn] as string).trim().length > 0);
   if (allDocumentsUploaded) {
-    const { data: reviews, error: reviewError } = await supabase.from('verifikasi_dokumen').select('dokumen_id,status').eq('pendaftar_id', participantId);
-    if (reviewError || !reviews) throw new Error('Status verifikasi dokumen tidak dapat diperiksa.');
-    const verifiedIds = new Set(reviews.filter(review => review.status === 'verified').map(review => review.dokumen_id));
+    if (!reviewResult || reviewResult.error || !reviewResult.data) throw new Error('Status verifikasi dokumen tidak dapat diperiksa.');
+    // The reviews were read before this upsert, so the document just verified is added here.
+    const verifiedIds = new Set([...reviewResult.data.filter(review => review.status === 'verified').map(review => review.dokumen_id), documentId]);
     const allDocumentsVerified = DOCUMENT_DEFINITIONS.every(document => verifiedIds.has(document.id));
     if (allDocumentsVerified) {
       const { error: statusError } = await supabase.from('pendaftar').update({ status: 'Terverifikasi' }).eq('id', participantId).eq('status', 'Menunggu Verifikasi');

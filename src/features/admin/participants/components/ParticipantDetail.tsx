@@ -1,24 +1,23 @@
 import { AlertTriangle, ArrowLeft, Check, ClipboardCheck, Flag } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminNoteAction';
-import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
 import { setNisnFlagAction } from '../actions/setNisnFlagAction';
-import { DocumentPreviewButton, type ViewerDocument } from './DocumentPreviewButton';
+import type { ViewerDocument } from './DocumentPreviewButton';
+import { DocumentReviewCard } from './DocumentReviewCard';
 import { DocumentPrefetch } from './DocumentPrefetch';
 import { StickyAside } from './StickyAside';
 import { documentReplacedAt, documentVersion } from '../documentVersion';
 import { ParticipantStatusPanel } from './ParticipantStatusPanel';
 import { ParticipantStatusBadge } from './ParticipantStatus';
 import { ParticipantEditableGroup } from './ParticipantEditableGroup';
-import { ReplaceDocumentButton } from './ReplaceDocumentButton';
 import { DownloadProofButton } from '@/features/registration/components/DownloadProofButton';
 import { Button } from '@/components/ui/button';
 import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ADMIN_DONE_BUTTON, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
+import { ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
 import { Textarea } from '@/components/ui/textarea';
-import type { DocumentReviewStatus, ParticipantDetail as ParticipantDetailData } from '../contracts';
+import type { ParticipantDetail as ParticipantDetailData } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
 import { whatsAppWebHref } from '../whatsapp';
 
@@ -128,65 +127,16 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                   const replacedAt = document.path ? documentReplacedAt(document.path) : null;
                   // Same second line on every card: where the file came from, not a status the buttons already show.
                   const sourceLabel = !document.path ? 'Belum diunggah' : replacedAt ? `Diganti admin, ${shortDate(replacedAt)}` : 'Dari pendaftaran';
-                  const markerStyles = status === 'missing' ? 'border border-dashed border-slate-300 bg-white' : status === 'verified' ? 'bg-emerald-600 text-white' : 'border border-slate-300 bg-white';
                   return (
-                    <article
+                    <DocumentReviewCard
                       key={document.id}
-                      data-review-state={status}
-                      className={`flex h-full min-w-0 flex-col rounded-xl border p-3 shadow-sm shadow-slate-950/[0.03] transition-colors ${
-                        status === 'missing' ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-200 bg-white'
-                      }`}
-                    >
-                      <div className="flex min-w-0 items-start gap-2.5">
-                        {/* A checkbox-like marker: ticked when verified, empty while waiting, dashed when missing. */}
-                        <span
-                          aria-hidden="true"
-                          data-document-index
-                          className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded ${markerStyles}`}
-                        >
-                          {status === 'verified' && <Check className="size-3" strokeWidth={3} />}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex min-w-0 items-start justify-between gap-2">
-                            {/* Two lines reserved so a long title does not make its card taller than its neighbour. */}
-                            <h3 className="min-h-8 break-words text-xs font-semibold leading-4 text-slate-950">{document.title}</h3>
-                            {document.path && (
-                              <ReplaceDocumentButton participantId={participant.id} documentId={document.id} title={document.title} hasFile />
-                            )}
-                          </div>
-                          <p data-document-source className="text-[11px] leading-4 text-slate-500">{sourceLabel}</p>
-                        </div>
-                      </div>
-                      {document.path ? (
-                        // The verify button takes the spare width so "Terverifikasi" fits; "Lihat" only needs its label.
-                        <form action={saveDocumentReviewAction} className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 pt-3">
-                          <input type="hidden" name="participantId" value={participant.id} />
-                          <input type="hidden" name="documentId" value={document.id} />
-                          <Button
-                            type="submit"
-                            name="status"
-                            value={'verified' satisfies DocumentReviewStatus}
-                            aria-label={`${status === 'verified' ? 'Terverifikasi' : 'Verifikasi'} ${document.title}`}
-                            aria-pressed={status === 'verified'}
-                            size="sm"
-                            className={`${status === 'verified' ? ADMIN_DONE_BUTTON : ADMIN_PRIMARY_BUTTON} w-full min-w-0 px-2`}
-                          >
-                            <Check aria-hidden="true" className="size-3 shrink-0" />
-                            <span className="truncate">{status === 'verified' ? 'Terverifikasi' : 'Verifikasi'}</span>
-                          </Button>
-                          <DocumentPreviewButton
-                            compact
-                            participantId={participant.id}
-                            documents={viewerDocuments}
-                            index={viewerDocuments.findIndex(item => item.id === document.id)}
-                          />
-                        </form>
-                      ) : (
-                        <div className="mt-auto pt-3">
-                          <ReplaceDocumentButton participantId={participant.id} documentId={document.id} title={document.title} hasFile={false} />
-                        </div>
-                      )}
-                    </article>
+                      participantId={participant.id}
+                      document={document}
+                      status={status}
+                      sourceLabel={sourceLabel}
+                      viewerDocuments={viewerDocuments}
+                      viewerIndex={viewerDocuments.findIndex(item => item.id === document.id)}
+                    />
                   );
                 })}
               </div>

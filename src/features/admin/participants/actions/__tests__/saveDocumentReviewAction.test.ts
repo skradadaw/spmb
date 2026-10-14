@@ -67,6 +67,25 @@ describe('saveDocumentReviewAction', () => {
     expect(mocks.updateStatus).not.toHaveBeenCalled();
   });
 
+  it('counts the document being verified even before its review existed', async () => {
+    // Reviews are read before the upsert, so the current document is not in them yet.
+    mocks.reviewRows.mockResolvedValue({ data: [{ dokumen_id: 'kartuKeluarga', status: 'verified' }, { dokumen_id: 'pasFoto', status: 'verified' }, { dokumen_id: 'buktiPembayaran', status: 'verified' }], error: null });
+    await saveDocumentReviewAction(form('verified'));
+    expect(mocks.updateStatus).toHaveBeenCalledWith('status', 'Menunggu Verifikasi');
+  });
+
+  it('reads the files and the existing reviews at the same time, before saving', async () => {
+    let resolveRow: (value: unknown) => void = () => {};
+    mocks.getDocumentRow.mockReturnValue(new Promise(resolve => { resolveRow = resolve; }));
+    const pending = saveDocumentReviewAction(form('verified'));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(mocks.reviewRows).toHaveBeenCalledWith('pendaftar_id', participantId);
+    expect(mocks.upsert).not.toHaveBeenCalled();
+    resolveRow({ dokumen_akta_kelahiran: 'akta.pdf', dokumen_kartu_keluarga: 'kk.pdf', dokumen_pas_foto: 'foto.png', dokumen_bukti_pembayaran: 'bukti.pdf' });
+    await pending;
+    expect(mocks.upsert).toHaveBeenCalledTimes(1);
+  });
+
   it('does not mark participant verified while any document is unreviewed', async () => {
     mocks.reviewRows.mockResolvedValue({ data: [{ dokumen_id: 'aktaKelahiran', status: 'verified' }, { dokumen_id: 'kartuKeluarga', status: 'verified' }, { dokumen_id: 'buktiPembayaran', status: 'verified' }], error: null });
     await saveDocumentReviewAction(form('verified'));
