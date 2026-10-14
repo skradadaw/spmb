@@ -20,6 +20,8 @@ export type RegistrationProof = {
   jenisPendaftaran: string;
   pilihanKelas: string;
   kelasTujuan: string | null;
+  /** TK/PAUD for Siswa Baru, the previous SD for Pindahan. */
+  asalSekolah: string | null;
 };
 
 /** `proof` dapat kosong bila data bukti gagal dibaca; pendaftaran tetap tersimpan. */

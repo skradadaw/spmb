@@ -8,6 +8,7 @@ const proof = {
   jenisPendaftaran: 'Siswa Baru',
   pilihanKelas: 'Bilingual',
   kelasTujuan: null,
+  asalSekolah: 'TK Pelita Harapan',
 };
 
 describe('registration proof PDF', () => {
@@ -23,11 +24,26 @@ describe('registration proof PDF', () => {
     expect(pdf).not.toContain('Kelas Tujuan');
   });
 
+  it('prints the TK/PAUD the child comes from', async () => {
+    const pdf = (await buildRegistrationProofPdf(proof, null)).output();
+
+    expect(pdf).toContain('Asal TK');
+    expect(pdf).toContain('TK Pelita Harapan');
+  });
+
+  it('writes the TK name in Indonesian spelling whatever case it was typed in', async () => {
+    const pdf = (await buildRegistrationProofPdf({ ...proof, asalSekolah: 'tk islam terpadu AL - MUHAJIRIN.' }, null)).output();
+
+    expect(pdf).toContain('TK Islam Terpadu Al-Muhajirin');
+  });
+
   it('adds the target grade only for Pindahan applicants', async () => {
     const pdf = (await buildRegistrationProofPdf({ ...proof, jenisPendaftaran: 'Pindahan', kelasTujuan: '4' }, null)).output();
 
     expect(pdf).toContain('Kelas Tujuan');
     expect(pdf).toContain('Kelas 4');
+    expect(pdf).toContain('Asal Sekolah');
+    expect(pdf).not.toContain('Asal TK');
   });
 
   it('names the file after the registration number', () => {

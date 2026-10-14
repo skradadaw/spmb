@@ -60,7 +60,7 @@ export function createSignedUploadRepository(client: SupabaseClient) {
     async getProof(submissionId: string): Promise<RegistrationProof | null> {
       const { data, error } = await client
         .from('pendaftar')
-        .select('nomor_pendaftaran,nama_lengkap,jenis_pendaftaran,pilihan_kelas,kelas_tujuan')
+        .select('nomor_pendaftaran,nama_lengkap,jenis_pendaftaran,pilihan_kelas,kelas_tujuan,asal_sekolah')
         .eq('submission_id', submissionId)
         .neq('status', 'Menunggu Unggahan')
         .maybeSingle();
@@ -72,6 +72,7 @@ export function createSignedUploadRepository(client: SupabaseClient) {
         jenisPendaftaran: String(data.jenis_pendaftaran ?? ''),
         pilihanKelas: String(data.pilihan_kelas ?? ''),
         kelasTujuan: typeof data.kelas_tujuan === 'string' ? data.kelas_tujuan : null,
+        asalSekolah: typeof data.asal_sekolah === 'string' ? data.asal_sekolah : null,
       };
     },
 

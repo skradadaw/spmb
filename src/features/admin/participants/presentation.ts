@@ -1,15 +1,20 @@
+import { formatSchoolName } from '@/lib/schoolName';
 import type { ParticipantFieldGroupName } from './fields';
 
 const PRESERVED_ABBREVIATIONS = new Set(['D1', 'D2', 'D3', 'D4', 'KM', 'MI', 'MTS', 'MA', 'NIK', 'NISN', 'OKB', 'PAUD', 'RW', 'RT', 'SD', 'S1', 'S2', 'S3', 'SMA', 'SMK', 'SMP', 'TK']);
 const NAME_PARTICLES = new Set(['al', 'bin', 'binti', 'boru', 'da', 'de', 'del', 'della', 'di', 'du', 'la', 'van', 'von']);
 const PROPER_NAME_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
   identity: new Set(['namaLengkap', 'tempatLahir']),
-  school: new Set(['asalSekolah', 'tingkatPrestasi']),
+  school: new Set(['tingkatPrestasi']),
   affiliation: new Set(['namaOrangtuaDirektorat2', 'unitOrangtuaDirektorat2', 'namaSaudaraDirektorat2', 'unitSaudaraDirektorat2']),
   address: new Set(['alamatJalan', 'kelurahan', 'kecamatan', 'kota']),
   father: new Set(['nama', 'alamat']),
   mother: new Set(['nama', 'alamat']),
-  referral: new Set(['namaTkPengusul', 'namaPengusul']),
+  referral: new Set(['namaPengusul']),
+};
+const SCHOOL_NAME_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
+  school: new Set(['asalSekolah']),
+  referral: new Set(['namaTkPengusul']),
 };
 const SENTENCE_CASE_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
   school: new Set(['prestasiAnak']),
@@ -39,6 +44,7 @@ export function formatParticipantFieldValue(name: ParticipantFieldGroupName, key
   if (!value) return 'Belum diisi';
   if (name === 'registration' && key === 'kelasTujuan') return `Kelas ${value}`;
 
+  if (SCHOOL_NAME_FIELDS[name]?.has(key)) return formatSchoolName(value);
   if (PROPER_NAME_FIELDS[name]?.has(key)) return titleCase(value);
   if (SENTENCE_CASE_FIELDS[name]?.has(key)) return sentenceCase(value);
 

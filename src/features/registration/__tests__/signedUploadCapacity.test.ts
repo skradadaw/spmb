@@ -107,6 +107,7 @@ const proof = {
   jenisPendaftaran: 'Siswa Baru',
   pilihanKelas: 'Bilingual',
   kelasTujuan: null,
+  asalSekolah: 'TK Pelita',
 };
 
 function repositoryWithCapacity(available: boolean) {
@@ -192,7 +193,7 @@ describe('signed upload capacity', () => {
 
   it('reads the proof of a finalized registration by submission', async () => {
     const maybeSingle = vi.fn().mockResolvedValue({
-      data: { nomor_pendaftaran: 'OB-2027-012', nama_lengkap: 'Rani', jenis_pendaftaran: 'Pindahan', pilihan_kelas: 'Reguler', kelas_tujuan: '3' },
+      data: { nomor_pendaftaran: 'OB-2027-012', nama_lengkap: 'Rani', jenis_pendaftaran: 'Pindahan', pilihan_kelas: 'Reguler', kelas_tujuan: '3', asal_sekolah: 'SD Harapan' },
       error: null,
     });
     const neq = vi.fn().mockReturnValue({ maybeSingle });
@@ -206,6 +207,7 @@ describe('signed upload capacity', () => {
       jenisPendaftaran: 'Pindahan',
       pilihanKelas: 'Reguler',
       kelasTujuan: '3',
+      asalSekolah: 'SD Harapan',
     });
     expect(neq).toHaveBeenCalledWith('status', 'Menunggu Unggahan');
   });

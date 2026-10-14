@@ -72,6 +72,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
                 jenisPendaftaran: participant.registration.jenisPendaftaran ?? '',
                 pilihanKelas: participant.registration.pilihanKelas ?? '',
                 kelasTujuan: participant.registration.kelasTujuan ?? null,
+                asalSekolah: participant.school.asalSekolah ? formatParticipantFieldValue('school', 'asalSekolah', participant.school.asalSekolah) : null,
               }}
               className={ADMIN_SECONDARY_BUTTON}
             />
@@ -179,6 +180,9 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
   );
 }
 
+/** Compact button that wraps its label instead of overflowing a narrow grid cell on small phones. */
+const NISN_FLAG_BUTTON = 'h-auto min-h-7 max-w-full shrink whitespace-normal px-2.5 py-1 text-left leading-4';
+
 /** NISN Tidak Sesuai toggle under the NISN value; editing the NISN clears it automatically. */
 function NisnFlagForm({ participantId, flagged }: { participantId: string; flagged: boolean }) {
   return (
@@ -188,17 +192,17 @@ function NisnFlagForm({ participantId, flagged }: { participantId: string; flagg
       {flagged ? (
         <>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex h-7 items-center gap-1 rounded-full border border-amber-200 bg-amber-100 px-2.5 text-xs font-semibold text-amber-800">
-              <AlertTriangle aria-hidden="true" className="size-3.5" />Ditandai tidak sesuai
+            <span className="inline-flex min-h-7 max-w-full items-center gap-1 rounded-2xl border border-amber-200 bg-amber-100 px-2.5 py-1 text-xs leading-4 font-semibold text-amber-800">
+              <AlertTriangle aria-hidden="true" className="size-3.5 shrink-0" />Ditandai tidak sesuai
             </span>
-            <Button type="submit" className={`${ADMIN_SECONDARY_BUTTON} h-7 px-2.5`}>
+            <Button type="submit" className={`${ADMIN_SECONDARY_BUTTON} ${NISN_FLAG_BUTTON}`}>
               <Check aria-hidden="true" className="size-3.5" />NISN sudah benar
             </Button>
           </div>
           <p className="text-[11px] leading-4 text-amber-800/80">Tanda hilang otomatis setelah NISN diperbarui lewat Edit.</p>
         </>
       ) : (
-        <Button type="submit" className={`${ADMIN_SECONDARY_BUTTON} h-7 px-2.5 text-amber-800 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-900`}>
+        <Button type="submit" className={`${ADMIN_SECONDARY_BUTTON} ${NISN_FLAG_BUTTON} text-amber-800 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-900`}>
           <Flag aria-hidden="true" className="size-3.5" />Tandai NISN tidak sesuai
         </Button>
       )}
