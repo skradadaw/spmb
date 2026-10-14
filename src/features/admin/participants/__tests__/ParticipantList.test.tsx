@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ParticipantList } from '../components/ParticipantList';
 import { ParticipantFilters } from '../components/ParticipantFilters';
@@ -31,14 +31,13 @@ describe('Data Pendaftar UI', () => {
   });
 
   it('filters by Gelombang OKB and clears it with Reset', () => {
-    render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('gelombang=3'))} statuses={['Terjadwal OKB']} total={4} />);
+    render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('gelombang=3'))} statuses={['Terjadwal OKB']} />);
     expect(screen.getByLabelText('Gelombang').textContent).toContain('Gelombang 3');
     expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
-    expect(screen.getByRole('link', { name: /Ekspor Excel/ }).getAttribute('href')).toBe('/admin/pendaftar/ekspor?gelombang=3');
   });
 
   it('offers Perlu Perhatian as one checkbox and keeps the NISN link from the dashboard as a removable chip', () => {
-    render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('perhatian=nisn'))} statuses={['Diterima']} total={3} />);
+    render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('perhatian=nisn'))} statuses={['Diterima']} />);
     expect((screen.getByRole('checkbox', { name: 'Perlu perhatian' }) as HTMLInputElement).checked).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Hapus filter NISN tidak sesuai' }));
     expect(router.replace).toHaveBeenLastCalledWith('/admin/pendaftar?perhatian=semua', { scroll: false });
@@ -61,7 +60,9 @@ describe('Data Pendaftar UI', () => {
     expect(screen.getByRole('table')).toBeDefined();
     expect(screen.getByRole('columnheader', { name: 'Asal TK' })).toBeDefined();
     expect(screen.getByRole('cell', { name: 'TK Melati' })).toBeDefined();
-    expect(screen.getByText('Asal TK: TK Melati')).toBeDefined();
+    const mobileCard = within(screen.getByRole('list', { name: 'Daftar pendaftar' })).getByRole('link', { name: 'Lihat detail Ani Putri' });
+    expect(within(mobileCard).getByText('Asal TK').nextElementSibling?.textContent).toBe('TK Melati');
+    expect(within(mobileCard).getByText('OB-2027-007')).toBeDefined();
     expect(screen.getAllByText('Ani Putri')).toHaveLength(2);
     const links = screen.getAllByRole('link', { name: /detail/i });
     expect(links).toHaveLength(2);
@@ -76,7 +77,7 @@ describe('Data Pendaftar UI', () => {
     expect(pages.map(link => link.textContent)).toEqual(['1', '5', '6', '7', '12']);
     expect(screen.getByRole('link', { name: 'Halaman 6' }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('link', { name: 'Halaman 12' }).getAttribute('href')).toBe('/admin/pendaftar?q=Ani&kelas=Reguler&page=12');
-    expect(screen.getByText('6 / 12')).toBeDefined();
+    expect(within(screen.getByRole('navigation', { name: 'Halaman' })).getByText('6 / 12')).toBeDefined();
   });
   it('shows Kelas Penempatan once set and the target grade of a Pindahan', () => {
     render(<ParticipantList query={query} result={{ items: [{ ...row, pilihanKelas: 'Tahfizh', kelasPenempatan: 'Reguler', status: 'Diterima' }, { ...row, id: 'p', jenisPendaftaran: 'Pindahan', kelasTujuan: '3' }], total: 2, page: 1, pageSize: 20, totalPages: 1 }} />);
@@ -92,18 +93,19 @@ describe('Data Pendaftar UI', () => {
     expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
   });
   it('keeps only search, Status, Kelas, Gelombang and Perlu perhatian, applied without a submit button', () => {
-    render(<ParticipantFilters query={query} statuses={['Menunggu Unggahan', 'Menunggu Verifikasi']} total={37} />);
+    render(<ParticipantFilters query={query} statuses={['Menunggu Unggahan', 'Menunggu Verifikasi']} />);
     expect(screen.getByRole('searchbox', { name: 'Cari nama / nomor' }).getAttribute('maxlength')).toBe('100');
     expect(screen.getAllByRole('combobox')).toHaveLength(3);
     expect(screen.queryByRole('button', { name: /Terapkan/ })).toBeNull();
-    expect(screen.getByRole('link', { name: /Ekspor Excel \(37\)/ }).getAttribute('href')).toBe('/admin/pendaftar/ekspor?q=Ani&kelas=Reguler');
+    // Ekspor pindah ke header halaman, di luar card filter.
+    expect(screen.queryByText(/Ekspor/)).toBeNull();
     expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
   });
   it('hides Reset when nothing is filtered and searches after typing pauses', () => {
     vi.useFakeTimers();
     try {
       router.replace.mockClear();
-      render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('page=3'))} statuses={[]} total={50} />);
+      render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('page=3'))} statuses={[]} />);
       expect(screen.queryByRole('link', { name: /Reset/ })).toBeNull();
       fireEvent.change(screen.getByRole('searchbox', { name: 'Cari nama / nomor' }), { target: { value: 'Ani ' } });
       expect(router.replace).not.toHaveBeenCalled();

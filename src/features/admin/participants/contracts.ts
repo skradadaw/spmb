@@ -7,6 +7,8 @@ export const PARTICIPANT_CLASSES = ['Reguler', 'Bilingual', 'Tahfizh'] as const;
 /** Filter Kelas: tiga program kelas untuk Siswa Baru (Kelas Penempatan bila sudah ditetapkan, selain itu Pilihan Kelas), plus semua Pindahan. */
 export const PARTICIPANT_CLASS_FILTERS = [...PARTICIPANT_CLASSES, 'Pindahan'] as const;
 export const PARTICIPANT_DEFAULT_STATUSES = ['Menunggu Unggahan', 'Menunggu Verifikasi', 'Terverifikasi', 'Terjadwal OKB', 'Sudah OKB', 'Diterima', 'Ditolak', 'Dibatalkan'] as const;
+/** Status offered in the Status filter. Menunggu Unggahan is left out (not yet a registration) but still reachable from the Ringkasan card. */
+export const PARTICIPANT_FILTER_STATUSES = PARTICIPANT_DEFAULT_STATUSES.filter(status => status !== 'Menunggu Unggahan');
 /** Status yang masih boleh dibatalkan admin; Ditolak sudah final dan Menunggu Unggahan belum dianggap mendaftar. */
 export const CANCELLABLE_STATUSES = ['Menunggu Verifikasi', 'Terverifikasi', 'Terjadwal OKB', 'Sudah OKB', 'Diterima'] as const;
 

@@ -12,6 +12,7 @@ type Result<T> = PromiseLike<{ data: T | null; error: unknown; count?: number | 
 type Query = {
   ilike: (column: string, value: string) => Query;
   eq: (column: string, value: string | boolean) => Query;
+  in: (column: string, values: readonly string[]) => Query;
   not: (column: string, operator: string, value: string) => Query;
   lt: (column: string, value: string) => Query;
   or: (filters: string) => Query;
@@ -109,10 +110,11 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         if (result.data.length < 1000) return items;
       }
     },
-    async exportDetails(query: ParticipantListQuery): Promise<ParticipantExportRecord[]> {
+    /** Ekspor berdiri sendiri dari filter daftar: hanya status yang dipilih admin yang menyaring. */
+    async exportDetails(statuses: readonly string[]): Promise<ParticipantExportRecord[]> {
       const records: ParticipantExportRecord[] = [];
       for (let offset = 0; ; offset += 1000) {
-        const result = await applyFilters(client.from('pendaftar').select(PARTICIPANT_EXPORT_COLUMNS), query).order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 999);
+        const result = await client.from('pendaftar').select(PARTICIPANT_EXPORT_COLUMNS).in('status', statuses).order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 999);
         if (result.error || !result.data) throw failure();
         for (const raw of result.data) {
           const row = raw as Record<string, unknown>;
@@ -123,6 +125,19 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
           records.push({ id: String(row.id), createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi', adminNote: text(row.catatan_admin), nisnMismatch: row.nisn_tidak_sesuai === true, fields });
         }
         if (result.data.length < 1000) return records;
+      }
+    },
+    /** Jumlah pendaftar per status, untuk ditampilkan di modal ekspor. */
+    async countByStatus(statuses: readonly string[]): Promise<Record<string, number>> {
+      const counts: Record<string, number> = Object.fromEntries(statuses.map(status => [status, 0]));
+      for (let offset = 0; ; offset += 1000) {
+        const result = await client.from('pendaftar').select('status').in('status', statuses).order('id').range(offset, offset + 999);
+        if (result.error || !result.data) throw failure();
+        for (const row of result.data as Record<string, unknown>[]) {
+          const status = text(row.status);
+          if (status && status in counts) counts[status] += 1;
+        }
+        if (result.data.length < 1000) return counts;
       }
     },
     async getDocumentRow(id: string): Promise<Record<string, unknown> | null> {

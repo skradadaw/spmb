@@ -18,7 +18,26 @@ describe('AdminShell navigation', () => {
     });
   });
 
+  it('starts minimised on the first visit', () => {
+    render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
+
+    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('mini');
+    expect(screen.getByRole('button', { name: 'Perluas sidebar' }).getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('remembers the expanded preference', async () => {
+    const { unmount } = render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
+    fireEvent.click(screen.getByRole('button', { name: 'Perluas sidebar' }));
+    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
+    expect(window.localStorage.getItem('admin-sidebar-collapsed')).toBe('false');
+
+    unmount();
+    render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Minimalkan sidebar' })).toBeDefined());
+  });
+
   it('collapses the desktop sidebar to icon navigation and remembers the preference', async () => {
+    window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     const { unmount } = render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
     const collapseButton = screen.getByRole('button', { name: 'Minimalkan sidebar' });
 
@@ -35,6 +54,7 @@ describe('AdminShell navigation', () => {
   });
 
   it('toggles the sidebar with Ctrl+B', () => {
+    window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
 
     fireEvent.keyDown(window, { key: 'b', ctrlKey: true });
@@ -45,6 +65,7 @@ describe('AdminShell navigation', () => {
   });
 
   it('keeps sidebar labels mounted while switching to mini mode', () => {
+    window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
     const sidebar = screen.getByTestId('admin-sidebar');
     const summaryLabel = within(sidebar).getByText('Ringkasan');
@@ -70,7 +91,11 @@ describe('AdminShell navigation', () => {
     expect(screen.getByRole('button', { name: 'Tutup menu admin' }).getAttribute('aria-expanded')).toBe('true');
     expect(screen.getByRole('navigation', { name: 'Navigasi admin mobile' })).toBeDefined();
 
-    fireEvent.click(screen.getAllByRole('link', { name: 'Ringkasan' })[1]);
+    const mobileNavigation = screen.getByRole('navigation', { name: 'Navigasi admin mobile' });
+    expect(within(mobileNavigation).getByRole('link', { name: 'Data Pendaftar' }).getAttribute('aria-current')).toBe('page');
+    expect(within(screen.getByRole('dialog', { name: 'Menu admin' })).getByRole('button', { name: 'Keluar dari panel admin' })).toBeDefined();
+
+    fireEvent.click(within(mobileNavigation).getByRole('link', { name: 'Ringkasan' }));
     expect(screen.queryByRole('navigation', { name: 'Navigasi admin mobile' })).toBeNull();
   });
 });

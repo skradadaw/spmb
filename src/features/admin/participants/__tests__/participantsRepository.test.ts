@@ -5,18 +5,20 @@ import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contrac
 import { parseParticipantListQuery } from '../query';
 
 function fixture() {
-  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), gt: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(), lt: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
+  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(), gt: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(), lt: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
   return { q, repo: createParticipantsRepository({ from: vi.fn(() => q) } as unknown as SupabaseClient) };
 }
 describe('participants repository', () => {
-  it('exports complete student fields using active filters and excludes document storage paths', async () => {
+  it('exports complete student fields for the chosen statuses only and excludes document storage paths', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [{ id: 'a', created_at: '2026-10-11T00:00:00Z', nama_lengkap: 'Ani', nama_ayah: 'Budi', alamat_rumah: 'Jalan Melati', catatan_admin: 'Catatan', dokumen_pas_foto: 'secret/path' }], error: null });
-    const result = await repo.exportDetails(parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler')));
+    const result = await repo.exportDetails(['Diterima', 'Sudah OKB']);
     expect(q.select).toHaveBeenCalledWith(expect.stringContaining('nama_ayah'));
     expect(q.select).toHaveBeenCalledWith(expect.not.stringContaining('dokumen_pas_foto'));
-    expect(q.ilike).toHaveBeenCalledWith('nama_lengkap', '%Ani%');
-    expect(q.eq).toHaveBeenCalledWith('jenis_pendaftaran', 'Siswa Baru');
+    expect(q.in).toHaveBeenCalledWith('status', ['Diterima', 'Sudah OKB']);
+    // Filter daftar tidak ikut ke ekspor.
+    expect(q.ilike).not.toHaveBeenCalled();
+    expect(q.eq).not.toHaveBeenCalled();
     expect(result[0]).toMatchObject({ fields: { namaLengkap: 'Ani', fatherNama: 'Budi' }, adminNote: 'Catatan' });
   });
 
@@ -156,10 +158,15 @@ describe('participants repository', () => {
     expect(detail?.okb).toEqual({ jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 2' });
 
     q.range.mockResolvedValueOnce({ data: [{ id: 'a', jadwal_okb_gelombang: 3 }], error: null });
-    const [record] = await repo.exportDetails(parseParticipantListQuery(new URLSearchParams('gelombang=3')));
-    // The export follows the Gelombang filter like the list does.
-    expect(q.eq).toHaveBeenCalledWith('jadwal_okb_gelombang', '3');
+    const [record] = await repo.exportDetails(['Terjadwal OKB']);
     expect(record.fields.jadwalGelombang).toBe('Gelombang 3');
+  });
+  it('counts applicants per status across batches, starting every status at zero', async () => {
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: Array.from({ length: 1000 }, () => ({ status: 'Diterima' })), error: null }).mockResolvedValueOnce({ data: [{ status: 'Ditolak' }], error: null });
+    expect(await repo.countByStatus(['Diterima', 'Ditolak', 'Dibatalkan'])).toEqual({ Diterima: 1000, Ditolak: 1, Dibatalkan: 0 });
+    expect(q.in).toHaveBeenCalledWith('status', ['Diterima', 'Ditolak', 'Dibatalkan']);
+    expect(q.range).toHaveBeenNthCalledWith(2, 1000, 1999);
   });
   it('loads submission_id with document paths to validate storage ownership', async () => {
     const { q, repo } = fixture();

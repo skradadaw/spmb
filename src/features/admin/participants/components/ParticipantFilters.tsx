@@ -1,8 +1,7 @@
 'use client';
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, RotateCcw, Download, X } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { Search, RotateCcw, X } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,22 +13,23 @@ import { OKB_WAVES, okbWaveLabel } from '@/features/admin/okbWave';
 
 const ALL = '__all__';
 const SEARCH_DELAY_MS = 400;
+/** Keeps popups clear of the sticky 68px mobile admin header. */
+export const SELECT_COLLISION_PADDING = { top: 80, bottom: 12 };
 
 function FilterSelect({ id, label, value, options, onChange }: { id: string; label: string; value: string | null; options: readonly string[]; onChange: (value: string | null) => void }) {
   return <div className="min-w-0"><label htmlFor={id} className="text-xs font-semibold text-[var(--admin-muted)]">{label}</label>
     <Select value={value ?? ALL} onValueChange={next => onChange(next === ALL ? null : next)}><SelectTrigger id={id} className="mt-2 h-10 w-full"><SelectValue /></SelectTrigger>
-      <SelectContent><SelectItem value={ALL}>{`Semua ${label.toLowerCase()}`}</SelectItem>{options.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent>
+      <SelectContent collisionPadding={SELECT_COLLISION_PADDING}><SelectItem value={ALL}>{`Semua ${label.toLowerCase()}`}</SelectItem>{options.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent>
     </Select>
   </div>;
 }
 
 /** Every change applies immediately and returns to page 1; the search waits until typing pauses. */
-export function ParticipantFilters({ query, statuses, total }: { query: ParticipantListQuery; statuses: readonly string[]; total: number }) {
+export function ParticipantFilters({ query, statuses }: { query: ParticipantListQuery; statuses: readonly string[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [search, setSearch] = useState(query.search);
   const statusOptions = Array.from(new Set([...statuses, ...(query.statusFilter ? [query.statusFilter] : [])]));
-  const exportHref = participantListHref(query).replace('/admin/pendaftar', '/admin/pendaftar/ekspor');
   const apply = (change: Partial<ParticipantListQuery>) => startTransition(() => router.replace(participantListHref({ ...query, ...change }), { scroll: false }));
 
   // Follow outside navigation (Reset, back button) without clobbering what is being typed.
@@ -54,11 +54,10 @@ export function ParticipantFilters({ query, statuses, total }: { query: Particip
       <FilterSelect id="participant-wave" label="Gelombang" value={query.waveFilter ? okbWaveLabel(query.waveFilter) : null} options={OKB_WAVES.map(okbWaveLabel)} onChange={label => apply({ waveFilter: OKB_WAVES.find(wave => okbWaveLabel(wave) === label) ?? null })} />
       <label className="flex h-10 cursor-pointer items-center gap-2 text-sm font-medium"><input type="checkbox" checked={query.attentionFilter !== null} onChange={event => apply({ attentionFilter: event.target.checked ? 'semua' : null })} className="size-4 accent-[var(--admin-sidebar)]" />Perlu perhatian</label>
     </form>
-    <div className="mt-4 flex flex-wrap items-center gap-2">
+    <div className="mt-4 flex flex-wrap items-center gap-2 empty:hidden">
       {query.attentionFilter === 'nisn' && <button type="button" onClick={() => apply({ attentionFilter: 'semua' })} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 text-xs font-semibold text-amber-800 hover:bg-amber-100" aria-label={`Hapus filter ${ATTENTION_FILTERS.nisn}`}>{ATTENTION_FILTERS.nisn}<X aria-hidden="true" className="size-3.5" /></button>}
       {query.okbMissed && <button type="button" onClick={() => apply({ okbMissed: false })} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 text-xs font-semibold text-amber-800 hover:bg-amber-100" aria-label="Hapus filter Tidak hadir OKB">Tidak hadir OKB<X aria-hidden="true" className="size-3.5" /></button>}
       {hasActiveFilters(query) && <ButtonLink href={participantListHref({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, waveFilter: null, page: 1, pageSize: query.pageSize })} variant="outline" className="h-10"><RotateCcw aria-hidden="true" />Reset</ButtonLink>}
-      <a href={exportHref} className={buttonVariants({ variant: 'outline', className: 'h-10 sm:ml-auto' })}><Download aria-hidden="true" />Ekspor Excel ({total})</a>
     </div>
   </CardContent></Card>;
 }
