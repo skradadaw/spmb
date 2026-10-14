@@ -1,6 +1,7 @@
 import { GState, jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { contactInfo, registrationInfo } from '@/features/home/data';
+import { formatProperName } from '@/lib/properName';
 import { formatSchoolName } from '@/lib/schoolName';
 import type { RegistrationProof } from './contracts';
 
@@ -46,8 +47,13 @@ async function loadLogo(): Promise<string | null> {
   }
 }
 
+/**
+ * Named after the child so the file is easy to recognise when sent over WhatsApp;
+ * the number stays because two children can share a name.
+ */
 export function proofFileName(proof: RegistrationProof) {
-  return `Bukti-Pendaftaran-${proof.nomorPendaftaran}.pdf`;
+  const name = formatProperName(proof.namaLengkap.replace(/[\\/:*?"<>|\p{Cc}]/gu, ' ')).slice(0, 80).trim();
+  return name ? `Bukti Pendaftaran ${name} (${proof.nomorPendaftaran}).pdf` : `Bukti Pendaftaran (${proof.nomorPendaftaran}).pdf`;
 }
 
 /** Siswa Baru come from a TK/PAUD; Pindahan come from another SD. */

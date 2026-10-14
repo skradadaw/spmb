@@ -1,8 +1,7 @@
+import { formatProperName, PRESERVED_ABBREVIATIONS } from '@/lib/properName';
 import { formatSchoolName } from '@/lib/schoolName';
 import type { ParticipantFieldGroupName } from './fields';
 
-const PRESERVED_ABBREVIATIONS = new Set(['D1', 'D2', 'D3', 'D4', 'KM', 'MI', 'MTS', 'MA', 'NIK', 'NISN', 'OKB', 'PAUD', 'RW', 'RT', 'SD', 'S1', 'S2', 'S3', 'SMA', 'SMK', 'SMP', 'TK']);
-const NAME_PARTICLES = new Set(['al', 'bin', 'binti', 'boru', 'da', 'de', 'del', 'della', 'di', 'du', 'la', 'van', 'von']);
 const PROPER_NAME_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
   identity: new Set(['namaLengkap', 'tempatLahir']),
   school: new Set(['tingkatPrestasi']),
@@ -23,17 +22,6 @@ const SENTENCE_CASE_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string
   mother: new Set(['pendidikan', 'pekerjaan', 'penghasilan']),
 };
 
-function titleCase(value: string) {
-  let wordIndex = 0;
-  return value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('id-ID').replace(/[\p{L}\p{N}]+/gu, word => {
-    const currentIndex = wordIndex++;
-    const upperWord = word.toLocaleUpperCase('id-ID');
-    if (PRESERVED_ABBREVIATIONS.has(upperWord)) return upperWord;
-    if (currentIndex > 0 && NAME_PARTICLES.has(word)) return word;
-    return word.charAt(0).toLocaleUpperCase('id-ID') + word.slice(1);
-  });
-}
-
 function sentenceCase(value: string) {
   const normalized = value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('id-ID');
   const sentence = normalized.replace(/^[\p{L}]/u, character => character.toLocaleUpperCase('id-ID'));
@@ -45,7 +33,7 @@ export function formatParticipantFieldValue(name: ParticipantFieldGroupName, key
   if (name === 'registration' && key === 'kelasTujuan') return `Kelas ${value}`;
 
   if (SCHOOL_NAME_FIELDS[name]?.has(key)) return formatSchoolName(value);
-  if (PROPER_NAME_FIELDS[name]?.has(key)) return titleCase(value);
+  if (PROPER_NAME_FIELDS[name]?.has(key)) return formatProperName(value);
   if (SENTENCE_CASE_FIELDS[name]?.has(key)) return sentenceCase(value);
 
   if ((name === 'identity' && key === 'tanggalLahir') || (name === 'okb' && key === 'jadwalTanggal')) {

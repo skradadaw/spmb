@@ -46,7 +46,12 @@ describe('registration proof PDF', () => {
     expect(pdf).not.toContain('Asal TK');
   });
 
-  it('names the file after the registration number', () => {
-    expect(proofFileName(proof)).toBe('Bukti-Pendaftaran-OB-2027-001.pdf');
+  it('names the file after the child and the registration number', () => {
+    expect(proofFileName(proof)).toBe('Bukti Pendaftaran Siti Aminah (OB-2027-001).pdf');
+  });
+
+  it('tidies the name and drops characters a file name cannot hold', () => {
+    expect(proofFileName({ ...proof, namaLengkap: "  HOLDAN aof/sya'bani?  " })).toBe("Bukti Pendaftaran Holdan Aof Sya'Bani (OB-2027-001).pdf");
+    expect(proofFileName({ ...proof, namaLengkap: '' })).toBe('Bukti Pendaftaran (OB-2027-001).pdf');
   });
 });
