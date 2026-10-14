@@ -266,24 +266,25 @@ export default function ClassOptions({
 
         <section
           aria-labelledby="keunggulan-title"
-          className="relative mt-6 overflow-hidden rounded-3xl border border-public-deep/10 bg-white/80 p-6 shadow-sm shadow-public-deep/5 backdrop-blur-sm sm:p-8"
+          className="relative mt-6 overflow-hidden rounded-3xl border border-public-deep/10 bg-white/80 p-6 shadow-sm shadow-public-deep/5 backdrop-blur-sm sm:p-8 lg:p-10"
         >
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-public-green via-amber-300 to-public-green" />
           <p className="text-xs font-bold uppercase tracking-wider text-public-green">Fasilitas unggul di semua Pilihan Kelas</p>
-          <h3 id="keunggulan-title" className="mt-1 text-xl font-bold tracking-tight text-slate-950">
+          <h3 id="keunggulan-title" className="mt-2 text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
             Aman, nyaman, dan lengkap untuk tumbuh kembang Ananda
           </h3>
-          <ul className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-8 grid gap-x-10 gap-y-6 border-t border-public-deep/10 pt-8 sm:grid-cols-2 sm:gap-y-7 lg:grid-cols-3">
             {schoolFacilities.map(({ title, description }, index) => {
               const FacilityIcon = schoolFacilityIcons[index];
               return (
-                <li key={title} className="flex items-start gap-3.5">
+                // The two text lines match the icon's height, so both sit on one centre line.
+                <li key={title} className="flex items-center gap-4">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-public-tint text-public-green ring-1 ring-inset ring-public-line">
                     <FacilityIcon aria-hidden="true" size={20} />
                   </span>
                   <div className="min-w-0">
-                    <h4 className="text-[0.95rem] font-semibold leading-6 text-slate-900">{title}</h4>
-                    <p className="text-sm leading-6 text-slate-600">{description}</p>
+                    <h4 className="text-[0.95rem] font-semibold leading-5 text-slate-900">{title}</h4>
+                    <p className="mt-1 text-sm leading-5 text-slate-600">{description}</p>
                   </div>
                 </li>
               );
