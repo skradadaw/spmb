@@ -269,11 +269,11 @@ export default function ClassOptions({
           className="relative mt-6 overflow-hidden rounded-3xl border border-public-deep/10 bg-white/80 p-6 shadow-sm shadow-public-deep/5 backdrop-blur-sm sm:p-8"
         >
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-public-green via-amber-300 to-public-green" />
-          <p className="text-xs font-bold uppercase tracking-wider text-public-green">Fasilitas unggul untuk setiap Ananda</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-public-green">Fasilitas unggul di semua Pilihan Kelas</p>
           <h3 id="keunggulan-title" className="mt-1 text-xl font-bold tracking-tight text-slate-950">
-            Di semua Pilihan Kelas
+            Aman, nyaman, dan lengkap untuk tumbuh kembang Ananda
           </h3>
-          <ul className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
             {schoolFacilities.map(({ title, description }, index) => {
               const FacilityIcon = schoolFacilityIcons[index];
               return (
@@ -283,7 +283,7 @@ export default function ClassOptions({
                   </span>
                   <div className="min-w-0">
                     <h4 className="text-[0.95rem] font-semibold leading-6 text-slate-900">{title}</h4>
-                    <p className="mt-0.5 text-sm leading-6 text-slate-600">{description}</p>
+                    <p className="text-sm leading-6 text-slate-600">{description}</p>
                   </div>
                 </li>
               );

@@ -68,18 +68,15 @@ export const classHighlights: Record<ClassOption, readonly string[]> = {
 
 /** Facilities every Pilihan Kelas shares. */
 export const schoolFacilities = [
-  {
-    title: 'Ruang kelas nyaman dan interaktif',
-    description: 'AC, proyektor atau smart TV, loker siswa, kamar mandi, dan CCTV, dengan tata duduk yang mendukung belajar kolaboratif.',
-  },
-  { title: 'Sistem keamanan terpadu', description: 'CCTV dan pos satpam menjaga lingkungan sekolah sepanjang hari.' },
-  { title: 'Laboratorium komputer dan IT', description: 'Ananda mengenal teknologi informasi sejak dini.' },
-  { title: 'Lapangan olahraga multifungsi', description: 'Ruang gerak untuk olahraga, upacara, dan kegiatan luar kelas.' },
-  { title: 'Ruang seni dan kreativitas', description: 'Tempat Ananda menyalurkan bakat seni dan berkarya.' },
-  { title: 'Perpustakaan ramah anak dan UKS', description: 'Pojok baca yang nyaman serta layanan kesehatan sekolah.' },
-  { title: 'Layanan jemputan siswa', description: 'Antar-jemput yang memudahkan perjalanan Ananda ke sekolah.' },
-  { title: 'Layanan psikologi', description: 'Pendampingan tumbuh kembang dan kesiapan belajar Ananda.' },
-  { title: 'Kantin sehat dan higienis', description: 'Makanan bergizi yang terjaga kebersihannya.' },
+  { title: 'Ruang kelas nyaman dan interaktif', description: 'Ber-AC, smart TV, loker, dan CCTV.' },
+  { title: 'Sistem keamanan terpadu', description: 'CCTV dan pos satpam berjaga setiap hari.' },
+  { title: 'Laboratorium komputer dan IT', description: 'Mengenal teknologi sejak dini.' },
+  { title: 'Lapangan olahraga multifungsi', description: 'Ruang gerak untuk olahraga dan kegiatan luar kelas.' },
+  { title: 'Ruang seni dan kreativitas', description: 'Wadah menyalurkan bakat seni.' },
+  { title: 'Perpustakaan ramah anak dan UKS', description: 'Pojok baca nyaman dan layanan kesehatan.' },
+  { title: 'Layanan jemputan siswa', description: 'Perjalanan ke sekolah lebih praktis.' },
+  { title: 'Layanan psikologi', description: 'Pendampingan tumbuh kembang Ananda.' },
+  { title: 'Kantin sehat dan higienis', description: 'Makanan bergizi dan terjaga kebersihannya.' },
 ] as const;
 
 export const contactInfo = {

@@ -258,8 +258,8 @@ describe('Open Booking landing page', () => {
     expect(within(card('Bilingual')).queryByText(/Juz/)).toBeNull();
     expect(within(card('Tahfizh')).getByText('Target hafalan 4–5 Juz')).toBeDefined();
 
-    const shared = screen.getByRole('region', { name: 'Di semua Pilihan Kelas' });
-    expect(within(shared).getByText('Fasilitas unggul untuk setiap Ananda')).toBeDefined();
+    const shared = screen.getByRole('region', { name: 'Aman, nyaman, dan lengkap untuk tumbuh kembang Ananda' });
+    expect(within(shared).getByText('Fasilitas unggul di semua Pilihan Kelas')).toBeDefined();
     expect(within(shared).getAllByRole('heading', { level: 4 }).map((heading) => heading.textContent)).toEqual([
       'Ruang kelas nyaman dan interaktif',
       'Sistem keamanan terpadu',
@@ -271,7 +271,7 @@ describe('Open Booking landing page', () => {
       'Layanan psikologi',
       'Kantin sehat dan higienis',
     ]);
-    expect(within(shared).getByText(/AC, proyektor atau smart TV, loker siswa, kamar mandi, dan CCTV/)).toBeDefined();
+    expect(within(shared).getByText('Ber-AC, smart TV, loker, dan CCTV.')).toBeDefined();
   });
 
   it('hides class quota status when capacity data is unavailable', () => {
