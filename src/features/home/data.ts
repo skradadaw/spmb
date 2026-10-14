@@ -84,6 +84,15 @@ export const contactInfo = {
     'https://www.google.com/maps/place/SD+Plus+3+Al-Muhajirin+Purwakarta/@-6.5214189,107.4600823,17z',
 } as const;
 
+/** Section links shared by the header, the mobile menu and the footer. */
+export const navigationItems = [
+  ['Jadwal', '#jadwal'],
+  ['Alur', '#alur'],
+  ['Kelas', '#kelas'],
+  ['Biaya dan Berkas', '#persiapan'],
+  ['FAQ', '#faq'],
+] as const;
+
 export const socialLinks = [
   { platform: 'Instagram', url: 'https://www.instagram.com/sdplus3almuhajirin' },
   { platform: 'Facebook', url: 'https://www.facebook.com/SDPlus3AlMuhajirin' },

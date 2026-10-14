@@ -11,19 +11,11 @@ import {
   Sparkles,
   WalletCards,
 } from 'lucide-react';
-import { registrationInfo } from '@/features/home/data';
+import { navigationItems, registrationInfo } from '@/features/home/data';
 import { ButtonLink } from '@/components/ui/button-link';
 import MobileNavigation from './MobileNavigation';
 import SectionWave from './SectionWave';
 import { actionClass } from './actionStyles';
-
-const navigationItems = [
-  ['Jadwal', '#jadwal'],
-  ['Alur', '#alur'],
-  ['Kelas', '#kelas'],
-  ['Biaya dan Berkas', '#persiapan'],
-  ['FAQ', '#faq'],
-] as const;
 
 export function HomeHeader() {
   return (

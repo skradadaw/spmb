@@ -1,28 +1,91 @@
 import Image from 'next/image';
-import { Clock3, MapPin, Navigation } from 'lucide-react';
+import type { ComponentType, ReactNode, SVGProps } from 'react';
+import { ArrowUpRight, Clock3, MapPin } from 'lucide-react';
 import { FacebookIcon, InstagramIcon, TikTokIcon } from '@/components/icons/SocialIcons';
-import { contactInfo, registrationInfo, socialLinks } from '@/features/home/data';
-import { AccreditationBadge, WhatsAppLink } from './ContactLinks';
-import { actionClass } from './actionStyles';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
+import { contactInfo, navigationItems, registrationInfo, socialLinks } from '@/features/home/data';
+import { AccreditationBadge } from './ContactLinks';
 
 const SOCIAL_ICONS = { Instagram: InstagramIcon, Facebook: FacebookIcon, TikTok: TikTokIcon };
 
+const HEADING = 'text-xs font-bold uppercase tracking-[0.16em] text-amber-300';
+const LINK = 'rounded-md transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+
+/** One contact line: an icon tile, a small label and its value, so every contact reads the same way. */
+function ContactItem({ icon: Icon, label, children }: { icon: ComponentType<SVGProps<SVGSVGElement>>; label: string; children: ReactNode }) {
+  return (
+    <li className="flex items-start gap-3">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-public-mint ring-1 ring-inset ring-white/10">
+        <Icon aria-hidden="true" className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs text-public-mint/60">{label}</p>
+        <div className="mt-0.5 leading-6 text-white">{children}</div>
+      </div>
+    </li>
+  );
+}
+
 export default function SiteFooter() {
   return (
-    <footer className="bg-public-deep px-4 pt-14 text-sm text-public-mint/80 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-10 pb-10 md:grid-cols-[1.1fr_1fr_1fr]">
-        <div>
+    <footer className="relative isolate overflow-hidden bg-public-deep px-4 text-sm text-public-mint/80 sm:px-6 lg:px-8">
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-public-green via-amber-300 to-public-green" />
+      <div aria-hidden="true" className="hero-grid absolute inset-0 -z-10 opacity-10" />
+
+      <div className="mx-auto grid max-w-7xl gap-12 py-14 sm:py-16 lg:grid-cols-12 lg:gap-8">
+        <div className="lg:col-span-5 lg:pr-8">
           <div className="flex items-center gap-3">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5">
-              <Image src="/logo.png" alt="" width={48} height={48} className="h-11 w-11 object-contain" />
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg shadow-black/10">
+              <Image src="/logo.png" alt="" width={48} height={48} className="size-11 object-contain" />
             </span>
             <div>
               <p className="text-base font-bold text-white">SD Plus 3 Al-Muhajirin</p>
-              <p className="mt-0.5">Open Booking Tahun Pelajaran {registrationInfo.academicYear}</p>
+              <p className="mt-0.5 text-xs">Purwakarta, Jawa Barat</p>
             </div>
           </div>
+          <p className="mt-5 max-w-sm leading-6">
+            Open Booking Tahun Pelajaran {registrationInfo.academicYear} untuk calon murid kelas 1 dan Pindahan.
+          </p>
           <AccreditationBadge className="mt-5 bg-white/10 px-3.5 py-1.5 text-white ring-1 ring-inset ring-white/15" />
-          <ul aria-label="Media sosial" className="mt-5 flex gap-2">
+        </div>
+
+        <nav aria-label="Jelajahi" className="lg:col-span-3">
+          <p className={HEADING}>Jelajahi</p>
+          <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-1">
+            {navigationItems.map(([label, href]) => (
+              <li key={href}>
+                <a href={href} className={LINK}>{label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="lg:col-span-4">
+          <p className={HEADING}>Hubungi kami</p>
+          <ul className="mt-5 space-y-4">
+            <ContactItem icon={WhatsAppIcon} label="WhatsApp panitia">
+              <a href={contactInfo.whatsappUrl} target="_blank" rel="noopener noreferrer" className={`font-bold ${LINK} hover:text-amber-200`}>
+                WhatsApp {contactInfo.whatsappLabel}
+              </a>
+            </ContactItem>
+            <ContactItem icon={Clock3} label="Jam layanan">
+              Layanan {contactInfo.serviceDays}, {contactInfo.serviceHours}
+            </ContactItem>
+            <ContactItem icon={MapPin} label="Lokasi sekolah">
+              <span>{contactInfo.address}</span>
+              <a href={contactInfo.mapsUrl} target="_blank" rel="noopener noreferrer" className={`mt-1 flex w-fit items-center gap-1 text-xs font-bold text-amber-300 ${LINK} hover:text-amber-200`}>
+                Buka di Google Maps<ArrowUpRight aria-hidden="true" className="size-3.5" />
+              </a>
+            </ContactItem>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mx-auto flex max-w-7xl flex-col-reverse items-center gap-4 border-t border-white/10 py-6 sm:flex-row sm:justify-between">
+        <p className="text-center text-xs text-public-mint/60 sm:text-left">© SD Plus 3 Al-Muhajirin Purwakarta</p>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-public-mint/60">Ikuti kami</span>
+          <ul aria-label="Media sosial" className="flex gap-2">
             {socialLinks.map(({ platform, url }) => {
               const Icon = SOCIAL_ICONS[platform];
               return (
@@ -33,49 +96,15 @@ export default function SiteFooter() {
                     rel="noopener noreferrer"
                     aria-label={`${platform} SD Plus 3 Al-Muhajirin`}
                     title={platform}
-                    className="flex size-11 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white hover:text-public-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="flex size-10 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white hover:text-public-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
-                    <Icon className="size-5" />
+                    <Icon className="size-[18px]" />
                   </a>
                 </li>
               );
             })}
           </ul>
         </div>
-
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Lokasi</p>
-          <p className="mt-4 flex items-start gap-2.5 leading-6">
-            <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-public-mint" />
-            <span>{contactInfo.address}</span>
-          </p>
-          <a
-            href={contactInfo.mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={actionClass('outlineOnDeep', 'sm', 'mt-4')}
-          >
-            <Navigation aria-hidden="true" />
-            Buka di Google Maps
-          </a>
-        </div>
-
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Panitia Open Booking</p>
-          <WhatsAppLink
-            iconClassName="size-4 text-public-mint"
-            className="mt-4 inline-flex min-h-11 items-center gap-2.5 rounded-lg font-bold text-white transition-colors hover:text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            WhatsApp {contactInfo.whatsappLabel}
-          </WhatsAppLink>
-          <p className="mt-2 flex items-center gap-2.5">
-            <Clock3 aria-hidden="true" className="size-4 shrink-0 text-public-mint" />
-            Layanan {contactInfo.serviceDays}, {contactInfo.serviceHours}
-          </p>
-        </div>
-      </div>
-      <div className="mx-auto max-w-7xl border-t border-white/10 py-6 text-center text-xs text-public-mint/60">
-        © SD Plus 3 Al-Muhajirin Purwakarta
       </div>
     </footer>
   );

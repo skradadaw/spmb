@@ -391,6 +391,20 @@ describe('Open Booking landing page', () => {
     expect(maps.getAttribute('target')).toBe('_blank');
   });
 
+  it('repeats the section navigation of the header in the footer', () => {
+    renderHome();
+
+    const footer = screen.getByRole('contentinfo');
+    const navigation = within(footer).getByRole('navigation', { name: 'Jelajahi' });
+    expect(within(navigation).getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['Jadwal', '#jadwal'],
+      ['Alur', '#alur'],
+      ['Kelas', '#kelas'],
+      ['Biaya dan Berkas', '#persiapan'],
+      ['FAQ', '#faq'],
+    ]);
+  });
+
   it('links the school Instagram, Facebook, and TikTok from the footer in a new tab', () => {
     renderHome();
 
