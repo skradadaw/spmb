@@ -34,6 +34,16 @@ describe('AdminShell navigation', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Perluas sidebar' })).toBeDefined());
   });
 
+  it('toggles the sidebar with Ctrl+B', () => {
+    render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
+
+    fireEvent.keyDown(window, { key: 'b', ctrlKey: true });
+    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('mini');
+
+    fireEvent.keyDown(window, { key: 'b', ctrlKey: true });
+    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
+  });
+
   it('keeps sidebar labels mounted while switching to mini mode', () => {
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
     const sidebar = screen.getByTestId('admin-sidebar');

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { LogOut, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { logoutAdminAction } from '@/features/auth/logout-action';
@@ -22,6 +22,16 @@ function subscribeToSidebarPreference(onChange: () => void) {
   };
 }
 
+function toggleSidebarPreference() {
+  const collapsed = getSidebarPreference();
+  try {
+    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(!collapsed));
+  } catch {
+    fallbackSidebarCollapsed = !collapsed;
+  }
+  window.dispatchEvent(new Event(SIDEBAR_PREFERENCE_EVENT));
+}
+
 function getSidebarPreference() {
   try {
     return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
@@ -36,18 +46,20 @@ export function AdminShell({ active, children }: { active?: AdminSection; childr
   const sidebarCollapsed = useSyncExternalStore(subscribeToSidebarPreference, getSidebarPreference, () => false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  function toggleSidebar() {
-    try {
-      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(!sidebarCollapsed));
-    } catch {
-      fallbackSidebarCollapsed = !sidebarCollapsed;
+  // Ctrl/Cmd+B, the usual shortcut for showing and hiding a sidebar.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key.toLowerCase() !== 'b' || !(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
+      event.preventDefault();
+      toggleSidebarPreference();
     }
-    window.dispatchEvent(new Event(SIDEBAR_PREFERENCE_EVENT));
-  }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return <div className="min-h-screen bg-[var(--admin-canvas)] text-foreground">
-    <DashboardSidebar active={activeSection} collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
-    <main data-testid="admin-content" data-sidebar-state={sidebarCollapsed ? 'mini' : 'expanded'} className={`min-w-0 transition-[padding] duration-200 ease-in-out motion-reduce:transition-none ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-[272px]'}`}>
+    <DashboardSidebar active={activeSection} collapsed={sidebarCollapsed} onToggle={toggleSidebarPreference} />
+    <main data-testid="admin-content" data-sidebar-state={sidebarCollapsed ? 'mini' : 'expanded'} className={`min-w-0 transition-[padding] duration-200 ease-in-out motion-reduce:transition-none ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-[288px]'}`}>
       <header className="border-b border-[var(--admin-border)] bg-[var(--admin-surface)] px-4 py-3 sm:px-6 lg:hidden">
         <div className="mx-auto max-w-7xl">
           <div className="flex items-center justify-between gap-3">

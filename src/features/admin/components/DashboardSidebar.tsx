@@ -1,26 +1,24 @@
 import Image from 'next/image';
 import { AdminNavigation, type AdminSection } from './AdminNavigation';
-import { LogOut, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react';
+import { LogOut, PanelLeft, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { logoutAdminAction } from '@/features/auth/logout-action';
 
 export function DashboardSidebar({ active = 'summary', collapsed = false, onToggle }: { active?: AdminSection; collapsed?: boolean; onToggle?: () => void }) {
   return (
-    <aside id="admin-sidebar" data-testid="admin-sidebar" data-state={collapsed ? 'mini' : 'expanded'} className={`fixed inset-y-0 left-0 z-20 hidden flex-col overflow-hidden bg-[var(--admin-sidebar)] text-white transition-[width] duration-200 ease-in-out motion-reduce:transition-none lg:flex ${collapsed ? 'w-20' : 'w-[272px]'}`}>
+    <aside id="admin-sidebar" data-testid="admin-sidebar" data-state={collapsed ? 'mini' : 'expanded'} className={`fixed inset-y-0 left-0 z-20 hidden flex-col bg-[var(--admin-sidebar)] text-white transition-[width] duration-200 ease-in-out motion-reduce:transition-none lg:flex ${collapsed ? 'w-20' : 'w-[288px]'}`}>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_20%_10%,rgba(57,209,85,0.32),transparent_35%),linear-gradient(145deg,transparent_50%,rgba(255,255,255,0.05))]" />
-      <div className={`relative flex h-full flex-col py-6 ${collapsed ? 'px-3' : 'px-5'}`}>
-        <div className={`flex items-center transition-[gap,padding] duration-200 ease-in-out motion-reduce:transition-none ${collapsed ? 'justify-center gap-0 px-0' : 'gap-3 px-2'}`}>
-          <Image src="/logo.png" alt="Logo SD Plus 3 Al-Muhajirin" width={44} height={44} className="size-11 shrink-0 object-contain drop-shadow-[0_5px_9px_rgba(0,0,0,0.24)]" priority />
-          <div aria-hidden={collapsed} className={`min-w-0 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out motion-reduce:transition-none ${collapsed ? 'max-w-0 opacity-0' : 'max-w-48 opacity-100'}`}>
-            <p className="truncate text-sm font-bold tracking-[-0.02em]">SD Plus 3 Al-Muhajirin</p>
-            <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-emerald-200">Panel Administrasi SPMB</p>
+      <div className={`relative flex h-full flex-col overflow-hidden py-6 ${collapsed ? 'px-3' : 'px-5'}`}>
+        <div className={`relative flex items-center transition-[gap,padding] duration-200 ease-in-out motion-reduce:transition-none ${collapsed ? 'flex-col gap-0 px-0' : 'gap-2.5 pl-1 pr-8'}`}>
+          <Image src="/logo.png" alt="Logo SD Plus 3 Al-Muhajirin" width={44} height={44} className={`size-10 shrink-0 object-contain drop-shadow-[0_5px_9px_rgba(0,0,0,0.24)]`} priority />
+          <div aria-hidden={collapsed} className={`min-w-0 flex-1 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out motion-reduce:transition-none ${collapsed ? 'max-h-0 max-w-0 opacity-0' : 'max-w-52 opacity-100'}`}>
+            <p className="truncate text-xs font-extrabold uppercase tracking-[0.01em]">SD Plus 3 Al-Muhajirin</p>
+            <p className="mt-1 truncate text-[9px] font-bold uppercase tracking-[0.1em] text-emerald-200">Panel Administrasi SPMB</p>
           </div>
+          <SidebarToggle collapsed={collapsed} onToggle={onToggle} />
         </div>
-        <Button type="button" variant="ghost" size="icon" aria-label={collapsed ? 'Perluas sidebar' : 'Minimalkan sidebar'} aria-expanded={!collapsed} aria-controls="admin-sidebar" onClick={onToggle} title={collapsed ? 'Perluas sidebar' : 'Minimalkan sidebar'} className={`mt-4 size-10 text-emerald-100 hover:bg-white/12 hover:text-white ${collapsed ? 'self-center' : 'self-end'}`}>
-          {collapsed ? <PanelLeftOpen aria-hidden="true" className="size-[18px]" /> : <PanelLeftClose aria-hidden="true" className="size-[18px]" />}
-        </Button>
-        <Separator decorative className="my-4 bg-white/12" />
+        <Separator decorative className="mt-6 mb-4 bg-white/12" />
         <div aria-hidden={collapsed} className={`overflow-hidden px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200/70 transition-[max-height,opacity] duration-200 ease-in-out motion-reduce:transition-none ${collapsed ? 'max-h-0 opacity-0' : 'max-h-5 opacity-100'}`}>Menu utama</div>
         <AdminNavigation active={active} collapsed={collapsed} />
         <div className="mt-auto">
@@ -38,5 +36,28 @@ export function DashboardSidebar({ active = 'summary', collapsed = false, onTogg
         </div>
       </div>
     </aside>
+  );
+}
+
+/**
+ * Sidebar toggle in the style of claude.ai: a quiet panel icon at the end of the
+ * header row, and a framed button under the logo when minimised so it is always
+ * visible. One element in both states keeps keyboard focus. Ctrl/Cmd+B toggles it too (AdminShell).
+ */
+function SidebarToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle?: () => void }) {
+  const label = collapsed ? 'Perluas sidebar' : 'Minimalkan sidebar';
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-expanded={!collapsed}
+      aria-controls="admin-sidebar"
+      aria-keyshortcuts="Control+B Meta+B"
+      title={`${label} (Ctrl+B)`}
+      onClick={onToggle}
+      className={`grid place-items-center rounded-lg transition-[background-color,color] duration-150 hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300 motion-reduce:transition-none ${collapsed ? 'mt-4 size-10 cursor-e-resize border border-white/15 bg-white/10 text-white' : 'absolute -right-1 top-1/2 size-8 -translate-y-1/2 cursor-w-resize text-emerald-100/75'}`}
+    >
+      <PanelLeft aria-hidden="true" className="size-[18px]" />
+    </button>
   );
 }
