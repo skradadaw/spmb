@@ -27,6 +27,8 @@ describe('AttendanceScanner', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Batalkan' }));
 
     await screen.findByText('Kehadiran dibatalkan. Pendaftar kembali Terjadwal OKB.');
+    // Not "Dibatalkan", which is a Status Pendaftar (see CONTEXT.md).
+    expect(screen.queryByText(/^Dibatalkan/)).toBeNull();
     const formData = mocks.updateStatus.mock.calls[0][1] as FormData;
     expect(formData.get('intent')).toBe('unattend');
     expect(formData.get('participantId')).toBe(applicant.id);
@@ -50,6 +52,23 @@ describe('AttendanceScanner', () => {
     await screen.findByText('Status pendaftar sudah berubah. Muat ulang halaman lalu coba lagi.');
     expect(screen.getByText('Hadir tercatat.')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Batalkan' })).toBeDefined();
+  });
+
+  it('keeps a newer scan as the latest result when an earlier undo finishes later', async () => {
+    let finishUndo: (value: unknown) => void = () => {};
+    mocks.updateStatus.mockReturnValue(new Promise(resolve => { finishUndo = resolve; }));
+    render(<AttendanceScanner />);
+    scanManually();
+    fireEvent.click(await screen.findByRole('button', { name: 'Batalkan' }));
+
+    mocks.scan.mockResolvedValue({ outcome: 'present', message: 'Hadir tercatat.', applicant: { ...applicant, id: 'other', nomorPendaftaran: 'OB-2027-002', namaLengkap: 'Budi Santoso' } });
+    scanManually('OB-2027-002');
+    await screen.findByText('Budi Santoso');
+    finishUndo({ status: 'error', message: 'Status pendaftar sudah berubah. Muat ulang halaman lalu coba lagi.' });
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Batalkan' }).hasAttribute('disabled')).toBe(false));
+    expect(screen.getAllByText('Budi Santoso').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('records the same applicant again when scanned after an undo', async () => {

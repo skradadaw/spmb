@@ -27,7 +27,8 @@ export function AttendanceScanner() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [manual, setManual] = useState('');
   const [undoing, setUndoing] = useState(false);
-  const [undoError, setUndoError] = useState<string | null>(null);
+  /** The undo error belongs to the scan it was for, so a newer scan never shows it. */
+  const [undoError, setUndoError] = useState<{ item: HistoryItem; message: string } | null>(null);
 
   const submit = useCallback(async (code: string) => {
     if (busyRef.current) return;
@@ -91,25 +92,27 @@ export function AttendanceScanner() {
 
   /** Batalkan Kehadiran for the latest successful scan, e.g. when the wrong card was scanned. */
   async function undoLatest() {
-    if (!latest?.applicant || latest.outcome !== 'present' || latest.undone) return;
+    const target = latest;
+    if (!target?.applicant || target.outcome !== 'present' || target.undone) return;
     const formData = new FormData();
-    formData.set('participantId', latest.applicant.id);
+    formData.set('participantId', target.applicant.id);
     formData.set('intent', 'unattend');
     setUndoing(true);
     setUndoError(null);
     try {
       const result = await updateParticipantStatusAction({ status: 'idle', message: '' }, formData);
       if (result.status !== 'success') {
-        setUndoError(result.message);
+        setUndoError({ item: target, message: result.message });
         return;
       }
-      const undone = { ...latest, undone: true, message: result.message, applicant: { ...latest.applicant, status: 'Terjadwal OKB' } };
-      setLatest(undone);
-      setHistory((current) => current.map((item) => (item === latest ? undone : item)));
+      const undone = { ...target, undone: true, message: result.message, applicant: { ...target.applicant, status: 'Terjadwal OKB' } };
+      // A newer scan may have arrived meanwhile; it stays the latest result.
+      setLatest((current) => (current === target ? undone : current));
+      setHistory((current) => current.map((item) => (item === target ? undone : item)));
       // The same card may be scanned again straight away.
       lastCodeRef.current = null;
     } catch {
-      setUndoError('Kehadiran tidak dapat dibatalkan. Periksa koneksi lalu coba lagi.');
+      setUndoError({ item: target, message: 'Kehadiran tidak dapat dibatalkan. Periksa koneksi lalu coba lagi.' });
     } finally {
       setUndoing(false);
     }
@@ -146,7 +149,7 @@ export function AttendanceScanner() {
 
       <div className="space-y-3">
         <div aria-live="polite">
-          {latest ? <ResultCard item={latest} undoing={undoing} undoError={undoError} onUndo={undoLatest} /> : (
+          {latest ? <ResultCard item={latest} undoing={undoing} undoError={undoError?.item === latest ? undoError.message : null} onUndo={undoLatest} /> : (
             <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-[var(--admin-muted)]">Arahkan kamera ke QR pada Bukti Pendaftaran. Kehadiran langsung tercatat bila hari ini sesuai Jadwal OKB.</div>
           )}
         </div>
@@ -157,7 +160,7 @@ export function AttendanceScanner() {
               {history.slice(1).map((item, index) => (
                 <li key={`${item.code}-${item.at}-${index}`} className="flex items-center justify-between gap-3 py-2">
                   <span className="min-w-0 truncate">{item.applicant?.namaLengkap || item.code}</span>
-                  <span className={item.undone ? 'shrink-0 text-slate-500' : item.outcome === 'present' ? 'shrink-0 text-emerald-700' : 'shrink-0 text-rose-700'}>{item.undone ? 'Dibatalkan' : item.outcome === 'present' ? 'Hadir' : 'Ditolak'} · {item.at}</span>
+                  <span className={item.undone ? 'shrink-0 text-slate-500' : item.outcome === 'present' ? 'shrink-0 text-emerald-700' : 'shrink-0 text-rose-700'}>{item.undone ? 'Kehadiran dibatalkan' : item.outcome === 'present' ? 'Hadir' : 'Ditolak'} · {item.at}</span>
                 </li>
               ))}
             </ul>

@@ -156,7 +156,9 @@ describe('participants repository', () => {
     expect(detail?.okb).toEqual({ jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 2' });
 
     q.range.mockResolvedValueOnce({ data: [{ id: 'a', jadwal_okb_gelombang: 3 }], error: null });
-    const [record] = await repo.exportDetails(parseParticipantListQuery(new URLSearchParams()));
+    const [record] = await repo.exportDetails(parseParticipantListQuery(new URLSearchParams('gelombang=3')));
+    // The export follows the Gelombang filter like the list does.
+    expect(q.eq).toHaveBeenCalledWith('jadwal_okb_gelombang', '3');
     expect(record.fields.jadwalGelombang).toBe('Gelombang 3');
   });
   it('loads submission_id with document paths to validate storage ownership', async () => {
