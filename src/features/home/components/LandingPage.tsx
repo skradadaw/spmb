@@ -1,5 +1,4 @@
 import ClassOptions from './ClassOptions';
-import ClosingCta from './ClosingCta';
 import FrequentQuestions from './FrequentQuestions';
 import HomeHero, { HomeHeader } from './HomeHero';
 import RegistrationPreparation from './RegistrationPreparation';
@@ -29,7 +28,6 @@ export default function LandingPage({
         <ClassOptions classCapacities={classCapacities} />
         <RegistrationPreparation />
         <FrequentQuestions />
-        <ClosingCta />
       </main>
       <SiteFooter />
     </div>

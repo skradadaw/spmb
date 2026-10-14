@@ -312,8 +312,9 @@ describe('Open Booking landing page', () => {
       'Bukti Pendaftaran hilang, bagaimana?',
       'Berhalangan hadir OKB, bagaimana?',
     ]);
-    expect(within(section).getByText('Masih ada pertanyaan?')).toBeDefined();
-    expect(within(section).getByText(/07\.00–17\.00/)).toBeDefined();
+    // The help card shows beside the questions on desktop and inside the closing CTA on mobile.
+    expect(within(section).getAllByText('Masih ada pertanyaan?')).toHaveLength(2);
+    expect(within(section).getAllByText(/07\.00–17\.00/).length).toBeGreaterThan(0);
     const whatsapp = within(section).getByRole('link', { name: /whatsapp panitia/i });
     expect(whatsapp.getAttribute('href')).toBe('https://wa.me/6281998311470');
     expect(whatsapp.getAttribute('target')).toBe('_blank');
@@ -336,16 +337,28 @@ describe('Open Booking landing page', () => {
     ]);
   });
 
-  it('alternates white and canvas section backgrounds, each with the same decoration', () => {
+  it('alternates white and canvas section backgrounds, each with the same dotted decoration and no glow', () => {
     renderHome();
-    const sections = ['alur-title', 'kelas-title', 'persiapan-title', 'faq-title', 'cta-title']
+    const sections = ['alur-title', 'kelas-title', 'persiapan-title', 'faq-title']
       .map((id) => document.getElementById(id)!.closest('section')!);
 
-    expect(sections.map((section) => section.dataset.tone)).toEqual(['white', 'canvas', 'white', 'canvas', 'white']);
+    expect(sections.map((section) => section.dataset.tone)).toEqual(['white', 'canvas', 'white', 'canvas']);
     for (const section of sections) {
       expect(section.className).toContain(section.dataset.tone === 'white' ? 'bg-white' : 'bg-public-canvas');
-      expect(section.querySelectorAll(':scope > [data-section-backdrop]')).toHaveLength(1);
+      const backdrops = section.querySelectorAll(':scope > [data-section-backdrop]');
+      expect(backdrops).toHaveLength(1);
+      expect(backdrops[0].querySelector('.blur-3xl')).toBeNull();
     }
+  });
+
+  it('closes the FAQ block with the CTA on the same background instead of a separate band', () => {
+    renderHome();
+    const faq = document.getElementById('faq-title')!.closest('section')!;
+    const cta = document.getElementById('cta-title')!.closest('section')!;
+
+    expect(cta.parentElement?.closest('section')).toBe(faq);
+    expect(cta.className).not.toMatch(/bg-/);
+    expect(cta.querySelector('[data-section-backdrop]')).toBeNull();
   });
 
   it('closes with a WhatsApp option next to the registration CTA', () => {

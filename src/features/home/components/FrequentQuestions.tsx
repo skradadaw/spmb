@@ -1,5 +1,6 @@
 import { ChevronDown, Clock3 } from 'lucide-react';
 import { contactInfo, faqs } from '@/features/home/data';
+import ClosingCta from './ClosingCta';
 import { WhatsAppLink } from './ContactLinks';
 import SectionBackdrop from './SectionBackdrop';
 import SectionHeading from './SectionHeading';
@@ -53,6 +54,7 @@ export default function FrequentQuestions() {
           </WhatsAppLink>
         </div>
       </div>
+      <ClosingCta />
     </section>
   );
 }
