@@ -82,6 +82,23 @@ describe('updateParticipantStatusAction', () => {
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
+  it('removes the Jadwal OKB of a scheduled applicant, returning them to Terverifikasi', async () => {
+    const result = await updateParticipantStatusAction(idle, form('unschedule'));
+
+    expect(result).toEqual({ status: 'success', message: 'Jadwal OKB dihapus. Pendaftar kembali Terverifikasi.' });
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terverifikasi', jadwal_okb_tanggal: null, jadwal_okb_gelombang: null });
+    expect(mocks.filters).toContainEqual(['eq:status', 'Terjadwal OKB']);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pendaftar');
+  });
+
+  it('reports a stale page when removing the Jadwal OKB of an applicant no longer scheduled', async () => {
+    mocks.writeMaybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const result = await updateParticipantStatusAction(idle, form('unschedule'));
+    expect(result).toEqual({ status: 'error', message: 'Status pendaftar sudah berubah. Muat ulang halaman lalu coba lagi.' });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it('marks attendance only from Terjadwal OKB', async () => {
     await updateParticipantStatusAction(idle, form('attend'));
 

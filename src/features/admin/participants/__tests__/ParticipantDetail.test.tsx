@@ -206,6 +206,23 @@ describe('ParticipantDetail', () => {
     expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Hadir OKB');
   });
 
+  it('asks for confirmation before removing a Jadwal OKB', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB', okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1' } }} />);
+    expect(screen.queryByRole('button', { name: /ya, hapus jadwal/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Hapus jadwal' }));
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog.textContent).toContain('kembali Terverifikasi');
+    expect(within(dialog).getByRole('button', { name: /ya, hapus jadwal/i }).getAttribute('value')).toBe('unschedule');
+  });
+
+  it('offers removing a Jadwal OKB only while scheduled', () => {
+    for (const status of ['Terverifikasi', 'Sudah OKB']) {
+      const { unmount } = render(<ParticipantDetail participant={{ ...participant, status }} />);
+      expect(screen.queryByRole('button', { name: 'Hapus jadwal' })).toBeNull();
+      unmount();
+    }
+  });
+
   it('schedules OKB with a date and one of three Gelombang OKB instead of a free-text session', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Terverifikasi' }} />);
     expect(screen.getByText('Jadwalkan OKB')).toBeDefined();

@@ -1,7 +1,7 @@
 'use client';
 
-import { useActionState, useState } from 'react';
-import { CalendarClock, Check, RotateCcw, UserCheck, XCircle } from 'lucide-react';
+import { useActionState, useState, type ReactNode } from 'react';
+import { CalendarClock, CalendarX2, Check, RotateCcw, UserCheck, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -24,7 +24,7 @@ import { OKB_WAVES, okbWaveLabel } from '@/features/admin/okbWave';
 import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
 import { CANCELLABLE_STATUSES } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
-import { updateParticipantStatusAction, type UpdateParticipantStatusState } from '../actions/updateParticipantStatusAction';
+import { updateParticipantStatusAction, type ParticipantStatusIntent, type UpdateParticipantStatusState } from '../actions/updateParticipantStatusAction';
 
 const initialState: UpdateParticipantStatusState = { status: 'idle', message: '' };
 type FormAction = (formData: FormData) => void;
@@ -93,17 +93,31 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
         )}
 
         {status === 'Terjadwal OKB' && (
-          <form action={formAction} className="flex flex-wrap gap-2">
-            <input type="hidden" name="participantId" value={participantId} />
-            <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
-              <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
-            </Button>
+          <div className="flex flex-wrap gap-2">
+            <form action={formAction}>
+              <input type="hidden" name="participantId" value={participantId} />
+              <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
+                <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
+              </Button>
+            </form>
             {!rescheduling && (
               <Button type="button" onClick={() => setRescheduling(true)} className={ADMIN_SECONDARY_BUTTON}>
                 <CalendarClock aria-hidden="true" className="size-3.5" />Jadwalkan ulang
               </Button>
             )}
-          </form>
+            <ConfirmDialog
+              participantId={participantId}
+              intent="unschedule"
+              trigger={<><CalendarX2 aria-hidden="true" className="size-3.5" />Hapus jadwal</>}
+              triggerClassName={ADMIN_SECONDARY_BUTTON}
+              title="Hapus Jadwal OKB?"
+              description="Tanggal dan Gelombang OKB dikosongkan, lalu pendaftar kembali Terverifikasi dan perlu dijadwalkan lagi. Kursinya tetap terpakai."
+              confirmLabel="Ya, hapus jadwal"
+              confirmClassName={ADMIN_PRIMARY_BUTTON}
+              pending={pending}
+              formAction={formAction}
+            />
+          </div>
         )}
 
         {(status === 'Terverifikasi' || rescheduling) && (
@@ -153,7 +167,18 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
 
         {canCancel && (
           <div className="border-t border-slate-200 pt-3">
-            <CancelDialog participantId={participantId} pending={pending} formAction={formAction} />
+            <ConfirmDialog
+              participantId={participantId}
+              intent="cancel"
+              trigger={<><XCircle aria-hidden="true" className="size-3.5" />Batalkan pendaftar</>}
+              triggerClassName={ADMIN_DANGER_BUTTON}
+              title="Batalkan pendaftar ini?"
+              description="Gunakan untuk berkas palsu, tidak hadir OKB tanpa dijadwalkan ulang, atau mengundurkan diri. Kursinya akan dibebaskan untuk pendaftar lain. Tulis alasannya di catatan admin."
+              confirmLabel="Ya, batalkan pendaftar"
+              confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
+              pending={pending}
+              formAction={formAction}
+            />
           </div>
         )}
       </CardContent>
@@ -266,25 +291,33 @@ function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, pe
   );
 }
 
-function CancelDialog({ participantId, pending, formAction }: { participantId: string; pending: boolean; formAction: FormAction }) {
+/** A status change that is easy to regret, so it is confirmed in a dialog before submitting. */
+function ConfirmDialog({ participantId, intent, trigger, triggerClassName, title, description, confirmLabel, confirmClassName, pending, formAction }: {
+  participantId: string;
+  intent: ParticipantStatusIntent;
+  trigger: ReactNode;
+  triggerClassName: string;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  confirmClassName: string;
+  pending: boolean;
+  formAction: FormAction;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger render={<Button type="button" className={ADMIN_DANGER_BUTTON} />}>
-        <XCircle aria-hidden="true" className="size-3.5" />Batalkan pendaftar
-      </AlertDialogTrigger>
+      <AlertDialogTrigger render={<Button type="button" className={triggerClassName} />}>{trigger}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Batalkan pendaftar ini?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Gunakan untuk berkas palsu, tidak hadir OKB tanpa dijadwalkan ulang, atau mengundurkan diri. Kursinya akan dibebaskan untuk pendaftar lain. Tulis alasannya di catatan admin.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <form action={formAction} onSubmit={() => setOpen(false)}>
           <input type="hidden" name="participantId" value={participantId} />
           <AlertDialogFooter>
             <AlertDialogCancel>Kembali</AlertDialogCancel>
-            <Button type="submit" name="intent" value="cancel" disabled={pending} className={ADMIN_DANGER_SOLID_BUTTON}>Ya, batalkan pendaftar</Button>
+            <Button type="submit" name="intent" value={intent} disabled={pending} className={confirmClassName}>{confirmLabel}</Button>
           </AlertDialogFooter>
         </form>
       </AlertDialogContent>
@@ -297,7 +330,7 @@ function statusHint(status: string, previousStatus: string | null) {
     case 'Menunggu Unggahan': return 'Berkas belum selesai diunggah orang tua.';
     case 'Menunggu Verifikasi': return 'Verifikasi keempat berkas agar OKB dapat dijadwalkan.';
     case 'Terverifikasi': return 'Berkas lengkap. Tetapkan jadwal OKB.';
-    case 'Terjadwal OKB': return 'Tandai hadir setelah OKB, atau jadwalkan ulang bila berhalangan.';
+    case 'Terjadwal OKB': return 'Tandai hadir setelah OKB, jadwalkan ulang bila berhalangan, atau hapus jadwalnya.';
     case 'Sudah OKB': return 'Catat Keputusan Penerimaan yang ditetapkan Panitia.';
     case 'Diterima': return 'Pendaftar diterima oleh Panitia.';
     case 'Ditolak': return 'Pendaftar tidak lolos OKB.';

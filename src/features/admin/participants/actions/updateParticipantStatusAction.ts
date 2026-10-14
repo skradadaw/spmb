@@ -10,7 +10,7 @@ import { CANCELLABLE_STATUSES } from '../contracts';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-export type ParticipantStatusIntent = 'schedule' | 'attend' | 'decide' | 'cancel' | 'restore';
+export type ParticipantStatusIntent = 'schedule' | 'unschedule' | 'attend' | 'decide' | 'cancel' | 'restore';
 export type UpdateParticipantStatusState = { status: 'idle' | 'success' | 'error'; message: string };
 
 const ok = (message: string): UpdateParticipantStatusState => ({ status: 'success', message });
@@ -53,6 +53,17 @@ export async function updateParticipantStatusAction(
         .maybeSingle();
       if (error) throw error;
       result = data ? ok('Jadwal OKB berhasil disimpan.') : fail(STALE);
+    } else if (intent === 'unschedule') {
+      // Hapus Jadwal OKB: still in process, so the seat stays taken.
+      const { data, error } = await supabase
+        .from('pendaftar')
+        .update({ status: 'Terverifikasi', jadwal_okb_tanggal: null, jadwal_okb_gelombang: null })
+        .eq('id', participantId)
+        .eq('status', 'Terjadwal OKB')
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      result = data ? ok('Jadwal OKB dihapus. Pendaftar kembali Terverifikasi.') : fail(STALE);
     } else if (intent === 'attend') {
       const { data, error } = await supabase
         .from('pendaftar')
