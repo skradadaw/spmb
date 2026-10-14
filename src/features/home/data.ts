@@ -47,6 +47,8 @@ export const registrationFlow = [
 
 export const schoolProfile = {
   accreditation: 'A',
+  summary:
+    'Sekolah dasar Islam terakreditasi A yang memadukan kurikulum nasional dengan pembelajaran berbasis kepesantrenan. Lewat kelas Reguler, Bilingual, dan Tahfizh, Ananda tumbuh berakhlak mulia, dekat dengan Al-Qur’an, dan siap melangkah ke jenjang berikutnya.',
 } as const;
 
 export const classProgramDescriptions: Record<ClassOption, string> = {

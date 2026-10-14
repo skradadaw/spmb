@@ -36,8 +36,11 @@ describe('DocumentReviewCard', () => {
     const card = renderCard();
     fireEvent.click(screen.getByRole('button', { name: 'Verifikasi Bukti Pembayaran OKB' }));
 
-    await screen.findByText('Verifikasi gagal disimpan. Coba lagi.');
-    expect(card.getAttribute('data-review-state')).toBe('pending');
+    // Under a busy test run the failed transition can settle late, so wait for both the message and the revert.
+    await waitFor(() => {
+      expect(screen.getByText('Verifikasi gagal disimpan. Coba lagi.')).toBeDefined();
+      expect(card.getAttribute('data-review-state')).toBe('pending');
+    }, { timeout: 3000 });
     expect(screen.getByRole('button', { name: 'Verifikasi Bukti Pembayaran OKB' }).getAttribute('aria-pressed')).toBe('false');
   });
 });

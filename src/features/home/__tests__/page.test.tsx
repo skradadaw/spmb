@@ -382,7 +382,6 @@ describe('Open Booking landing page', () => {
       within(footer).getByText('Jl. Ipik Gandamanah No. 33, Ciseureuh, Purwakarta, Jawa Barat'),
     ).toBeDefined();
     expect(within(footer).getByText(/07\.00–17\.00/)).toBeDefined();
-    expect(within(footer).getByText(/Tahun Pelajaran 2027\/2028/)).toBeDefined();
     const whatsapp = within(footer).getByRole('link', { name: /0819-9831-1470/ });
     expect(whatsapp.getAttribute('href')).toBe('https://wa.me/6281998311470');
     const maps = within(footer).getByRole('link', { name: /buka di google maps/i });
@@ -391,18 +390,12 @@ describe('Open Booking landing page', () => {
     expect(maps.getAttribute('target')).toBe('_blank');
   });
 
-  it('repeats the section navigation of the header in the footer', () => {
+  it('sells the school in the footer instead of repeating the section navigation', () => {
     renderHome();
 
     const footer = screen.getByRole('contentinfo');
-    const navigation = within(footer).getByRole('navigation', { name: 'Jelajahi' });
-    expect(within(navigation).getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
-      ['Jadwal', '#jadwal'],
-      ['Alur', '#alur'],
-      ['Kelas', '#kelas'],
-      ['Biaya dan Berkas', '#persiapan'],
-      ['FAQ', '#faq'],
-    ]);
+    expect(within(footer).queryByRole('navigation')).toBeNull();
+    expect(within(footer).getByText(/memadukan kurikulum nasional dengan pembelajaran berbasis kepesantrenan/)).toBeDefined();
   });
 
   it('links the school Instagram, Facebook, and TikTok from the footer in a new tab', () => {

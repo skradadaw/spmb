@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode, SVGProps } from 'react';
 import { ArrowUpRight, Clock3, MapPin } from 'lucide-react';
 import { FacebookIcon, InstagramIcon, TikTokIcon } from '@/components/icons/SocialIcons';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
-import { contactInfo, navigationItems, registrationInfo, socialLinks } from '@/features/home/data';
+import { contactInfo, schoolProfile, socialLinks } from '@/features/home/data';
 import { AccreditationBadge } from './ContactLinks';
 
 const SOCIAL_ICONS = { Instagram: InstagramIcon, Facebook: FacebookIcon, TikTok: TikTokIcon };
@@ -33,7 +33,7 @@ export default function SiteFooter() {
       <div aria-hidden="true" className="hero-grid absolute inset-0 -z-10 opacity-10" />
 
       <div className="mx-auto grid max-w-7xl gap-12 py-14 sm:py-16 lg:grid-cols-12 lg:gap-8">
-        <div className="lg:col-span-5 lg:pr-8">
+        <div className="lg:col-span-6">
           <div className="flex items-center gap-3">
             <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg shadow-black/10">
               <Image src="/logo.png" alt="" width={48} height={48} className="size-11 object-contain" />
@@ -43,24 +43,11 @@ export default function SiteFooter() {
               <p className="mt-0.5 text-xs">Purwakarta, Jawa Barat</p>
             </div>
           </div>
-          <p className="mt-5 max-w-sm leading-6">
-            Open Booking Tahun Pelajaran {registrationInfo.academicYear} untuk calon murid kelas 1 dan Pindahan.
-          </p>
+          <p className="mt-5 max-w-md leading-6">{schoolProfile.summary}</p>
           <AccreditationBadge className="mt-5 bg-white/10 px-3.5 py-1.5 text-white ring-1 ring-inset ring-white/15" />
         </div>
 
-        <nav aria-label="Jelajahi" className="lg:col-span-3">
-          <p className={HEADING}>Jelajahi</p>
-          <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-1">
-            {navigationItems.map(([label, href]) => (
-              <li key={href}>
-                <a href={href} className={LINK}>{label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-5 lg:col-start-8">
           <p className={HEADING}>Hubungi kami</p>
           <ul className="mt-5 space-y-4">
             <ContactItem icon={WhatsAppIcon} label="WhatsApp panitia">
