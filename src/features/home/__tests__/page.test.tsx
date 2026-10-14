@@ -391,6 +391,22 @@ describe('Open Booking landing page', () => {
     expect(maps.getAttribute('target')).toBe('_blank');
   });
 
+  it('links the school Instagram, Facebook, and TikTok from the footer in a new tab', () => {
+    renderHome();
+
+    const footer = screen.getByRole('contentinfo');
+    const links = within(footer).getByRole('list', { name: 'Media sosial' });
+    expect(within(links).getAllByRole('link').map((link) => [link.getAttribute('aria-label'), link.getAttribute('href')])).toEqual([
+      ['Instagram SD Plus 3 Al-Muhajirin', 'https://www.instagram.com/sdplus3almuhajirin'],
+      ['Facebook SD Plus 3 Al-Muhajirin', 'https://www.facebook.com/SDPlus3AlMuhajirin'],
+      ['TikTok SD Plus 3 Al-Muhajirin', 'https://www.tiktok.com/@sdplus3almuhajirin'],
+    ]);
+    for (const link of within(links).getAllByRole('link')) {
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    }
+  });
+
   it('never uses the word seleksi', () => {
     const { container } = renderHome();
 

@@ -84,6 +84,12 @@ export const contactInfo = {
     'https://www.google.com/maps/place/SD+Plus+3+Al-Muhajirin+Purwakarta/@-6.5214189,107.4600823,17z',
 } as const;
 
+export const socialLinks = [
+  { platform: 'Instagram', url: 'https://www.instagram.com/sdplus3almuhajirin' },
+  { platform: 'Facebook', url: 'https://www.facebook.com/SDPlus3AlMuhajirin' },
+  { platform: 'TikTok', url: 'https://www.tiktok.com/@sdplus3almuhajirin' },
+] as const;
+
 export const faqs = [
   {
     question: 'Berapa biaya OKB dan ke mana membayarnya?',

@@ -1,8 +1,11 @@
 import Image from 'next/image';
 import { Clock3, MapPin, Navigation } from 'lucide-react';
-import { contactInfo, registrationInfo } from '@/features/home/data';
+import { FacebookIcon, InstagramIcon, TikTokIcon } from '@/components/icons/SocialIcons';
+import { contactInfo, registrationInfo, socialLinks } from '@/features/home/data';
 import { AccreditationBadge, WhatsAppLink } from './ContactLinks';
 import { actionClass } from './actionStyles';
+
+const SOCIAL_ICONS = { Instagram: InstagramIcon, Facebook: FacebookIcon, TikTok: TikTokIcon };
 
 export default function SiteFooter() {
   return (
@@ -19,6 +22,25 @@ export default function SiteFooter() {
             </div>
           </div>
           <AccreditationBadge className="mt-5 bg-white/10 px-3.5 py-1.5 text-white ring-1 ring-inset ring-white/15" />
+          <ul aria-label="Media sosial" className="mt-5 flex gap-2">
+            {socialLinks.map(({ platform, url }) => {
+              const Icon = SOCIAL_ICONS[platform];
+              return (
+                <li key={platform}>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${platform} SD Plus 3 Al-Muhajirin`}
+                    title={platform}
+                    className="flex size-11 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white hover:text-public-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    <Icon className="size-5" />
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
         <div>
