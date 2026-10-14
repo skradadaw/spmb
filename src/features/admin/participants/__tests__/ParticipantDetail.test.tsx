@@ -223,6 +223,23 @@ describe('ParticipantDetail', () => {
     }
   });
 
+  it('asks for confirmation before undoing attendance', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Sudah OKB', okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1' } }} />);
+    expect(screen.queryByRole('button', { name: /ya, batalkan kehadiran/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Batalkan kehadiran' }));
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog.textContent).toContain('kembali Terjadwal OKB');
+    expect(within(dialog).getByRole('button', { name: /ya, batalkan kehadiran/i }).getAttribute('value')).toBe('unattend');
+  });
+
+  it('offers undoing attendance only before the Keputusan Penerimaan', () => {
+    for (const status of ['Terjadwal OKB', 'Diterima', 'Ditolak']) {
+      const { unmount } = render(<ParticipantDetail participant={{ ...participant, status }} />);
+      expect(screen.queryByRole('button', { name: 'Batalkan kehadiran' })).toBeNull();
+      unmount();
+    }
+  });
+
   it('schedules OKB with a date and one of three Gelombang OKB instead of a free-text session', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Terverifikasi' }} />);
     expect(screen.getByText('Jadwalkan OKB')).toBeDefined();

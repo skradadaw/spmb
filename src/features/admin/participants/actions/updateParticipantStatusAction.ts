@@ -10,7 +10,7 @@ import { CANCELLABLE_STATUSES } from '../contracts';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-export type ParticipantStatusIntent = 'schedule' | 'unschedule' | 'attend' | 'decide' | 'cancel' | 'restore';
+export type ParticipantStatusIntent = 'schedule' | 'unschedule' | 'attend' | 'unattend' | 'decide' | 'cancel' | 'restore';
 export type UpdateParticipantStatusState = { status: 'idle' | 'success' | 'error'; message: string };
 
 const ok = (message: string): UpdateParticipantStatusState => ({ status: 'success', message });
@@ -74,6 +74,17 @@ export async function updateParticipantStatusAction(
         .maybeSingle();
       if (error) throw error;
       result = data ? ok('Pendaftar tercatat hadir OKB.') : fail(STALE);
+    } else if (intent === 'unattend') {
+      // Batalkan Kehadiran: the Jadwal OKB is kept; only before the Keputusan Penerimaan.
+      const { data, error } = await supabase
+        .from('pendaftar')
+        .update({ status: 'Terjadwal OKB' })
+        .eq('id', participantId)
+        .eq('status', 'Sudah OKB')
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      result = data ? ok('Kehadiran dibatalkan. Pendaftar kembali Terjadwal OKB.') : fail(STALE);
     } else if (intent === 'decide') {
       const keputusan = String(formData.get('keputusan') ?? '');
       const kelas = String(formData.get('kelasPenempatan') ?? '');

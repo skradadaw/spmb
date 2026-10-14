@@ -13,9 +13,9 @@ Keputusan yang sudah disepakati:
 
 **Status:** ready-for-agent
 
-- [ ] Panel Status & OKB pada Pendaftar Sudah OKB menampilkan tombol "Batalkan kehadiran". Tombol tidak tampil pada status lain.
-- [ ] Menekan tombol membuka dialog konfirmasi. Pembatalan dialog tidak mengubah apa pun.
-- [ ] Setelah dikonfirmasi: status menjadi Terjadwal OKB, tanggal dan Gelombang tetap, dan pesan sukses tampil.
-- [ ] Jika status di database sudah bukan Sudah OKB (misalnya keputusan baru saja dicatat), aksi tidak mengubah apa pun dan menampilkan pesan halaman usang.
-- [ ] Halaman detail dan daftar Pendaftar di-revalidate.
-- [ ] Tes server action dan detail Pendaftar mencakup perilaku di atas.
+- [x] Panel Status & OKB pada Pendaftar Sudah OKB menampilkan tombol "Batalkan kehadiran". Tombol tidak tampil pada status lain.
+- [x] Menekan tombol membuka dialog konfirmasi. Pembatalan dialog tidak mengubah apa pun.
+- [x] Setelah dikonfirmasi: status menjadi Terjadwal OKB, tanggal dan Gelombang tetap, dan pesan sukses tampil.
+- [x] Jika status di database sudah bukan Sudah OKB (misalnya keputusan baru saja dicatat), aksi tidak mengubah apa pun dan menampilkan pesan halaman usang.
+- [x] Halaman detail dan daftar Pendaftar di-revalidate.
+- [x] Tes server action dan detail Pendaftar mencakup perilaku di atas.

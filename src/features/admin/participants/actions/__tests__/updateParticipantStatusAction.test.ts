@@ -106,6 +106,23 @@ describe('updateParticipantStatusAction', () => {
     expect(mocks.filters).toContainEqual(['eq:status', 'Terjadwal OKB']);
   });
 
+  it('undoes attendance, returning an applicant to Terjadwal OKB with the same schedule', async () => {
+    const result = await updateParticipantStatusAction(idle, form('unattend'));
+
+    expect(result).toEqual({ status: 'success', message: 'Kehadiran dibatalkan. Pendaftar kembali Terjadwal OKB.' });
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB' });
+    expect(mocks.filters).toContainEqual(['eq:status', 'Sudah OKB']);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(`/admin/pendaftar/${participantId}`);
+  });
+
+  it('does not undo attendance once the applicant is no longer Sudah OKB', async () => {
+    mocks.writeMaybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const result = await updateParticipantStatusAction(idle, form('unattend'));
+    expect(result).toEqual({ status: 'error', message: 'Status pendaftar sudah berubah. Muat ulang halaman lalu coba lagi.' });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it('cancels an accepted applicant and remembers the previous status', async () => {
     mocks.readMaybeSingle.mockResolvedValue({ data: { status: 'Diterima' }, error: null });
 

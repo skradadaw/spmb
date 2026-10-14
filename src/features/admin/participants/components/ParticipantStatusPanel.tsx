@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useState, type ReactNode } from 'react';
-import { CalendarClock, CalendarX2, Check, RotateCcw, UserCheck, XCircle } from 'lucide-react';
+import { CalendarClock, CalendarX2, Check, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -129,6 +129,21 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
             pending={pending}
             formAction={formAction}
             onCancel={rescheduling ? () => setRescheduling(false) : undefined}
+          />
+        )}
+
+        {status === 'Sudah OKB' && (
+          <ConfirmDialog
+            participantId={participantId}
+            intent="unattend"
+            trigger={<><UserX aria-hidden="true" className="size-3.5" />Batalkan kehadiran</>}
+            triggerClassName={ADMIN_SECONDARY_BUTTON}
+            title="Batalkan kehadiran OKB?"
+            description="Gunakan bila kehadiran tercatat karena salah scan. Pendaftar kembali Terjadwal OKB dengan tanggal dan Gelombang yang sama."
+            confirmLabel="Ya, batalkan kehadiran"
+            confirmClassName={ADMIN_PRIMARY_BUTTON}
+            pending={pending}
+            formAction={formAction}
           />
         )}
 
