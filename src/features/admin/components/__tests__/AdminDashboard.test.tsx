@@ -52,7 +52,10 @@ describe('AdminDashboard', () => {
   it('lists upcoming OKB days, marks today and offers the attendance scan', () => {
     render(<AdminDashboard summary={summary} />);
     expect(screen.getByText('Hari ini')).toBeDefined();
-    expect(screen.getByText('Gelombang 1: 10 · Gelombang 2: 8')).toBeDefined();
+    expect(screen.getByText('Gelombang 1 · 10 pendaftar')).toBeDefined();
+    expect(screen.getByText('Gelombang 2 · 8 pendaftar')).toBeDefined();
+    // A single Gelombang needs no count of its own; the day total already gives it.
+    expect(screen.getByText('Gelombang 3')).toBeDefined();
     expect(screen.getByRole('link', { name: /Scan Kehadiran/ }).getAttribute('href')).toBe('/admin/scan');
   });
 

@@ -5,9 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { AdminDashboardSummary } from '../contracts';
 
-function dayLabel(date: string) {
+function formatDate(date: string, options: Intl.DateTimeFormatOptions) {
   // Jadwal OKB is a calendar date; noon UTC keeps it on the same day in Asia/Jakarta.
-  return new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' }).format(new Date(`${date}T12:00:00Z`));
+  return new Intl.DateTimeFormat('id-ID', { ...options, timeZone: 'Asia/Jakarta' }).format(new Date(`${date}T12:00:00Z`));
+}
+
+/** With one Gelombang the day total already says how many; with several, each chip carries its own count. */
+function waveLabel(wave: { label: string; count: number }, single: boolean) {
+  return single ? wave.label : `${wave.label} · ${wave.count} pendaftar`;
 }
 
 /** The nearest OKB dates with how many Pendaftar are scheduled, so the admin can prepare rooms and the attendance scan. */
@@ -30,12 +35,26 @@ export function OkbScheduleCard({ schedule, today }: Pick<AdminDashboardSummary,
             {schedule.map(day => {
               const isToday = day.date === today;
               return (
-                <li key={day.date} className={cn('rounded-xl border px-4 py-3', isToday ? 'border-emerald-200 bg-emerald-50/60' : 'border-slate-100')}>
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="font-semibold text-slate-900">{dayLabel(day.date)}{isToday && <span className="ml-2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Hari ini</span>}</span>
-                    <span className="tabular-nums text-slate-500"><strong className="text-slate-900">{day.total}</strong> pendaftar</span>
+                <li key={day.date} className={cn('flex items-center gap-3 rounded-xl border p-3', isToday ? 'border-emerald-200 bg-emerald-50/60' : 'border-slate-100')}>
+                  <div aria-hidden="true" className={cn('grid w-12 shrink-0 overflow-hidden rounded-lg border text-center', isToday ? 'border-emerald-200 bg-white' : 'border-slate-200 bg-white')}>
+                    <span className={cn('py-0.5 text-[10px] font-bold uppercase tracking-wide text-white', isToday ? 'bg-emerald-600' : 'bg-[var(--admin-sidebar)]')}>{formatDate(day.date, { month: 'short' })}</span>
+                    <span className="py-1 text-lg font-bold leading-6 tabular-nums text-slate-900">{formatDate(day.date, { day: 'numeric' })}</span>
                   </div>
-                  <p className="mt-1 break-words text-[11px] leading-4 text-slate-500">{day.waves.map(wave => `${wave.label}: ${wave.count}`).join(' · ')}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {formatDate(day.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                      {isToday && <span className="ml-2 rounded-full bg-emerald-600 px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide text-white">Hari ini</span>}
+                    </p>
+                    <ul aria-label="Gelombang OKB" className="mt-1.5 flex flex-wrap gap-1.5">
+                      {day.waves.map(wave => (
+                        <li key={wave.label} className="rounded-full border border-sky-100 bg-sky-50 px-2 py-0.5 text-[11px] font-medium leading-4 text-sky-800">{waveLabel(wave, day.waves.length === 1)}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <p className="shrink-0 text-right leading-tight">
+                    <span className="block text-xl font-bold tabular-nums text-slate-900">{day.total}</span>
+                    <span className="text-[11px] text-slate-500">pendaftar</span>
+                  </p>
                 </li>
               );
             })}
