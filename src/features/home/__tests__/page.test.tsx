@@ -259,7 +259,19 @@ describe('Open Booking landing page', () => {
     expect(within(card('Tahfizh')).getByText('Target hafalan 4–5 Juz')).toBeDefined();
 
     const shared = screen.getByRole('region', { name: 'Di semua Pilihan Kelas' });
-    expect(within(shared).getAllByRole('listitem')).toHaveLength(6);
+    expect(within(shared).getByText('Fasilitas unggul untuk setiap Ananda')).toBeDefined();
+    expect(within(shared).getAllByRole('heading', { level: 4 }).map((heading) => heading.textContent)).toEqual([
+      'Ruang kelas nyaman dan interaktif',
+      'Sistem keamanan terpadu',
+      'Laboratorium komputer dan IT',
+      'Lapangan olahraga multifungsi',
+      'Ruang seni dan kreativitas',
+      'Perpustakaan ramah anak dan UKS',
+      'Layanan jemputan siswa',
+      'Layanan psikologi',
+      'Kantin sehat dan higienis',
+    ]);
+    expect(within(shared).getByText(/AC, proyektor atau smart TV, loker siswa, kamar mandi, dan CCTV/)).toBeDefined();
   });
 
   it('hides class quota status when capacity data is unavailable', () => {

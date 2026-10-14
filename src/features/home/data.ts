@@ -66,14 +66,20 @@ export const classHighlights: Record<ClassOption, readonly string[]> = {
   Tahfizh: ['Target hafalan 4–5 Juz', 'Tahfizh Camp', 'Grand Outing Class'],
 };
 
-/** Programs every Pilihan Kelas shares. */
-export const schoolHighlights = [
-  'Hafal doa harian, surat pilihan, dan 20 hadits',
-  'Pembelajaran berbasis kepesantrenan',
-  'Pembiasaan shalat dan adab salam',
-  'Dasar teknologi informasi',
-  'Pengembangan bakat seni, olahraga, dan ekskul',
-  'Lingkungan Islami, pendidik profesional',
+/** Facilities every Pilihan Kelas shares. */
+export const schoolFacilities = [
+  {
+    title: 'Ruang kelas nyaman dan interaktif',
+    description: 'AC, proyektor atau smart TV, loker siswa, kamar mandi, dan CCTV, dengan tata duduk yang mendukung belajar kolaboratif.',
+  },
+  { title: 'Sistem keamanan terpadu', description: 'CCTV dan pos satpam menjaga lingkungan sekolah sepanjang hari.' },
+  { title: 'Laboratorium komputer dan IT', description: 'Ananda mengenal teknologi informasi sejak dini.' },
+  { title: 'Lapangan olahraga multifungsi', description: 'Ruang gerak untuk olahraga, upacara, dan kegiatan luar kelas.' },
+  { title: 'Ruang seni dan kreativitas', description: 'Tempat Ananda menyalurkan bakat seni dan berkarya.' },
+  { title: 'Perpustakaan ramah anak dan UKS', description: 'Pojok baca yang nyaman serta layanan kesehatan sekolah.' },
+  { title: 'Layanan jemputan siswa', description: 'Antar-jemput yang memudahkan perjalanan Ananda ke sekolah.' },
+  { title: 'Layanan psikologi', description: 'Pendampingan tumbuh kembang dan kesiapan belajar Ananda.' },
+  { title: 'Kantin sehat dan higienis', description: 'Makanan bergizi yang terjaga kebersihannya.' },
 ] as const;
 
 export const contactInfo = {

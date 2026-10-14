@@ -3,27 +3,29 @@ import Link from 'next/link';
 import {
   ArrowRight,
   BookHeart,
-  BookMarked,
   BookOpenCheck,
   BookOpenText,
+  Brain,
   Bus,
-  HandHeart,
-  HeartHandshake,
   Languages,
+  Laptop,
+  LibraryBig,
   MicVocal,
-  MonitorSmartphone,
   MoonStar,
   Mosque,
-  ScrollText,
+  Palette,
+  Presentation,
+  ShieldCheck,
   Sparkles,
   Speech,
   Star,
   Tent,
   TentTree,
-  Trophy,
+  Utensils,
+  Volleyball,
   type LucideIcon,
 } from 'lucide-react';
-import { classHighlights, classProgramDescriptions, schoolHighlights } from '@/features/home/data';
+import { classHighlights, classProgramDescriptions, schoolFacilities } from '@/features/home/data';
 import {
   CLASS_OPTIONS,
   classQuotaStatus,
@@ -96,8 +98,8 @@ const classHighlightIcons: Record<ClassOption, readonly LucideIcon[]> = {
   Tahfizh: [BookHeart, Tent, Bus],
 };
 
-/** One icon per entry of schoolHighlights, in the same order. */
-const schoolHighlightIcons = [ScrollText, BookMarked, HandHeart, MonitorSmartphone, Trophy, HeartHandshake];
+/** One icon per entry of schoolFacilities, in the same order. */
+const schoolFacilityIcons = [Presentation, ShieldCheck, Laptop, Volleyball, Palette, LibraryBig, Bus, Brain, Utensils];
 
 function SeatsLeft({
   capacity,
@@ -267,19 +269,22 @@ export default function ClassOptions({
           className="relative mt-6 overflow-hidden rounded-3xl border border-public-deep/10 bg-white/80 p-6 shadow-sm shadow-public-deep/5 backdrop-blur-sm sm:p-8"
         >
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-public-green via-amber-300 to-public-green" />
-          <p className="text-xs font-bold uppercase tracking-wider text-public-green">Untuk setiap Ananda</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-public-green">Fasilitas unggul untuk setiap Ananda</p>
           <h3 id="keunggulan-title" className="mt-1 text-xl font-bold tracking-tight text-slate-950">
             Di semua Pilihan Kelas
           </h3>
-          <ul className="mt-6 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-            {schoolHighlights.map((highlight, index) => {
-              const HighlightIcon = schoolHighlightIcons[index];
+          <ul className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+            {schoolFacilities.map(({ title, description }, index) => {
+              const FacilityIcon = schoolFacilityIcons[index];
               return (
-                <li key={highlight} className="flex items-center gap-3.5">
+                <li key={title} className="flex items-start gap-3.5">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-public-tint text-public-green ring-1 ring-inset ring-public-line">
-                    <HighlightIcon aria-hidden="true" size={20} />
+                    <FacilityIcon aria-hidden="true" size={20} />
                   </span>
-                  <span className="text-[0.95rem] font-semibold leading-6 text-slate-800">{highlight}</span>
+                  <div className="min-w-0">
+                    <h4 className="text-[0.95rem] font-semibold leading-6 text-slate-900">{title}</h4>
+                    <p className="mt-0.5 text-sm leading-6 text-slate-600">{description}</p>
+                  </div>
                 </li>
               );
             })}
