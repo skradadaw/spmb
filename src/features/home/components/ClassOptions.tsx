@@ -32,6 +32,7 @@ import {
   type ClassQuotaStatus,
 } from '@/features/registration/classCapacity';
 import { AccreditationBadge } from './ContactLinks';
+import SectionBackdrop from './SectionBackdrop';
 import SectionHeading from './SectionHeading';
 import { actionClass } from './actionStyles';
 
@@ -132,11 +133,10 @@ export default function ClassOptions({
     <section
       id="kelas"
       aria-labelledby="kelas-title"
+      data-tone="canvas"
       className="relative isolate scroll-mt-24 overflow-hidden bg-public-canvas px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
     >
-      <div aria-hidden="true" className="texture-dots absolute inset-x-0 top-0 -z-10 h-64" />
-      <div aria-hidden="true" className="absolute -left-24 top-32 -z-10 h-72 w-72 rounded-full bg-public-line/40 blur-3xl" />
-      <div aria-hidden="true" className="absolute -right-24 bottom-24 -z-10 h-80 w-80 rounded-full bg-amber-200/35 blur-3xl" />
+      <SectionBackdrop />
       <div
         aria-hidden="true"
         className="absolute right-[4%] top-20 -z-10 hidden h-16 w-16 rotate-12 items-center justify-center rounded-3xl border border-amber-200 bg-white/70 text-amber-500 shadow-lg shadow-public-deep/5 backdrop-blur-sm xl:flex"

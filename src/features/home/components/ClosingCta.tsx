@@ -3,14 +3,17 @@ import { ArrowRight, Clock3 } from 'lucide-react';
 import { contactInfo, registrationInfo } from '@/features/home/data';
 import { WhatsAppLink } from './ContactLinks';
 import Eyebrow from './Eyebrow';
+import SectionBackdrop from './SectionBackdrop';
 import { actionClass } from './actionStyles';
 
 export default function ClosingCta() {
   return (
     <section
       aria-labelledby="cta-title"
-      className="bg-public-canvas px-4 pb-16 sm:px-6 sm:pb-24 lg:px-8"
+      data-tone="white"
+      className="relative isolate overflow-hidden bg-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
     >
+      <SectionBackdrop />
       <div className="relative isolate mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-public-deep px-6 py-12 text-white shadow-2xl shadow-public-deep/40 sm:px-10 sm:py-16 lg:px-16">
         <div aria-hidden="true" className="hero-grid absolute inset-0 -z-10 opacity-20" />
         <div aria-hidden="true" className="absolute -right-20 -top-24 -z-10 h-72 w-72 rounded-full bg-public-line/20 blur-3xl" />

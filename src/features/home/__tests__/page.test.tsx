@@ -336,6 +336,18 @@ describe('Open Booking landing page', () => {
     ]);
   });
 
+  it('alternates white and canvas section backgrounds, each with the same decoration', () => {
+    renderHome();
+    const sections = ['alur-title', 'kelas-title', 'persiapan-title', 'faq-title', 'cta-title']
+      .map((id) => document.getElementById(id)!.closest('section')!);
+
+    expect(sections.map((section) => section.dataset.tone)).toEqual(['white', 'canvas', 'white', 'canvas', 'white']);
+    for (const section of sections) {
+      expect(section.className).toContain(section.dataset.tone === 'white' ? 'bg-white' : 'bg-public-canvas');
+      expect(section.querySelectorAll(':scope > [data-section-backdrop]')).toHaveLength(1);
+    }
+  });
+
   it('closes with a WhatsApp option next to the registration CTA', () => {
     renderHome();
 

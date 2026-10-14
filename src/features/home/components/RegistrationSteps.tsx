@@ -1,4 +1,5 @@
 import { registrationFlow } from '@/features/home/data';
+import SectionBackdrop from './SectionBackdrop';
 import SectionHeading from './SectionHeading';
 
 export default function RegistrationSteps() {
@@ -6,12 +7,10 @@ export default function RegistrationSteps() {
     <section
       id="alur"
       aria-labelledby="alur-title"
-      className="relative scroll-mt-24 overflow-hidden bg-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
+      data-tone="white"
+      className="relative isolate scroll-mt-24 overflow-hidden bg-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
     >
-      <div
-        aria-hidden="true"
-        className="texture-dots absolute inset-x-0 top-0 h-64"
-      />
+      <SectionBackdrop />
       <div className="relative mx-auto max-w-7xl">
         <SectionHeading
           id="alur-title"

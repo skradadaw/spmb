@@ -1,6 +1,7 @@
 import { ChevronDown, Clock3 } from 'lucide-react';
 import { contactInfo, faqs } from '@/features/home/data';
 import { WhatsAppLink } from './ContactLinks';
+import SectionBackdrop from './SectionBackdrop';
 import SectionHeading from './SectionHeading';
 import { actionClass } from './actionStyles';
 
@@ -9,9 +10,10 @@ export default function FrequentQuestions() {
     <section
       id="faq"
       aria-labelledby="faq-title"
-      className="relative scroll-mt-24 overflow-hidden bg-public-canvas px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
+      data-tone="canvas"
+      className="relative isolate scroll-mt-24 overflow-hidden bg-public-canvas px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
     >
-      <div aria-hidden="true" className="texture-dots absolute inset-x-0 top-0 h-64" />
+      <SectionBackdrop />
       <div className="relative mx-auto grid max-w-7xl items-start gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-x-16">
         <SectionHeading
           id="faq-title"

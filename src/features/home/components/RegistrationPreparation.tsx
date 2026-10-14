@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { registrationInfo } from '@/features/home/data';
 import CopyAccountButton from './CopyAccountButton';
+import SectionBackdrop from './SectionBackdrop';
 import SectionHeading from './SectionHeading';
 import { actionClass } from './actionStyles';
 
@@ -40,11 +41,10 @@ export default function RegistrationPreparation() {
     <section
       id="persiapan"
       aria-labelledby="persiapan-title"
+      data-tone="white"
       className="relative isolate scroll-mt-24 overflow-hidden bg-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8"
     >
-      <div aria-hidden="true" className="texture-dots absolute inset-x-0 top-0 -z-10 h-64" />
-      <div aria-hidden="true" className="absolute -left-28 top-1/3 -z-10 h-80 w-80 rounded-full bg-public-line/35 blur-3xl" />
-      <div aria-hidden="true" className="absolute -bottom-20 -right-24 -z-10 h-80 w-80 rounded-full bg-amber-200/30 blur-3xl" />
+      <SectionBackdrop />
       <div className="mx-auto max-w-7xl">
         <SectionHeading
           id="persiapan-title"
