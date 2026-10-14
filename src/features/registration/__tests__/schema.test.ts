@@ -151,6 +151,22 @@ describe('Registration Form Validation Schema', () => {
     });
   });
 
+  describe('step1Schema Prestasi validation', () => {
+    it('requires an achievement name once a level is chosen', () => {
+      const result = step1Schema.safeParse({ ...baseValidStep1, tingkatPrestasi: 'Kecamatan', prestasiAnak: '' });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((issue) => issue.path[0] === 'prestasiAnak')).toBe(true);
+    });
+
+    it('accepts a level together with its achievement name', () => {
+      expect(step1Schema.safeParse({ ...baseValidStep1, tingkatPrestasi: 'Kecamatan', prestasiAnak: 'Juara 1 Lomba Mewarnai' }).success).toBe(true);
+    });
+
+    it('does not ask for a name when there is no achievement', () => {
+      expect(step1Schema.safeParse({ ...baseValidStep1, tingkatPrestasi: '', prestasiAnak: '' }).success).toBe(true);
+    });
+  });
+
   describe('step1Schema Kelas Tujuan validation', () => {
     it('requires a target grade for Pindahan applicants', () => {
       const result = step1Schema.safeParse({ ...baseValidStep1, jenisPendaftaran: 'Pindahan' });

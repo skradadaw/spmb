@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import { UploadCloud, Check, X, Eye, FileText } from 'lucide-react';
+import { UploadCloud, Check, X, Eye, FileText, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
 
@@ -97,7 +97,7 @@ export function DocumentUploadCard({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "relative border-2 rounded-2xl p-5 transition-all flex flex-col justify-between overflow-hidden group",
+          "relative border-2 rounded-2xl p-4 sm:p-5 transition-all flex flex-col justify-between overflow-hidden group",
           file
             ? "border-[#00AA13] bg-[#00AA13]/5 shadow-xs"
             : isDragging
@@ -118,8 +118,8 @@ export function DocumentUploadCard({
 
         {file ? (
           <div className="space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
                 {previewUrl && !isPdf ? (
                   <div
                     onClick={() => setIsPreviewOpen(true)}
@@ -149,51 +149,42 @@ export function DocumentUploadCard({
                     <Check size={22} />
                   </div>
                 )}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="font-semibold text-gray-900 text-sm truncate">{doc.title}</h4>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#00AA13]/10 text-[#00AA13] shrink-0">
-                      Wajib ✓
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-gray-900 text-sm leading-snug">{doc.title}</h4>
+                  <p className="text-xs text-gray-600 truncate mt-0.5">{file.name}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#00AA13]/10 text-[#00AA13]">
+                      <Check size={10} strokeWidth={3} /> Terunggah
                     </span>
+                    <span className="text-[11px] text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                   </div>
-                  <p className="text-xs text-gray-600 truncate max-w-[200px] mt-0.5">{file.name}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsPreviewOpen(true)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-[#00AA13] hover:bg-[#00AA13]/10 transition-colors p-1 cursor-pointer"
-                  title="Pratinjau Berkas"
-                >
-                  <Eye size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onRemove(doc.id)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors p-1 cursor-pointer"
-                  title="Hapus Berkas"
-                >
-                  <X size={18} />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => onRemove(doc.id)}
+                className="w-8 h-8 -mt-1 -mr-1 shrink-0 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                title="Hapus Berkas"
+                aria-label={`Hapus berkas ${doc.title}`}
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#00AA13]/15 text-xs">
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(true)}
-                className="font-medium text-[#00AA13] hover:underline flex items-center gap-1 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2 rounded-full font-semibold text-[#00AA13] bg-white border border-[#00AA13]/30 hover:bg-[#00AA13]/10 transition-colors cursor-pointer"
               >
-                <Eye size={13} /> Lihat Pratinjau
+                <Eye size={14} className="shrink-0" /> Pratinjau
               </button>
               <label
                 htmlFor={`file-input-${doc.id}`}
-                className="font-medium text-gray-500 hover:text-gray-800 hover:underline cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2 rounded-full font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer"
               >
-                Ganti Berkas
+                <RefreshCw size={13} className="shrink-0" /> Ganti Berkas
               </label>
             </div>
           </div>

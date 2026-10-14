@@ -5,7 +5,7 @@ import { useForm, Controller, useWatch, type FieldErrors } from 'react-hook-form
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { CheckCircle2, ChevronRight, ChevronLeft, Loader2, CalendarIcon, User, Users, MapPin, FileText, GraduationCap, Info, Check, UserCheck } from 'lucide-react';
-import { DIRECTORATE_2_UNITS, KELAS_TUJUAN_OPTIONS, REFERRAL_TYPES, formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
+import { ACHIEVEMENT_LEVEL_OPTIONS, DIRECTORATE_2_UNITS, KELAS_TUJUAN_OPTIONS, REFERRAL_TYPES, formSchema, step1BaseSchema, step2Schema, type FormData } from '../schema';
 import {
   cancelRegistrationAction,
   finalizeRegistrationAction,
@@ -41,6 +41,8 @@ const steps = [
 ];
 
 const DOCUMENTS = DOCUMENT_DEFINITIONS;
+// Radix Select can't hold an empty value, so "belum ada prestasi" gets a sentinel.
+const NO_ACHIEVEMENT = '__none__';
 
 type NumericField = 'nik' | 'nisn' | 'rt' | 'rw' | 'nikAyah' | 'nikIbu';
 type PhoneField = 'teleponAyah' | 'teleponIbu' | 'nomorWaPengusul';
@@ -148,6 +150,8 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
   const kecamatanVal = useWatch({ control, name: 'kecamatan' });
 
   const [adaAfiliasiDirektorat2, setAdaAfiliasiDirektorat2] = useState<'Ya' | 'Tidak'>('Tidak');
+  // Keeps "Belum ada prestasi" visible in the select, since the stored level stays empty.
+  const [tanpaPrestasi, setTanpaPrestasi] = useState(false);
   const [tipeAfiliasiDirektorat2, setTipeAfiliasiDirektorat2] = useState<'Orang Tua' | 'Saudara' | ''>('');
   const [afiliasiDirektorat2Error, setAfiliasiDirektorat2Error] = useState<string | null>(null);
 
@@ -157,6 +161,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
   const adaPengusul = useWatch({ control, name: 'adaPengusul' });
   const tipePengusul = useWatch({ control, name: 'tipePengusul' });
   const tanggalLahir = useWatch({ control, name: 'tanggalLahir' });
+  const tingkatPrestasi = useWatch({ control, name: 'tingkatPrestasi' });
   
   let ageYears = 0;
   let ageMonths = 0;
@@ -439,7 +444,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
         </div>
 
         {/* Form Content */}
-        <div className="p-5 sm:p-8 md:p-12">
+        <div className="p-4 sm:p-8 md:p-12">
           {submitError && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }} 
@@ -490,12 +495,12 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                 
                 <div className="space-y-6">
                   {/* Program Pilihan */}
-                  <div className="p-6 bg-white shadow-sm rounded-xl border border-gray-200">
-                    <div className="bg-gray-50/50 p-3 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4">
+                  <div className="p-4 sm:p-6 bg-white shadow-sm rounded-2xl border border-gray-200">
+                    <div className="bg-gray-50/70 px-3 py-2.5 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4 sm:mb-5">
                       <FileText size={16} className="text-[#00AA13]" />
                       <h4 className="text-sm font-semibold text-gray-900">Program Pilihan</h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium text-gray-700">Jenis Pendaftaran *</label>
                         <Controller
@@ -570,12 +575,12 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                   </div>
 
                   {/* Identitas Diri */}
-                  <div className="p-6 bg-white shadow-sm rounded-xl border border-gray-200">
-                    <div className="bg-gray-50/50 p-3 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4">
+                  <div className="p-4 sm:p-6 bg-white shadow-sm rounded-2xl border border-gray-200">
+                    <div className="bg-gray-50/70 px-3 py-2.5 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4 sm:mb-5">
                       <User size={16} className="text-[#00AA13]" />
                       <h4 className="text-sm font-semibold text-gray-900">Identitas Diri</h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       <div className="space-y-1.5 md:col-span-2">
                         <label htmlFor="namaLengkap" className="text-sm font-medium text-gray-700">Nama Lengkap *</label>
                         <input id="namaLengkap" {...register('namaLengkap')} className={cn(inputClass, errors.namaLengkap && "border-red-500")} placeholder="Nama sesuai Akta Kelahiran" />
@@ -693,12 +698,12 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                   </div>
 
                   {/* Pendidikan & Prestasi */}
-                  <div className="p-6 bg-white shadow-sm rounded-xl border border-gray-200">
-                    <div className="bg-gray-50/50 p-3 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4">
+                  <div className="p-4 sm:p-6 bg-white shadow-sm rounded-2xl border border-gray-200">
+                    <div className="bg-gray-50/70 px-3 py-2.5 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4 sm:mb-5">
                       <GraduationCap size={16} className="text-[#00AA13]" />
                       <h4 className="text-sm font-semibold text-gray-900">Riwayat Pendidikan & Prestasi</h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       <div className="space-y-1.5">
                         <label htmlFor="asalSekolah" className="text-sm font-medium text-gray-700">Asal Sekolah (TK/PAUD) *</label>
                         <input id="asalSekolah" {...register('asalSekolah')} className={cn(inputClass, errors.asalSekolah && "border-red-500")} placeholder="Nama TK/PAUD" />
@@ -710,36 +715,56 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                         {errors.jarakKeSekolah && <p className="text-red-500 text-xs mt-1">{errors.jarakKeSekolah.message}</p>}
                       </div>
                       <div className="space-y-1.5">
-                        <label htmlFor="prestasiAnak" className="text-sm font-medium text-gray-700">Prestasi Anak (Opsional)</label>
-                        <input id="prestasiAnak" {...register('prestasiAnak')} className={inputClass} placeholder="Misal: Juara 1 Lomba Mewarnai" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-gray-700">Tingkat Prestasi</label>
+                        <label className="text-sm font-medium text-gray-700">Tingkat Prestasi (Opsional)</label>
                         <Controller
                           control={control}
                           name="tingkatPrestasi"
                           render={({ field }) => (
-                            <Select onValueChange={(val) => { field.onChange(val); clearErrors('tingkatPrestasi'); }} value={field.value || ''}>
+                            <Select
+                              onValueChange={(val) => {
+                                const level = val === NO_ACHIEVEMENT ? '' : val;
+                                field.onChange(level);
+                                setTanpaPrestasi(!level);
+                                clearErrors(['tingkatPrestasi', 'prestasiAnak']);
+                                if (!level) setValue('prestasiAnak', '');
+                              }}
+                              value={field.value || (tanpaPrestasi ? NO_ACHIEVEMENT : '')}
+                            >
                               <SelectTrigger>
-                                <SelectValue placeholder="Pilih Tingkat" />
+                                <SelectValue placeholder="Pilih jika anak punya prestasi" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Sekolah">Sekolah</SelectItem>
-                                <SelectItem value="Kecamatan">Kecamatan</SelectItem>
-                                <SelectItem value="Kabupaten/Kota">Kabupaten/Kota</SelectItem>
-                                <SelectItem value="Provinsi">Provinsi</SelectItem>
-                                <SelectItem value="Nasional">Nasional</SelectItem>
+                                <SelectItem value={NO_ACHIEVEMENT}>Belum ada prestasi</SelectItem>
+                                {ACHIEVEMENT_LEVEL_OPTIONS.map((level) => (
+                                  <SelectItem key={level} value={level}>{level}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           )}
                         />
                       </div>
+                      {tingkatPrestasi && (
+                        <div className="space-y-1.5">
+                          <label htmlFor="prestasiAnak" className="text-sm font-medium text-gray-700">Nama Prestasi *</label>
+                          <input
+                            id="prestasiAnak"
+                            {...register('prestasiAnak', {
+                              onChange: () => {
+                                if (errors.prestasiAnak) clearErrors('prestasiAnak');
+                              },
+                            })}
+                            className={cn(inputClass, errors.prestasiAnak && "border-red-500")}
+                            placeholder="Misal: Juara 1 Lomba Mewarnai"
+                          />
+                          {errors.prestasiAnak && <p className="text-red-500 text-xs mt-1">{errors.prestasiAnak.message}</p>}
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Alamat Lengkap */}
-                  <div className="p-6 bg-white shadow-sm rounded-xl border border-gray-200">
-                    <div className="bg-gray-50/50 p-3 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4">
+                  <div className="p-4 sm:p-6 bg-white shadow-sm rounded-2xl border border-gray-200">
+                    <div className="bg-gray-50/70 px-3 py-2.5 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4 sm:mb-5">
                       <MapPin size={16} className="text-[#00AA13]" />
                       <h4 className="text-sm font-semibold text-gray-900">Alamat Lengkap Rumah</h4>
                     </div>
@@ -939,12 +964,12 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                   </div>
 
                   {/* Informasi Tambahan */}
-                  <div className="p-6 bg-white shadow-sm rounded-xl border border-gray-200">
-                    <div className="bg-gray-50/50 p-3 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4">
+                  <div className="p-4 sm:p-6 bg-white shadow-sm rounded-2xl border border-gray-200">
+                    <div className="bg-gray-50/70 px-3 py-2.5 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4 sm:mb-5">
                       <Info size={16} className="text-[#00AA13]" />
                       <h4 className="text-sm font-semibold text-gray-900">Informasi Tambahan</h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       {/* Pertanyaan Gabungan Afiliasi Direktorat 2 */}
                       <div className="space-y-1.5 md:col-span-2">
                         <label className="text-sm font-medium text-gray-700">
@@ -1051,7 +1076,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
 
                           {/* Field Isian jika Orang Tua Bekerja */}
                           {tipeAfiliasiDirektorat2 === 'Orang Tua' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                               <div className="space-y-1.5">
                                 <label htmlFor="namaOrangtuaDirektorat2" className="text-sm font-medium text-gray-700">Nama orang tua yang bekerja *</label>
                                 <input 
@@ -1091,7 +1116,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
 
                           {/* Field Isian jika Saudara Bersekolah */}
                           {tipeAfiliasiDirektorat2 === 'Saudara' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                               <div className="space-y-1.5">
                                 <label htmlFor="namaSaudaraDirektorat2" className="text-sm font-medium text-gray-700">Nama saudara yang bersekolah *</label>
                                 <input
@@ -1134,7 +1159,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                           <span>Pengusul / Rujukan Murid</span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                           <div className="space-y-1.5 md:col-span-2">
                             <label className="text-sm font-medium text-gray-700">
                               Apakah pendaftaran murid ini berdasarkan pengusulan/rujukan dari seseorang? *
@@ -1173,7 +1198,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                           {adaPengusul === 'Ya' && (
                             <div className="space-y-6 md:col-span-2 pt-2 border-t border-gray-100">
                               {/* Nama Pengusul / Rujukan (Kategori) & Nama Asal TK */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-start">
                                 <div className="space-y-2">
                                   <label className="text-sm font-medium text-gray-700">Nama Pengusul/Rujukan: *</label>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1230,7 +1255,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                               )}
                               </div>
 
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 {/* Nama Lengkap Pengusul */}
                                 <div className="space-y-1.5">
                                   <label htmlFor="namaPengusul" className="text-sm font-medium text-gray-700">Nama lengkap pengusul: *</label>
@@ -1296,8 +1321,8 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                 
                 <div className="space-y-8 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-8">
                   {/* Ayah Section */}
-                  <div className="p-6 bg-white shadow-sm rounded-xl border border-gray-200">
-                    <div className="bg-gray-50/50 p-3 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4">
+                  <div className="p-4 sm:p-6 bg-white shadow-sm rounded-2xl border border-gray-200">
+                    <div className="bg-gray-50/70 px-3 py-2.5 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4 sm:mb-5">
                       <User size={16} className="text-[#00AA13]" />
                       <h4 className="text-sm font-semibold text-gray-900">Data Ayah</h4>
                     </div>
@@ -1385,10 +1410,10 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                       <div className="space-y-1.5 md:col-span-2">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
                           <label htmlFor="alamatAyah" className="text-sm font-medium text-gray-700">Alamat Ayah *</label>
-                          <label className="flex items-center gap-2 text-xs font-semibold text-[#00AA13] bg-[#00AA13]/10 px-3.5 py-1.5 rounded-full cursor-pointer hover:bg-[#00AA13]/20 transition-colors w-fit select-none">
+                          <label className="flex items-start sm:items-center gap-2 text-xs font-semibold leading-snug text-[#00AA13] bg-[#00AA13]/10 px-3 py-2 rounded-lg cursor-pointer hover:bg-[#00AA13]/20 transition-colors w-full sm:w-fit select-none">
                             <input 
                               type="checkbox" 
-                              className="rounded text-[#00AA13] focus:ring-[#00AA13] cursor-pointer w-4 h-4 accent-[#00AA13]"
+                              className="rounded text-[#00AA13] focus:ring-[#00AA13] cursor-pointer w-4 h-4 shrink-0 accent-[#00AA13]"
                               onChange={(e) => handleCopyAddress('alamatAyah', e.target.checked)}
                             />
                             <span>Alamat sama dengan tempat tinggal anak</span>
@@ -1410,8 +1435,8 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                   </div>
 
                   {/* Ibu Section */}
-                  <div className="p-6 bg-white shadow-sm rounded-xl border border-gray-200">
-                    <div className="bg-gray-50/50 p-3 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4">
+                  <div className="p-4 sm:p-6 bg-white shadow-sm rounded-2xl border border-gray-200">
+                    <div className="bg-gray-50/70 px-3 py-2.5 rounded-lg border-l-4 border-[#00AA13] flex items-center gap-2 mb-4 sm:mb-5">
                       <User size={16} className="text-[#00AA13]" />
                       <h4 className="text-sm font-semibold text-gray-900">Data Ibu</h4>
                     </div>
@@ -1500,10 +1525,10 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                       <div className="space-y-1.5 md:col-span-2">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
                           <label htmlFor="alamatIbu" className="text-sm font-medium text-gray-700">Alamat Ibu *</label>
-                          <label className="flex items-center gap-2 text-xs font-semibold text-[#00AA13] bg-[#00AA13]/10 px-3.5 py-1.5 rounded-full cursor-pointer hover:bg-[#00AA13]/20 transition-colors w-fit select-none">
+                          <label className="flex items-start sm:items-center gap-2 text-xs font-semibold leading-snug text-[#00AA13] bg-[#00AA13]/10 px-3 py-2 rounded-lg cursor-pointer hover:bg-[#00AA13]/20 transition-colors w-full sm:w-fit select-none">
                             <input 
                               type="checkbox" 
-                              className="rounded text-[#00AA13] focus:ring-[#00AA13] cursor-pointer w-4 h-4 accent-[#00AA13]"
+                              className="rounded text-[#00AA13] focus:ring-[#00AA13] cursor-pointer w-4 h-4 shrink-0 accent-[#00AA13]"
                               onChange={(e) => handleCopyAddress('alamatIbu', e.target.checked)}
                             />
                             <span>Alamat sama dengan tempat tinggal anak</span>
@@ -1529,45 +1554,56 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
 
               <div className={cn("space-y-6", currentStep !== 2 && "hidden")}>
             {/* Step 3 Header & Completeness Tracker */}
-            <div className="p-4 sm:p-5 bg-gradient-to-br from-emerald-50/40 via-white to-gray-50/70 rounded-2xl border border-emerald-100 shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-[#00AA13]/10 text-[#00AA13] flex items-center justify-center shrink-0 shadow-xs">
-                    <FileText size={20} className="stroke-[2.2]" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-                      Unggah Dokumen Wajib
-                    </h3>
-                    <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 leading-relaxed">
-                      Wajib mengunggah 4 berkas dokumen untuk kelengkapan pendaftaran.
-                    </p>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00AA13]/10 flex items-center justify-center text-[#00AA13] shrink-0">
+                  <FileText size={18} className="sm:w-5 sm:h-5" />
                 </div>
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Unggah Dokumen Wajib</h3>
+                  <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+                    Unggah {DOCUMENTS.length} berkas berikut untuk melengkapi pendaftaran.
+                  </p>
+                </div>
+              </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-2.5 bg-white px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-gray-200/80 shadow-2xs shrink-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] sm:text-xs font-semibold text-gray-600">Status:</span>
-                        <span className={cn(
-                          "text-[11px] sm:text-xs font-bold px-2 py-0.5 rounded-md",
-                          Object.keys(uploadedFiles).length === DOCUMENTS.length
-                            ? "bg-green-100 text-green-800 font-extrabold"
-                            : "bg-amber-50 text-amber-800 border border-amber-200/60"
-                        )}>
-                          {Object.keys(uploadedFiles).length === DOCUMENTS.length
-                            ? "4/4 Lengkap ✓"
-                            : `${Object.keys(uploadedFiles).length} dari 4 Berkas`}
-                        </span>
-                      </div>
-                      <div className="w-20 sm:w-28 h-2 bg-gray-100 rounded-full overflow-hidden border border-gray-200/50">
+              {(() => {
+                const uploadedCount = Object.keys(uploadedFiles).length;
+                const isComplete = uploadedCount === DOCUMENTS.length;
+                return (
+                  <div
+                    className={cn(
+                      "p-3.5 sm:p-4 rounded-2xl border transition-colors",
+                      isComplete ? "bg-[#00AA13]/5 border-[#00AA13]/30" : "bg-gray-50/80 border-gray-200"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2.5">
+                      <span className="text-xs sm:text-sm font-semibold text-gray-700">Kelengkapan berkas</span>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 whitespace-nowrap text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full",
+                          isComplete ? "bg-[#00AA13] text-white" : "bg-amber-100 text-amber-800"
+                        )}
+                      >
+                        {isComplete && <Check size={12} strokeWidth={3} className="shrink-0" />}
+                        {uploadedCount}/{DOCUMENTS.length} {isComplete ? 'Lengkap' : 'Terunggah'}
+                      </span>
+                    </div>
+                    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${DOCUMENTS.length}, minmax(0, 1fr))` }}>
+                      {DOCUMENTS.map((doc) => (
                         <div
-                          className="h-full bg-[#00AA13] transition-all duration-300 rounded-full"
-                          style={{ width: `${(Object.keys(uploadedFiles).length / DOCUMENTS.length) * 100}%` }}
+                          key={doc.id}
+                          className={cn(
+                            "h-1.5 rounded-full transition-colors duration-300",
+                            uploadedFiles[doc.id] ? "bg-[#00AA13]" : "bg-gray-200"
+                          )}
                         />
-                      </div>
+                      ))}
                     </div>
                   </div>
-                </div>
+                );
+              })()}
+            </div>
 
                 {uploadError && (
                   <motion.div
@@ -1581,7 +1617,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                 )}
 
                 {/* 4 Mandatory Document Cards */}
-                <div className="grid md:grid-cols-2 gap-5">
+                <div className="grid md:grid-cols-2 gap-3 sm:gap-5">
                   {DOCUMENTS.map((doc) => (
                     <DocumentUploadCard
                       key={doc.id}
@@ -1731,7 +1767,8 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="flex items-center justify-center gap-1 px-3.5 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer shadow-xs shrink-0"
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center gap-1 px-3.5 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer shadow-xs shrink-0 disabled:opacity-50 disabled:pointer-events-none"
                   >
                     <ChevronLeft size={16} className="shrink-0" />
                     <span>Sebelumnya</span>
@@ -1762,7 +1799,7 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                     {isSubmitting ? (
                       <>
                         <Loader2 size={16} className="animate-spin shrink-0" />
-                        <span className="truncate">{uploadStatusMessage || 'Memproses...'}</span>
+                        <span className="truncate">Mengirim...</span>
                       </>
                     ) : Object.keys(uploadedFiles).length === DOCUMENTS.length ? (
                       <>

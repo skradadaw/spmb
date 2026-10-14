@@ -173,10 +173,24 @@ function validateReferralDetails(
   }
 }
 
+function validateAchievementDetails(
+  data: z.infer<typeof step1BaseSchema>,
+  ctx: z.RefinementCtx,
+) {
+  if (data.tingkatPrestasi && (data.prestasiAnak?.trim().length ?? 0) < 3) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Nama prestasi wajib diisi',
+      path: ['prestasiAnak'],
+    });
+  }
+}
+
 export const step1Schema = step1BaseSchema
   .superRefine(validateDirectorate2Details)
   .superRefine(validateTransferGrade)
-  .superRefine(validateReferralDetails);
+  .superRefine(validateReferralDetails)
+  .superRefine(validateAchievementDetails);
 
 export const step2Schema = z.object({
   // Data Ayah
@@ -208,6 +222,7 @@ export const formSchema = z.object({
 })
   .superRefine(validateDirectorate2Details)
   .superRefine(validateTransferGrade)
-  .superRefine(validateReferralDetails);
+  .superRefine(validateReferralDetails)
+  .superRefine(validateAchievementDetails);
 
 export type FormData = z.infer<typeof formSchema>;

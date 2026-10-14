@@ -48,11 +48,11 @@ export function ConfirmationModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2 }}
-          className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 my-auto"
+          className="relative z-10 w-full max-w-lg max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 my-auto"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#00AA13] to-[#00880F] px-6 py-5 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="shrink-0 bg-gradient-to-r from-[#00AA13] to-[#00880F] px-4 sm:px-6 py-4 sm:py-5 text-white flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
                 <FileCheck size={22} className="text-white" />
               </div>
@@ -65,7 +65,8 @@ export function ConfirmationModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+                aria-label="Tutup"
+                className="w-8 h-8 shrink-0 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -73,7 +74,7 @@ export function ConfirmationModal({
           </div>
 
           {/* Body Content */}
-          <div className="p-5 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-4 overflow-y-auto">
             {/* Info Alert Box */}
             <div className="p-3.5 bg-green-50 border border-green-200 rounded-2xl flex items-start gap-2.5 text-xs text-green-900 leading-relaxed">
               <CheckCircle2 size={18} className="text-[#00AA13] shrink-0 mt-0.5" />
@@ -122,10 +123,10 @@ export function ConfirmationModal({
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 pt-1">
                 <span className="text-gray-600 font-medium text-[11px]">Status Dokumen:</span>
                 <span className="inline-flex items-center gap-1 font-bold text-[#00AA13] bg-[#00AA13]/10 px-2.5 py-1 rounded-full text-[11px]">
-                  <CheckCircle2 size={13} /> {uploadedCount} dari {totalCount} Dokumen Siap Upload
+                  <CheckCircle2 size={13} className="shrink-0" /> {uploadedCount} dari {totalCount} dokumen siap diunggah
                 </span>
               </div>
             </div>
@@ -137,33 +138,39 @@ export function ConfirmationModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2.5">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={onClose}
-              className="px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-gray-800 bg-white hover:bg-gray-100 rounded-full border border-gray-200 transition-all cursor-pointer disabled:opacity-50"
-            >
-              Periksa Kembali
-            </button>
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={onConfirm}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 bg-[#00AA13] hover:bg-[#00880F] active:scale-95 text-white rounded-full text-xs sm:text-sm font-bold transition-all shadow-md shadow-[#00AA13]/30 cursor-pointer disabled:opacity-80 disabled:cursor-wait"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>{uploadStatusMessage || 'Mengunggah Data...'}</span>
-                </>
-              ) : (
-                <>
+          <div className="shrink-0 p-4 sm:p-5 bg-gray-50 border-t border-gray-100">
+            {isSubmitting ? (
+              <div role="status" aria-live="polite" className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#00AA13]/10 flex items-center justify-center shrink-0">
+                  <Loader2 size={20} className="animate-spin text-[#00AA13]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900">Mengirim pendaftaran...</p>
+                  <p className="text-[11px] sm:text-xs text-gray-500 leading-snug mt-0.5">
+                    {uploadStatusMessage || 'Mengunggah data...'}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-1">Jangan tutup atau muat ulang halaman ini.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-2.5">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-gray-800 bg-white hover:bg-gray-100 rounded-full border border-gray-200 transition-all cursor-pointer"
+                >
+                  Periksa Kembali
+                </button>
+                <button
+                  type="button"
+                  onClick={onConfirm}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 sm:px-7 py-3 bg-[#00AA13] hover:bg-[#00880F] active:scale-95 text-white rounded-full text-sm font-bold transition-all shadow-md shadow-[#00AA13]/30 cursor-pointer"
+                >
                   <span>Ya, Kirim Pendaftaran</span>
-                  <CheckCircle2 size={16} />
-                </>
-              )}
-            </button>
+                  <CheckCircle2 size={16} className="shrink-0" />
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
