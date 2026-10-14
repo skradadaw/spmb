@@ -390,12 +390,22 @@ describe('Open Booking landing page', () => {
     expect(maps.getAttribute('target')).toBe('_blank');
   });
 
-  it('sells the school in the footer instead of repeating the section navigation', () => {
+  it('sells the school in the footer and offers descriptive quick links', () => {
     renderHome();
 
     const footer = screen.getByRole('contentinfo');
-    expect(within(footer).queryByRole('navigation')).toBeNull();
     expect(within(footer).getByText(/memadukan kurikulum nasional dengan pembelajaran berbasis kepesantrenan/)).toBeDefined();
+    const quickLinks = within(footer).getByRole('navigation', { name: 'Tautan cepat' });
+    expect(within(quickLinks).getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['Jadwal penting Open Booking', '#jadwal'],
+      ['Alur pendaftaran langkah demi langkah', '#alur'],
+      ['Pilihan Kelas dan sisa kuota', '#kelas'],
+      ['Biaya OKB dan Berkas yang disiapkan', '#persiapan'],
+      ['Unduh rincian biaya (PDF)', '/rincian-biaya-2027-2028.pdf'],
+      ['Isi formulir pendaftaran', '/pendaftaran'],
+    ]);
+    // Contacts are a plain list, not boxed in a card.
+    expect(footer.querySelector('.rounded-3xl')).toBeNull();
   });
 
   it('links the school Instagram, Facebook, and TikTok from the footer in a new tab', () => {
