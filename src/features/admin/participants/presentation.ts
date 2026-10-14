@@ -1,4 +1,5 @@
 import { formatProperName, PRESERVED_ABBREVIATIONS } from '@/lib/properName';
+import { formatAddress, formatRegionName } from '@/lib/address';
 import { formatSchoolName } from '@/lib/schoolName';
 import type { ParticipantFieldGroupName } from './fields';
 
@@ -6,14 +7,21 @@ const PROPER_NAME_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>
   identity: new Set(['namaLengkap', 'tempatLahir']),
   school: new Set(['tingkatPrestasi']),
   affiliation: new Set(['namaOrangtuaDirektorat2', 'unitOrangtuaDirektorat2', 'namaSaudaraDirektorat2', 'unitSaudaraDirektorat2']),
-  address: new Set(['alamatJalan', 'kelurahan', 'kecamatan', 'kota']),
-  father: new Set(['nama', 'alamat']),
-  mother: new Set(['nama', 'alamat']),
+  father: new Set(['nama']),
+  mother: new Set(['nama']),
   referral: new Set(['namaPengusul']),
 };
 const SCHOOL_NAME_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
   school: new Set(['asalSekolah']),
   referral: new Set(['namaTkPengusul']),
+};
+const ADDRESS_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
+  address: new Set(['alamatJalan']),
+  father: new Set(['alamat']),
+  mother: new Set(['alamat']),
+};
+const REGION_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
+  address: new Set(['kelurahan', 'kecamatan', 'kota', 'provinsi']),
 };
 const SENTENCE_CASE_FIELDS: Partial<Record<ParticipantFieldGroupName, Set<string>>> = {
   school: new Set(['prestasiAnak']),
@@ -34,6 +42,8 @@ export function formatParticipantFieldValue(name: ParticipantFieldGroupName, key
 
   if (SCHOOL_NAME_FIELDS[name]?.has(key)) return formatSchoolName(value);
   if (PROPER_NAME_FIELDS[name]?.has(key)) return formatProperName(value);
+  if (ADDRESS_FIELDS[name]?.has(key)) return formatAddress(value);
+  if (REGION_FIELDS[name]?.has(key)) return formatRegionName(value);
   if (SENTENCE_CASE_FIELDS[name]?.has(key)) return sentenceCase(value);
 
   if ((name === 'identity' && key === 'tanggalLahir') || (name === 'okb' && key === 'jadwalTanggal')) {

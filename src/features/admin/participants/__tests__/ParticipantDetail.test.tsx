@@ -67,7 +67,7 @@ describe('ParticipantDetail', () => {
     expect(screen.getAllByText('Purwakarta')).toHaveLength(3);
     expect(screen.getByText('TK Plus Roudhoh Purwakarta')).toBeDefined();
     expect(screen.getByText('Juara 3 lomba fashion show')).toBeDefined();
-    expect(screen.getByText('Kp Krajan Maracang')).toBeDefined();
+    expect(screen.getByText('Kp. Krajan Maracang')).toBeDefined();
     expect(screen.getByText('Karyawan swasta')).toBeDefined();
     expect(participant.identity.namaLengkap).toBe('RANI PUTRI');
     expect(screen.getByText('Nama ayah')).toBeDefined();

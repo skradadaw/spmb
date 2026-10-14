@@ -29,10 +29,36 @@ describe('participant Excel export', () => {
     expect(sheet).toContain('Administrasi - NISN tidak sesuai');
     expect(sheet).toContain('>Ya<');
     expect(sheet).toContain('11 Oktober 2026');
-    expect(sheet).toContain('HYPERLINK');
+    expect(sheet).toContain('&apos;=Hyperlink');
     expect(sheet).not.toContain('<f>');
     expect(sheet).toContain('autoFilter');
     expect(styles).toContain('FF217A52');
     expect(workbook).toContain('Pendaftar');
+  });
+
+  it('keeps long numbers such as NIK as text, even after a cell is edited', async () => {
+    const bytes = await participantExportXlsx([{ id: '1', createdAt: null, updatedAt: null, status: 'Diterima', adminNote: null, nisnMismatch: false, fields: { nik: '3301150101200001', teleponAyah: '081234567890', alamatJalan: 'JL. MELATI NO.5', rt: '2', rw: '3', kelurahan: 'CIBODAS', kecamatan: 'MANIIS', kota: 'KABUPATEN PURWAKARTA', provinsi: 'JAWA BARAT', alamatRumah: 'JL. MELATI NO.5, RT 2/RW 3, Kel. CIBODAS, Kec. MANIIS, Kota/Kab. KABUPATEN PURWAKARTA, Prov. JAWA BARAT' } }]);
+    const entries: Record<string, string> = {};
+    for (let offset = 0; bytes.readUInt32LE(offset) === 0x04034b50;) {
+      const nameLength = bytes.readUInt16LE(offset + 26);
+      const dataOffset = offset + 30 + nameLength + bytes.readUInt16LE(offset + 28);
+      const compressedSize = bytes.readUInt32LE(offset + 18);
+      entries[new TextDecoder().decode(bytes.subarray(offset + 30, offset + 30 + nameLength))] = inflateRawSync(bytes.subarray(dataOffset, dataOffset + compressedSize)).toString('utf8');
+      offset = dataOffset + compressedSize;
+    }
+    const sheet = entries['xl/worksheets/sheet1.xml'];
+    expect(sheet).toContain('t="inlineStr"><is><t xml:space="preserve">3301150101200001<');
+    // Alamat ditulis seperti di layar, dan Alamat rumah disusun ulang tanpa kata wilayah ganda.
+    expect(sheet).toContain('>Jl. Melati No. 5<');
+    expect(sheet).toContain('>Jawa Barat<');
+    expect(sheet).toContain('>Jl. Melati No. 5, RT 02/RW 03, Kel. Cibodas, Kec. Maniis, Kabupaten Purwakarta, Jawa Barat<');
+    expect(sheet).not.toContain('Kota/Kab.');
+    expect(sheet).toContain('style="2"');
+    expect(sheet).toContain('numberStoredAsText="1"');
+    expect(entries['xl/styles.xml'].match(/numFmtId="49"/g)).toHaveLength(2);
+    // Excel menolak seluruh styles.xml bila urutan sisi border tidak sesuai skema (left, right, top, bottom, diagonal).
+    const borders = entries['xl/styles.xml'].match(/<border>.*?<\/border>/g) ?? [];
+    expect(borders).toHaveLength(2);
+    for (const border of borders) expect(border).toMatch(/^<border><left\/><right\/><top\/><bottom[^>]*>.*<diagonal\/><\/border>$/);
   });
 });
