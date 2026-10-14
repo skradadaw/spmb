@@ -20,6 +20,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { FormSelect } from '@/features/admin/components/FormSelect';
 import { ADMIN_DANGER_BUTTON, ADMIN_DANGER_SOLID_BUTTON, ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
+import { OKB_WAVES, okbWaveLabel } from '@/features/admin/okbWave';
 import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
 import { CANCELLABLE_STATUSES } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
@@ -33,7 +34,8 @@ type Props = {
   status: string;
   previousStatus: string | null;
   jadwalTanggal: string | null;
-  jadwalSesi: string | null;
+  /** Gelombang OKB name, e.g. "Gelombang 1". */
+  jadwalGelombang: string | null;
   pilihanKelas: string | null;
   kelasPenempatan: string | null;
 };
@@ -52,12 +54,12 @@ function currentStep(status: string) {
   }
 }
 
-export function ParticipantStatusPanel({ participantId, status, previousStatus, jadwalTanggal, jadwalSesi, pilihanKelas, kelasPenempatan }: Props) {
+export function ParticipantStatusPanel({ participantId, status, previousStatus, jadwalTanggal, jadwalGelombang, pilihanKelas, kelasPenempatan }: Props) {
   const [state, formAction, pending] = useActionState(updateParticipantStatusAction, initialState);
   const [rescheduling, setRescheduling] = useState(false);
   const cancelled = status === 'Dibatalkan';
   const canCancel = (CANCELLABLE_STATUSES as readonly string[]).includes(status);
-  const hasSchedule = Boolean(jadwalTanggal || jadwalSesi);
+  const hasSchedule = Boolean(jadwalTanggal || jadwalGelombang);
   const canDecide = status === 'Sudah OKB' || status === 'Diterima' || status === 'Ditolak';
 
   return (
@@ -83,8 +85,8 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
                 <dd className="mt-0.5 text-sm font-medium text-slate-950">{formatParticipantFieldValue('okb', 'jadwalTanggal', jadwalTanggal)}</dd>
               </div>
               <div className="px-3 py-2">
-                <dt className="text-[11px] font-medium text-slate-500">Sesi</dt>
-                <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{jadwalSesi ?? 'Belum diisi'}</dd>
+                <dt className="text-[11px] font-medium text-slate-500">Gelombang</dt>
+                <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{jadwalGelombang ?? 'Belum diisi'}</dd>
               </div>
             </dl>
           </section>
@@ -109,7 +111,7 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
             participantId={participantId}
             title={rescheduling ? 'Jadwalkan ulang OKB' : 'Jadwalkan OKB'}
             jadwalTanggal={jadwalTanggal}
-            jadwalSesi={jadwalSesi}
+            jadwalGelombang={jadwalGelombang}
             pending={pending}
             formAction={formAction}
             onCancel={rescheduling ? () => setRescheduling(false) : undefined}
@@ -183,15 +185,16 @@ function StepIndicator({ current, muted }: { current: number; muted: boolean }) 
   );
 }
 
-function ScheduleForm({ participantId, title, jadwalTanggal, jadwalSesi, pending, formAction, onCancel }: {
+function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, pending, formAction, onCancel }: {
   participantId: string;
   title: string;
   jadwalTanggal: string | null;
-  jadwalSesi: string | null;
+  jadwalGelombang: string | null;
   pending: boolean;
   formAction: FormAction;
   onCancel?: () => void;
 }) {
+  const [gelombang, setGelombang] = useState(String(OKB_WAVES.find(wave => okbWaveLabel(wave) === jadwalGelombang) ?? ''));
   return (
     <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
       <input type="hidden" name="participantId" value={participantId} />
@@ -202,12 +205,20 @@ function ScheduleForm({ participantId, title, jadwalTanggal, jadwalSesi, pending
           <Input id="okb-tanggal" type="date" name="jadwalTanggal" required defaultValue={jadwalTanggal ?? ''} className={ADMIN_FIELD} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="okb-sesi" className={ADMIN_LABEL}>Sesi</Label>
-          <Input id="okb-sesi" type="text" name="jadwalSesi" required maxLength={100} placeholder="Contoh: Sesi 1 (08.00–10.00)" defaultValue={jadwalSesi ?? ''} className={ADMIN_FIELD} />
+          <Label htmlFor="okb-gelombang" className={ADMIN_LABEL}>Gelombang</Label>
+          <FormSelect
+            id="okb-gelombang"
+            name="jadwalGelombang"
+            value={gelombang}
+            placeholder="Pilih gelombang"
+            options={OKB_WAVES.map(wave => ({ value: String(wave), label: okbWaveLabel(wave) }))}
+            onChange={setGelombang}
+            className={ADMIN_FIELD}
+          />
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" name="intent" value="schedule" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>Simpan jadwal</Button>
+        <Button type="submit" name="intent" value="schedule" disabled={pending || !gelombang} className={ADMIN_PRIMARY_BUTTON}>Simpan jadwal</Button>
         {onCancel && <Button type="button" onClick={onCancel} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>}
       </div>
     </form>

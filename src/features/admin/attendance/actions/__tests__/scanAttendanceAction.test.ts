@@ -34,7 +34,7 @@ const row = (overrides: Record<string, unknown> = {}) => ({
   nama_lengkap: 'Siti Aminah',
   status: 'Terjadwal OKB',
   jadwal_okb_tanggal: '2026-11-07',
-  jadwal_okb_sesi: 'Sesi 1',
+  jadwal_okb_gelombang: 1,
   ...overrides,
 });
 
@@ -55,7 +55,7 @@ describe('scanAttendanceAction', () => {
 
     const result = await scanAttendanceAction(' ob-2027-001 ');
     expect(mocks.lookup).toHaveBeenCalledWith('OB-2027-001');
-    expect(result).toMatchObject({ outcome: 'present', message: 'Hadir tercatat.', applicant: { namaLengkap: 'Siti Aminah', status: 'Sudah OKB' } });
+    expect(result).toMatchObject({ outcome: 'present', message: 'Hadir tercatat.', applicant: { namaLengkap: 'Siti Aminah', status: 'Sudah OKB', jadwalGelombang: 'Gelombang 1' } });
     expect(mocks.update).toHaveBeenCalledWith({ status: 'Sudah OKB' });
     expect(mocks.updateFilters).toContainEqual(['status', 'Terjadwal OKB']);
     expect(mocks.updateFilters).toContainEqual(['jadwal_okb_tanggal', '2026-11-07']);
@@ -74,7 +74,7 @@ describe('scanAttendanceAction', () => {
     const result = await scanAttendanceAction('OB-2027-001');
     expect(result.outcome).toBe('rejected');
     expect(result.message).toContain('Bukan jadwal OKB hari ini');
-    expect(result.message).toContain('8 November 2026, Sesi 1');
+    expect(result.message).toContain('8 November 2026, Gelombang 1');
     expect(mocks.update).not.toHaveBeenCalled();
   });
 

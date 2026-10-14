@@ -1,6 +1,7 @@
 export type ClassUsage = { label: string; kuota: number; terpakai: number };
 export type LabelCount = { label: string; count: number };
-export type OkbScheduleDay = { date: string; total: number; sessions: LabelCount[] };
+/** One upcoming OKB date with how many Pendaftar are scheduled, per Gelombang OKB. */
+export type OkbScheduleDay = { date: string; total: number; waves: LabelCount[] };
 
 export type AdminDashboardSummary = {
   /** Tanggal hari ini di Asia/Jakarta (YYYY-MM-DD), dipakai menandai OKB hari ini. */

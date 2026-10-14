@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getAdminSession } from '@/features/auth/session';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
+import { okbWaveLabel, parseOkbWave } from '@/features/admin/okbWave';
 
 const NOMOR_PATTERN = /^OB-\d{4}-\d{3,}$/;
 
@@ -12,7 +13,8 @@ export type ScanApplicant = {
   namaLengkap: string;
   status: string;
   jadwalTanggal: string | null;
-  jadwalSesi: string | null;
+  /** Gelombang OKB name, e.g. "Gelombang 1". */
+  jadwalGelombang: string | null;
 };
 
 export type ScanAttendanceResult = {
@@ -44,19 +46,20 @@ export async function scanAttendanceAction(rawNomor: string): Promise<ScanAttend
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('pendaftar')
-      .select('id,nomor_pendaftaran,nama_lengkap,status,jadwal_okb_tanggal,jadwal_okb_sesi')
+      .select('id,nomor_pendaftaran,nama_lengkap,status,jadwal_okb_tanggal,jadwal_okb_gelombang')
       .eq('nomor_pendaftaran', nomor)
       .maybeSingle();
     if (error) throw error;
     if (!data) return rejected(`Nomor ${nomor} tidak ditemukan.`);
 
+    const wave = parseOkbWave(data.jadwal_okb_gelombang);
     const applicant: ScanApplicant = {
       id: String(data.id),
       nomorPendaftaran: nomor,
       namaLengkap: String(data.nama_lengkap ?? ''),
       status: String(data.status ?? ''),
       jadwalTanggal: typeof data.jadwal_okb_tanggal === 'string' ? data.jadwal_okb_tanggal : null,
-      jadwalSesi: typeof data.jadwal_okb_sesi === 'string' ? data.jadwal_okb_sesi : null,
+      jadwalGelombang: wave ? okbWaveLabel(wave) : null,
     };
 
     if (applicant.status === 'Sudah OKB') return rejected('Sudah tercatat hadir OKB.', applicant);
@@ -67,7 +70,7 @@ export async function scanAttendanceAction(rawNomor: string): Promise<ScanAttend
 
     const today = todayInJakarta();
     if (applicant.jadwalTanggal !== today) {
-      const jadwal = applicant.jadwalTanggal ? `${formatDate(applicant.jadwalTanggal)}${applicant.jadwalSesi ? `, ${applicant.jadwalSesi}` : ''}` : 'belum ada tanggal';
+      const jadwal = applicant.jadwalTanggal ? `${formatDate(applicant.jadwalTanggal)}${applicant.jadwalGelombang ? `, ${applicant.jadwalGelombang}` : ''}` : 'belum ada tanggal';
       return rejected(`Bukan jadwal OKB hari ini (jadwal: ${jadwal}). Jadwalkan ulang terlebih dahulu.`, applicant);
     }
 

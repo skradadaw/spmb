@@ -10,7 +10,7 @@ const payload = {
   transfers: 7,
   results: { accepted: 40, rejected: 6, withdrawn: 3 },
   acceptedByClass: [{ label: 'Bilingual', count: 20 }, { label: 'Reguler', count: 12 }],
-  schedule: [{ date: '2026-10-18', total: 3, sessions: [{ label: ' Sesi 1 ', count: 2 }, { label: null, count: 1 }] }],
+  schedule: [{ date: '2026-10-18', total: 3, waves: [{ wave: 1, count: 2 }, { wave: 3, count: 1 }] }],
 };
 
 function clientReturning(data: unknown, error: unknown = null) {
@@ -35,9 +35,9 @@ describe('admin dashboard repository', () => {
     expect(summary.acceptedByClass).toEqual([{ label: 'Reguler', count: 12 }, { label: 'Bilingual', count: 20 }, { label: 'Tahfizh', count: 0 }]);
   });
 
-  it('tidies session labels and names a missing one', async () => {
+  it('names each Gelombang OKB counted on an OKB day', async () => {
     const summary = await createAdminDashboardRepository(clientReturning(payload).client).getSummary();
-    expect(summary.schedule[0].sessions).toEqual([{ label: 'Sesi 1', count: 2 }, { label: 'Tanpa sesi', count: 1 }]);
+    expect(summary.schedule[0].waves).toEqual([{ label: 'Gelombang 1', count: 2 }, { label: 'Gelombang 3', count: 1 }]);
   });
 
   it('returns a zero-safe summary when counts are missing', async () => {

@@ -35,7 +35,7 @@ export function OkbScheduleCard({ schedule, today }: Pick<AdminDashboardSummary,
                     <span className="font-semibold text-slate-900">{dayLabel(day.date)}{isToday && <span className="ml-2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Hari ini</span>}</span>
                     <span className="tabular-nums text-slate-500"><strong className="text-slate-900">{day.total}</strong> pendaftar</span>
                   </div>
-                  <p className="mt-1 break-words text-[11px] leading-4 text-slate-500">{day.sessions.map(session => `${session.label}: ${session.count}`).join(' · ')}</p>
+                  <p className="mt-1 break-words text-[11px] leading-4 text-slate-500">{day.waves.map(wave => `${wave.label}: ${wave.count}`).join(' · ')}</p>
                 </li>
               );
             })}

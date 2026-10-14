@@ -14,7 +14,7 @@ const participant: ParticipantDetailData = {
   school: { asalSekolah: 'TK PLUS ROUDHOH PURWAKARTA', prestasiAnak: 'JUARA 3 LOMBA FASHION SHOW', tingkatPrestasi: null, jarakKeSekolah: '5' },
   affiliation: { bekerjaDiDirektorat2: null },
   referral: { adaPengusul: 'Tidak' },
-  okb: { jadwalTanggal: null, jadwalSesi: null },
+  okb: { jadwalTanggal: null, jadwalGelombang: null },
   decision: { kelasPenempatan: null },
   previousStatus: null,
   formValues: { namaLengkap: 'RANI PUTRI', jenisKelamin: 'Perempuan', jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Reguler', nik: '1234567890123456' },
@@ -189,18 +189,29 @@ describe('ParticipantDetail', () => {
     render(<ParticipantDetail participant={{
       ...participant,
       status: 'Terjadwal OKB',
-      okb: { jadwalTanggal: '2026-11-07', jadwalSesi: 'Sesi 1 (08.00–10.00)' },
+      okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 2' },
     }} />);
     expect(screen.getByText('7 November 2026')).toBeDefined();
+    expect(screen.getByText('Gelombang 2')).toBeDefined();
     expect(screen.getByRole('button', { name: /tandai hadir okb/i })).toBeDefined();
     // Rescheduling stays tucked away until requested, so the next step (attendance) is the obvious action.
     expect(screen.queryByText('Jadwalkan ulang OKB')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Jadwalkan ulang' }));
     expect(screen.getByText('Jadwalkan ulang OKB')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Simpan jadwal' })).toBeDefined();
+    // Rescheduling starts from the current Gelombang.
+    expect((document.querySelector('input[name="jadwalGelombang"]') as HTMLInputElement).value).toBe('2');
     // Step indicator: berkas and jadwal done, attendance is the current step.
     const steps = screen.getByRole('list', { name: 'Tahapan pendaftaran' });
     expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Hadir OKB');
+  });
+
+  it('schedules OKB with a date and one of three Gelombang OKB instead of a free-text session', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Terverifikasi' }} />);
+    expect(screen.getByText('Jadwalkan OKB')).toBeDefined();
+    expect(screen.getByLabelText('Gelombang')).toBeDefined();
+    expect(document.querySelector('input[name="jadwalGelombang"]')).not.toBeNull();
+    expect(document.querySelector('input[name="jadwalSesi"]')).toBeNull();
   });
 
   it('offers restoring a cancelled applicant to the status it was cancelled from', () => {

@@ -148,7 +148,7 @@ function ResultCard({ item }: { item: HistoryItem }) {
           {item.applicant && (
             <>
               <p className="mt-1 break-words text-base font-semibold text-slate-900">{item.applicant.namaLengkap}</p>
-              <p className="mt-0.5 text-sm text-slate-600">{item.applicant.nomorPendaftaran}{item.applicant.jadwalSesi ? ` · ${item.applicant.jadwalSesi}` : ''}</p>
+              <p className="mt-0.5 text-sm text-slate-600">{item.applicant.nomorPendaftaran}{item.applicant.jadwalGelombang ? ` · ${item.applicant.jadwalGelombang}` : ''}</p>
             </>
           )}
           <p className="mt-2 text-xs text-slate-500">{item.at}</p>

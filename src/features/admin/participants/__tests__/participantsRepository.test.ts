@@ -137,6 +137,17 @@ describe('participants repository', () => {
     expect(JSON.stringify(result)).not.toContain('secret');
     expect(result?.identity.nik).toBeNull();
   });
+  it('names the Gelombang OKB in the detail and the export', async () => {
+    const { q, repo } = fixture();
+    q.maybeSingle.mockResolvedValue({ data: { id: 'a', status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2 }, error: null });
+    q.range.mockResolvedValueOnce({ data: [], error: null });
+    const detail = await repo.getById('a');
+    expect(detail?.okb).toEqual({ jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 2' });
+
+    q.range.mockResolvedValueOnce({ data: [{ id: 'a', jadwal_okb_gelombang: 3 }], error: null });
+    const [record] = await repo.exportDetails(parseParticipantListQuery(new URLSearchParams()));
+    expect(record.fields.jadwalGelombang).toBe('Gelombang 3');
+  });
   it('loads submission_id with document paths to validate storage ownership', async () => {
     const { q, repo } = fixture();
     q.maybeSingle.mockResolvedValue({ data: { id: 'participant-id', submission_id: 'submission-id' }, error: null });

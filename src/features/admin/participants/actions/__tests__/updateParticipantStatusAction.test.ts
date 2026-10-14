@@ -51,25 +51,33 @@ describe('updateParticipantStatusAction', () => {
   });
 
   it('schedules OKB for a verified or already scheduled applicant', async () => {
-    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalSesi: 'Sesi 1' }));
+    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalGelombang: '2' }));
 
     expect(result).toEqual({ status: 'success', message: 'Jadwal OKB berhasil disimpan.' });
-    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_sesi: 'Sesi 1' });
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2 });
     expect(mocks.filters).toContainEqual(['in:status', ['Terverifikasi', 'Terjadwal OKB']]);
     expect(mocks.revalidatePath).toHaveBeenCalledWith(`/admin/pendaftar/${participantId}`);
   });
 
   it('rejects an impossible OKB date', async () => {
-    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-02-30', jadwalSesi: 'Sesi 1' }));
+    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-02-30', jadwalGelombang: '2' }));
 
     expect(result).toEqual({ status: 'error', message: 'Tanggal OKB tidak valid.' });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it('requires one of the three Gelombang OKB', async () => {
+    for (const jadwalGelombang of ['', '0', '4', 'Sesi 1']) {
+      const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalGelombang }));
+      expect(result).toEqual({ status: 'error', message: 'Pilih Gelombang OKB.' });
+    }
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
   it('reports a stale page when the applicant is no longer in a schedulable status', async () => {
     mocks.writeMaybeSingle.mockResolvedValue({ data: null, error: null });
 
-    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalSesi: 'Sesi 1' }));
+    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalGelombang: '2' }));
     expect(result.status).toBe('error');
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });

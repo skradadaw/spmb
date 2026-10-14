@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getAdminSession } from '@/features/auth/session';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
 import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
+import { parseOkbWave } from '@/features/admin/okbWave';
 import { CANCELLABLE_STATUSES } from '../contracts';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -39,13 +40,13 @@ export async function updateParticipantStatusAction(
   try {
     if (intent === 'schedule') {
       const tanggal = String(formData.get('jadwalTanggal') ?? '').trim();
-      const sesi = String(formData.get('jadwalSesi') ?? '').trim();
+      const gelombang = parseOkbWave(formData.get('jadwalGelombang'));
       if (!isValidDate(tanggal)) return fail('Tanggal OKB tidak valid.');
-      if (!sesi || sesi.length > 100) return fail('Sesi OKB wajib diisi (maksimal 100 karakter).');
+      if (!gelombang) return fail('Pilih Gelombang OKB.');
 
       const { data, error } = await supabase
         .from('pendaftar')
-        .update({ status: 'Terjadwal OKB', jadwal_okb_tanggal: tanggal, jadwal_okb_sesi: sesi })
+        .update({ status: 'Terjadwal OKB', jadwal_okb_tanggal: tanggal, jadwal_okb_gelombang: gelombang })
         .eq('id', participantId)
         .in('status', ['Terverifikasi', 'Terjadwal OKB'])
         .select('id')

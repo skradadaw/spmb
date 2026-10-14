@@ -6,6 +6,7 @@ import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
 import { escapeSearch } from '../query';
 import { fromPendaftarRow } from '../editing';
 import { DOCUMENT_DEFINITIONS } from '@/features/registration/contracts';
+import { okbWaveLabel, parseOkbWave } from '@/features/admin/okbWave';
 
 type Result<T> = PromiseLike<{ data: T | null; error: unknown; count?: number | null }>;
 type Query = {
@@ -20,6 +21,12 @@ type Query = {
 };
 type Client = { from: (table: 'pendaftar' | 'verifikasi_dokumen') => { select: (columns: string, options?: { count?: 'exact'; head?: boolean }) => Query } };
 const text = (value: unknown): string | null => typeof value === 'string' && value.trim() ? value : null;
+/** Field values as shown to the admin; Gelombang OKB is stored as a number but read as its name. */
+const fieldValue = (column: string, value: unknown) => {
+  if (column !== 'jadwal_okb_gelombang') return text(value);
+  const wave = parseOkbWave(value);
+  return wave ? okbWaveLabel(wave) : null;
+};
 const failure = () => new Error('Data pendaftar tidak dapat dimuat.');
 /** Pencarian yang diawali "OB-" dicocokkan ke Nomor Pendaftaran, selain itu ke nama. */
 const searchColumn = (search: string) => /^OB-/i.test(search.trim()) ? 'nomor_pendaftaran' : 'nama_lengkap';
@@ -109,7 +116,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
           const row = raw as Record<string, unknown>;
           const fields: Record<string, string | null> = {};
           for (const [group, definitions] of Object.entries(PARTICIPANT_FIELDS)) {
-            for (const [key, column] of definitions) fields[group === 'father' ? `father${key[0].toUpperCase()}${key.slice(1)}` : group === 'mother' ? `mother${key[0].toUpperCase()}${key.slice(1)}` : key] = text(row[column]);
+            for (const [key, column] of definitions) fields[group === 'father' ? `father${key[0].toUpperCase()}${key.slice(1)}` : group === 'mother' ? `mother${key[0].toUpperCase()}${key.slice(1)}` : key] = fieldValue(column, row[column]);
           }
           records.push({ id: String(row.id), createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi', adminNote: text(row.catatan_admin), nisnMismatch: row.nisn_tidak_sesuai === true, fields });
         }
@@ -135,7 +142,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         const item = review as Record<string, unknown>;
         return [item.dokumen_id, { status: item.status, reviewedAt: text(item.diperiksa_pada) ?? '', reviewedBy: text(item.diperiksa_oleh) ?? 'Admin' }];
       })) as ParticipantDocumentReviews;
-      const group = (name: ParticipantFieldGroupName) => Object.fromEntries(PARTICIPANT_FIELDS[name].map(([key, column]) => [key, text(row[column])]));
+      const group = (name: ParticipantFieldGroupName) => Object.fromEntries(PARTICIPANT_FIELDS[name].map(([key, column]) => [key, fieldValue(column, row[column])]));
       return {
         id, createdAt: text(row.created_at), updatedAt: text(row.updated_at), status: text(row.status) ?? 'Belum diisi',
         identity: group('identity'), registration: group('registration'), school: group('school'), affiliation: group('affiliation'),

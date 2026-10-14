@@ -16,7 +16,11 @@ Tes yang diikuti Pendaftar (Siswa Baru maupun Pindahan) setelah Berkasnya terver
 _Avoid_: tes masuk, seleksi
 
 **Jadwal OKB** (*OKB Schedule*):
-Tanggal dan sesi OKB yang ditetapkan admin langsung pada seorang Pendaftar. Pendaftar yang tidak hadir dapat dijadwalkan ulang.
+Tanggal dan Gelombang OKB yang ditetapkan admin langsung pada seorang Pendaftar. Pendaftar yang tidak hadir dapat dijadwalkan ulang.
+
+**Gelombang OKB** (*OKB Wave*):
+Kelompok pelaksanaan OKB yang dipilih admin saat menetapkan Jadwal OKB (Gelombang 1, 2, atau 3). Gelombang tidak menentukan tanggal; tanggal dipilih terpisah karena bisa berubah. Tidak berkaitan dengan kapan orang tua mendaftar.
+_Avoid_: sesi, gelombang pendaftaran
 
 ## Orang
 
@@ -90,6 +94,13 @@ Penetapan Panitia bahwa seorang Pendaftar Diterima atau Ditolak, beserta Kelas P
 
 **Scan Kehadiran** (*Attendance Scan*):
 Pemindaian QR pada Bukti Pendaftaran oleh admin di hari OKB, yang langsung mencatat Pendaftar hadir (Terjadwal OKB → Sudah OKB). Hanya berlaku bagi Pendaftar Terjadwal OKB pada tanggal Jadwal OKB-nya; selain itu tidak ada yang dicatat dan admin menjadwalkan ulang bila perlu.
+
+**Hapus Jadwal OKB** (*Unschedule OKB*):
+Pencabutan Jadwal OKB seorang Pendaftar Terjadwal OKB oleh admin, sehingga ia kembali Terverifikasi tanpa tanggal maupun Gelombang OKB. Pendaftar tetap berproses dan kursinya tetap terpakai.
+_Avoid_: batalkan jadwal, Dibatalkan (untuk kasus ini)
+
+**Batalkan Kehadiran** (*Undo Attendance*):
+Pencabutan catatan hadir seorang Pendaftar Sudah OKB, misalnya karena salah scan, sehingga ia kembali Terjadwal OKB dengan Jadwal OKB yang sama.
 
 **Berkas Pengganti** (*Replacement Document*):
 File yang diunggah admin untuk menggantikan salah satu Berkas Pendaftar, kapan pun dan pada status apa pun. File lama dihapus, Berkas kembali berstatus belum diperiksa, dan status Pendaftar tidak berubah.

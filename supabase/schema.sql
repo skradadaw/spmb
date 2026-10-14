@@ -94,7 +94,15 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS dokumen_bukti_pembayaran T
 
 -- OKB dan pembatalan
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jadwal_okb_tanggal DATE;
-ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jadwal_okb_sesi VARCHAR(100);
+-- Gelombang OKB (1-3) menggantikan sesi teks bebas; jadwal lama semuanya masuk Gelombang 1.
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jadwal_okb_gelombang SMALLINT CHECK (jadwal_okb_gelombang BETWEEN 1 AND 3);
+UPDATE public.pendaftar SET jadwal_okb_gelombang = 1 WHERE jadwal_okb_tanggal IS NOT NULL AND jadwal_okb_gelombang IS NULL;
+ALTER TABLE public.pendaftar DROP COLUMN IF EXISTS jadwal_okb_sesi;
+-- Terjadwal OKB selalu punya tanggal dan Gelombang.
+ALTER TABLE public.pendaftar DROP CONSTRAINT IF EXISTS pendaftar_jadwal_okb_check;
+ALTER TABLE public.pendaftar
+  ADD CONSTRAINT pendaftar_jadwal_okb_check
+  CHECK (status <> 'Terjadwal OKB' OR (jadwal_okb_tanggal IS NOT NULL AND jadwal_okb_gelombang IS NOT NULL));
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS status_sebelum_dibatalkan VARCHAR(50);
 
 -- Keputusan Penerimaan
@@ -571,17 +579,17 @@ AS $$
         GROUP BY 1
       ) AS diterima
     ), '[]'::jsonb),
-    -- Empat tanggal OKB terdekat; sesi berupa teks bebas sehingga dirapikan sebelum dihitung.
+    -- Empat tanggal OKB terdekat, dihitung per Gelombang OKB.
     'schedule', COALESCE((
-      SELECT jsonb_agg(jsonb_build_object('date', tanggal, 'total', total, 'sessions', sesi) ORDER BY tanggal)
+      SELECT jsonb_agg(jsonb_build_object('date', tanggal, 'total', total, 'waves', gelombang) ORDER BY tanggal)
       FROM (
-        SELECT tanggal, sum(jumlah)::INTEGER AS total, jsonb_agg(jsonb_build_object('label', label, 'count', jumlah) ORDER BY label) AS sesi
+        SELECT tanggal, sum(jumlah)::INTEGER AS total, jsonb_agg(jsonb_build_object('wave', wave, 'count', jumlah) ORDER BY wave) AS gelombang
         FROM (
-          SELECT jadwal_okb_tanggal AS tanggal, min(btrim(jadwal_okb_sesi)) AS label, count(*)::INTEGER AS jumlah
+          SELECT jadwal_okb_tanggal AS tanggal, jadwal_okb_gelombang AS wave, count(*)::INTEGER AS jumlah
           FROM public.pendaftar
           WHERE status = 'Terjadwal OKB' AND jadwal_okb_tanggal >= (SELECT d FROM today)
-          GROUP BY jadwal_okb_tanggal, lower(regexp_replace(btrim(COALESCE(jadwal_okb_sesi, '')), '\s+', ' ', 'g'))
-        ) AS per_sesi
+          GROUP BY jadwal_okb_tanggal, jadwal_okb_gelombang
+        ) AS per_gelombang
         GROUP BY tanggal
         ORDER BY tanggal
         LIMIT 4

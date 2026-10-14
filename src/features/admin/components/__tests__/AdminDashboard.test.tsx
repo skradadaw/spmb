@@ -14,8 +14,8 @@ const summary: AdminDashboardSummary = {
   results: { accepted: 40, rejected: 6, withdrawn: 3 },
   acceptedByClass: [{ label: 'Reguler', count: 12 }, { label: 'Bilingual', count: 20 }, { label: 'Tahfizh', count: 8 }],
   schedule: [
-    { date: '2026-10-18', total: 18, sessions: [{ label: 'Sesi 1', count: 10 }, { label: 'Sesi 2', count: 8 }] },
-    { date: '2026-10-25', total: 6, sessions: [{ label: 'Sesi 1', count: 6 }] },
+    { date: '2026-10-18', total: 18, waves: [{ label: 'Gelombang 1', count: 10 }, { label: 'Gelombang 2', count: 8 }] },
+    { date: '2026-10-25', total: 6, waves: [{ label: 'Gelombang 3', count: 6 }] },
   ],
 };
 
@@ -52,7 +52,7 @@ describe('AdminDashboard', () => {
   it('lists upcoming OKB days, marks today and offers the attendance scan', () => {
     render(<AdminDashboard summary={summary} />);
     expect(screen.getByText('Hari ini')).toBeDefined();
-    expect(screen.getByText('Sesi 1: 10 · Sesi 2: 8')).toBeDefined();
+    expect(screen.getByText('Gelombang 1: 10 · Gelombang 2: 8')).toBeDefined();
     expect(screen.getByRole('link', { name: /Scan Kehadiran/ }).getAttribute('href')).toBe('/admin/scan');
   });
 

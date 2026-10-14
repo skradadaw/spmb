@@ -310,6 +310,27 @@ describe('Supabase registration security schema', () => {
     expect(functionSql).toContain("WHERE status NOT IN ('Dibatalkan', 'Ditolak')");
   });
 
+  it('stores Jadwal OKB as a date plus one of three Gelombang OKB, replacing the free-text session', () => {
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS jadwal_okb_gelombang SMALLINT CHECK (jadwal_okb_gelombang BETWEEN 1 AND 3);');
+    // Jadwal OKB made before Gelombang existed all belong to Gelombang 1.
+    expect(compactSchema).toContain('UPDATE public.pendaftar SET jadwal_okb_gelombang = 1 WHERE jadwal_okb_tanggal IS NOT NULL AND jadwal_okb_gelombang IS NULL;');
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar DROP COLUMN IF EXISTS jadwal_okb_sesi;');
+    expect(compactSchema).not.toContain('ADD COLUMN IF NOT EXISTS jadwal_okb_sesi');
+    // Terjadwal OKB always has both a date and a Gelombang.
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar DROP CONSTRAINT IF EXISTS pendaftar_jadwal_okb_check;');
+    expect(compactSchema).toContain("ADD CONSTRAINT pendaftar_jadwal_okb_check CHECK (status <> 'Terjadwal OKB' OR (jadwal_okb_tanggal IS NOT NULL AND jadwal_okb_gelombang IS NOT NULL));");
+  });
+
+  it('counts upcoming OKB days per Gelombang on the dashboard', () => {
+    const functionSql = compactSql(schema.match(
+      /CREATE OR REPLACE FUNCTION public\.get_admin_dashboard_summary\([\s\S]*?\$\$;/,
+    )?.[0] ?? '');
+
+    expect(functionSql).toContain("jsonb_build_object('date', tanggal, 'total', total, 'waves', gelombang)");
+    expect(functionSql).toContain('GROUP BY jadwal_okb_tanggal, jadwal_okb_gelombang');
+    expect(functionSql).not.toContain('jadwal_okb_sesi');
+  });
+
   it('stores NISN Tidak Sesuai and per-applicant document counts for the participant list', () => {
     expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nisn_tidak_sesuai BOOLEAN NOT NULL DEFAULT false;');
     expect(compactSchema).toContain('ADD COLUMN IF NOT EXISTS berkas_belum_tersedia SMALLINT GENERATED ALWAYS AS');

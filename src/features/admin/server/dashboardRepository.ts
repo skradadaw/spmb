@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
+import { okbWaveLabel, parseOkbWave } from '../okbWave';
 import type { AdminDashboardSummary, LabelCount, OkbScheduleDay } from '../contracts';
 
 type Counts<K extends string> = Partial<Record<K, unknown>> | null | undefined;
@@ -14,7 +15,7 @@ type SummaryPayload = {
   transfers?: unknown;
   results?: Counts<keyof AdminDashboardSummary['results']>;
   acceptedByClass: { label: string | null; count: unknown }[];
-  schedule: { date: string; total: unknown; sessions: { label: string | null; count: unknown }[] | null }[];
+  schedule: { date: string; total: unknown; waves: { wave: unknown; count: unknown }[] | null }[];
 };
 
 type DashboardClient = {
@@ -48,7 +49,10 @@ function schedule(rows: SummaryPayload['schedule']): OkbScheduleDay[] {
   return rows.map(row => ({
     date: row.date,
     total: num(row.total),
-    sessions: (row.sessions ?? []).map(session => ({ label: session.label?.trim() || 'Tanpa sesi', count: num(session.count) })),
+    waves: (row.waves ?? []).flatMap(item => {
+      const wave = parseOkbWave(item.wave);
+      return wave ? [{ label: okbWaveLabel(wave), count: num(item.count) }] : [];
+    }),
   }));
 }
 
