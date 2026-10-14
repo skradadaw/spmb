@@ -8,7 +8,7 @@ const router = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.
 vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/admin/pendaftar' }));
 vi.mock('@/features/auth/logout-action', () => ({ logoutAdminAction: vi.fn() }));
 const query = parseParticipantListQuery(new URLSearchParams('q=Ani&kelas=Reguler&page=2'));
-const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', kelasPenempatan: null, kelasTujuan: null, jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', createdAt: '2026-10-10T01:00:00Z', attention: { nisnMismatch: false, missingDocuments: 0 } };
+const row = { id: 'abc', nomorPendaftaran: 'OB-2027-007', namaLengkap: 'ANI PUTRI', asalSekolah: 'tK mELATI', pilihanKelas: 'Reguler', kelasPenempatan: null, kelasTujuan: null, jenisPendaftaran: 'Siswa Baru', status: 'Menunggu Unggahan', jadwalGelombang: null, createdAt: '2026-10-10T01:00:00Z', attention: { nisnMismatch: false, missingDocuments: 0 } };
 
 describe('Data Pendaftar UI', () => {
   it('shows Perlu Perhatian under the status only when something needs handling', () => {
@@ -18,6 +18,23 @@ describe('Data Pendaftar UI', () => {
     expect(notes).toHaveLength(2);
     expect(notes[0].className).toContain('text-amber-700');
     expect(document.querySelectorAll('[data-attention]')).toHaveLength(2);
+  });
+
+  it('gives scheduled applicants their own blue status with the Gelombang name under it', () => {
+    render(<ParticipantList query={query} result={{ items: [{ ...row, status: 'Terjadwal OKB', jadwalGelombang: 'Gelombang 2' }, { ...row, id: 'b', status: 'Sudah OKB' }], total: 2, page: 1, pageSize: 20, totalPages: 1 }} />);
+    const scheduled = screen.getAllByText('Terjadwal OKB');
+    expect(scheduled.every(element => element.className.includes('text-sky-700'))).toBe(true);
+    expect(screen.getAllByText('Sudah OKB').every(element => element.className.includes('text-amber-700'))).toBe(true);
+    // Desktop table and mobile card both name the Gelombang, without the date.
+    expect(screen.getAllByText('Gelombang 2')).toHaveLength(2);
+    expect(screen.queryByText(/Gelombang 1|Gelombang 3/)).toBeNull();
+  });
+
+  it('filters by Gelombang OKB and clears it with Reset', () => {
+    render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('gelombang=3'))} statuses={['Terjadwal OKB']} total={4} />);
+    expect(screen.getByLabelText('Gelombang').textContent).toContain('Gelombang 3');
+    expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
+    expect(screen.getByRole('link', { name: /Ekspor Excel/ }).getAttribute('href')).toBe('/admin/pendaftar/ekspor?gelombang=3');
   });
 
   it('offers Perlu Perhatian as one checkbox and keeps the NISN link from the dashboard as a removable chip', () => {
@@ -74,10 +91,10 @@ describe('Data Pendaftar UI', () => {
     expect(screen.queryByRole('table')).toBeNull();
     expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
   });
-  it('keeps only search, Status, Kelas and Perlu perhatian, applied without a submit button', () => {
+  it('keeps only search, Status, Kelas, Gelombang and Perlu perhatian, applied without a submit button', () => {
     render(<ParticipantFilters query={query} statuses={['Menunggu Unggahan', 'Menunggu Verifikasi']} total={37} />);
     expect(screen.getByRole('searchbox', { name: 'Cari nama / nomor' }).getAttribute('maxlength')).toBe('100');
-    expect(screen.getAllByRole('combobox')).toHaveLength(2);
+    expect(screen.getAllByRole('combobox')).toHaveLength(3);
     expect(screen.queryByRole('button', { name: /Terapkan/ })).toBeNull();
     expect(screen.getByRole('link', { name: /Ekspor Excel \(37\)/ }).getAttribute('href')).toBe('/admin/pendaftar/ekspor?q=Ani&kelas=Reguler');
     expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');

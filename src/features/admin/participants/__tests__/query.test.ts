@@ -3,7 +3,7 @@ import { parseParticipantListQuery, participantListHref, escapeSearch, paginatio
 
 describe('participant query', () => {
   it('normalizes invalid pages and allowlists filters', () => {
-    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, page: 1, pageSize: 20 });
+    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, waveFilter: null, page: 1, pageSize: 20 });
     expect(parseParticipantListQuery(new URLSearchParams('page=2.5')).page).toBe(1);
   });
   it('allowlists the Perlu Perhatian filter and keeps it in links', () => {
@@ -11,6 +11,12 @@ describe('participant query', () => {
     expect(query.attentionFilter).toBe('nisn');
     expect(participantListHref(query, 2)).toBe('/admin/pendaftar?perhatian=nisn&page=2');
     expect(parseParticipantListQuery(new URLSearchParams('perhatian=__all__')).attentionFilter).toBeNull();
+  });
+  it('allowlists the Gelombang OKB filter and keeps it in links', () => {
+    const query = parseParticipantListQuery(new URLSearchParams('gelombang=2&kelas=Reguler'));
+    expect(query.waveFilter).toBe(2);
+    expect(participantListHref(query, 2)).toBe('/admin/pendaftar?kelas=Reguler&gelombang=2&page=2');
+    for (const value of ['0', '4', 'satu', '']) expect(parseParticipantListQuery(new URLSearchParams({ gelombang: value })).waveFilter).toBeNull();
   });
   it('bounds searches and escapes wildcard input', () => {
     expect(parseParticipantListQuery(new URLSearchParams({ q: ' x'.repeat(200) })).search.length).toBe(100);

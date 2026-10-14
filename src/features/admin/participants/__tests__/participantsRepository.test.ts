@@ -86,6 +86,17 @@ describe('participants repository', () => {
     }
   });
 
+  it('filters one Gelombang OKB among scheduled applicants and maps it per row', async () => {
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: [{ id: 'a', status: 'Terjadwal OKB', jadwal_okb_gelombang: 2 }, { id: 'b', status: 'Sudah OKB', jadwal_okb_gelombang: 1 }], count: 2, error: null });
+    const result = await repo.list(parseParticipantListQuery(new URLSearchParams('gelombang=2')));
+    expect(q.eq).toHaveBeenCalledWith('status', 'Terjadwal OKB');
+    expect(q.eq).toHaveBeenCalledWith('jadwal_okb_gelombang', '2');
+    expect(PARTICIPANT_LIST_COLUMNS).toContain('jadwal_okb_gelombang');
+    // Only scheduled applicants show their Gelombang in the list.
+    expect(result.items.map(item => item.jadwalGelombang)).toEqual(['Gelombang 2', null]);
+  });
+
   it('uses the chosen page size for the range and page count', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [{ id: 'a' }], count: 120, error: null });

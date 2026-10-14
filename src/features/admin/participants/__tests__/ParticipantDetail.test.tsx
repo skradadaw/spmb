@@ -125,7 +125,7 @@ describe('ParticipantDetail', () => {
 
   it('colours the header status badge by status', () => {
     const { unmount } = render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB' }} />);
-    expect(document.querySelector('[data-status="Terjadwal OKB"]')?.className).toContain('bg-amber-50');
+    expect(document.querySelector('[data-status="Terjadwal OKB"]')?.className).toContain('bg-sky-50');
     unmount();
     render(<ParticipantDetail participant={{ ...participant, status: 'Ditolak' }} />);
     expect(document.querySelector('[data-status="Ditolak"]')?.className).toContain('bg-rose-50');

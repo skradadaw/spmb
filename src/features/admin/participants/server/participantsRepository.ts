@@ -51,6 +51,7 @@ function applyFilters(request: Query, query: ParticipantListQuery) {
   if (query.statusFilter) request = request.eq('status', query.statusFilter);
   // Tidak Hadir OKB: tanggal Jadwal OKB sudah lewat tanpa Scan Kehadiran.
   if (query.okbMissed) request = request.eq('status', 'Terjadwal OKB').lt('jadwal_okb_tanggal', jakartaToday());
+  if (query.waveFilter) request = request.eq('status', 'Terjadwal OKB').eq('jadwal_okb_gelombang', String(query.waveFilter));
   if (query.attentionFilter) {
     request = request.not('status', 'in', EXCLUDED_STATUS_LIST);
     if (query.attentionFilter === 'nisn') request = request.eq('nisn_tidak_sesuai', true);
@@ -64,7 +65,8 @@ function mapList(row: Record<string, unknown>): ParticipantListItem {
   return {
     id: String(row.id), nomorPendaftaran: text(row.nomor_pendaftaran), namaLengkap: text(row.nama_lengkap) ?? 'Nama belum diisi', asalSekolah: text(row.asal_sekolah),
     pilihanKelas: text(row.pilihan_kelas) ?? 'Belum diisi', kelasPenempatan: text(row.kelas_penempatan), kelasTujuan: text(row.kelas_tujuan), jenisPendaftaran: text(row.jenis_pendaftaran) ?? 'Belum diisi',
-    status, createdAt: text(row.created_at), attention: mapAttention(row, status),
+    status, jadwalGelombang: status === 'Terjadwal OKB' ? fieldValue('jadwal_okb_gelombang', row.jadwal_okb_gelombang) : null,
+    createdAt: text(row.created_at), attention: mapAttention(row, status),
   };
 }
 

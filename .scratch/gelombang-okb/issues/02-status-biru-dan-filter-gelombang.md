@@ -13,10 +13,10 @@ Keputusan yang sudah disepakati:
 
 **Status:** ready-for-agent
 
-- [ ] Status Terjadwal OKB tampil biru di tabel desktop, kartu HP, dan badge detail. Status lain tidak berubah warna.
-- [ ] Baris Terjadwal OKB menampilkan "Gelombang N" di bawah status. Status lain tidak menampilkan Gelombang.
-- [ ] Query daftar Pendaftar mengambil kolom Gelombang.
-- [ ] Panel filter punya pilihan Gelombang. Nilai di luar 1–3 di URL diabaikan, dan tautan halaman/paginasi mempertahankan filter ini.
-- [ ] "Hapus filter" ikut mengosongkan filter Gelombang.
-- [ ] Ekspor dengan filter Gelombang aktif hanya berisi Pendaftar di Gelombang tersebut.
-- [ ] Tes daftar Pendaftar, parsing query, repository, dan ekspor mencakup perilaku di atas.
+- [x] Status Terjadwal OKB tampil biru di tabel desktop, kartu HP, dan badge detail. Status lain tidak berubah warna.
+- [x] Baris Terjadwal OKB menampilkan "Gelombang N" di bawah status. Status lain tidak menampilkan Gelombang.
+- [x] Query daftar Pendaftar mengambil kolom Gelombang.
+- [x] Panel filter punya pilihan Gelombang. Nilai di luar 1–3 di URL diabaikan, dan tautan halaman/paginasi mempertahankan filter ini.
+- [x] "Hapus filter" ikut mengosongkan filter Gelombang.
+- [x] Ekspor dengan filter Gelombang aktif hanya berisi Pendaftar di Gelombang tersebut.
+- [x] Tes daftar Pendaftar, parsing query, repository, dan ekspor mencakup perilaku di atas.
