@@ -12,8 +12,8 @@ Keputusan yang sudah disepakati:
 
 **Status:** ready-for-agent
 
-- [ ] Hasil scan yang berhasil menampilkan tombol "Batalkan". Hasil yang ditolak tidak menampilkannya.
-- [ ] Menekan "Batalkan" memanggil aksi Batalkan Kehadiran untuk Pendaftar tersebut, lalu menampilkan pesan bahwa kehadiran dibatalkan.
-- [ ] Jika aksi gagal (misalnya status sudah berubah), pesan galatnya tampil dan hasil scan tidak berubah.
-- [ ] Setelah dibatalkan, scan ulang Pendaftar yang sama di hari jadwalnya kembali mencatat hadir.
-- [ ] Ada tes yang mencakup tombol dan alurnya.
+- [x] Hasil scan yang berhasil menampilkan tombol "Batalkan". Hasil yang ditolak tidak menampilkannya.
+- [x] Menekan "Batalkan" memanggil aksi Batalkan Kehadiran untuk Pendaftar tersebut, lalu menampilkan pesan bahwa kehadiran dibatalkan.
+- [x] Jika aksi gagal (misalnya status sudah berubah), pesan galatnya tampil dan hasil scan tidak berubah.
+- [x] Setelah dibatalkan, scan ulang Pendaftar yang sama di hari jadwalnya kembali mencatat hadir.
+- [x] Ada tes yang mencakup tombol dan alurnya.
