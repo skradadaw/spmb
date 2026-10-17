@@ -1,7 +1,9 @@
 'use client';
 
 import { useActionState, useState, type ReactNode } from 'react';
-import { CalendarClock, CalendarX2, Check, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
+import { format, parse, isValid } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
+import { CalendarCheck, CalendarClock, CalendarDays, CalendarX2, Check, ChevronDown, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -14,8 +16,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { FormSelect } from '@/features/admin/components/FormSelect';
@@ -235,6 +238,7 @@ function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, pe
   onCancel?: () => void;
 }) {
   const [gelombang, setGelombang] = useState(String(OKB_WAVES.find(wave => okbWaveLabel(wave) === jadwalGelombang) ?? ''));
+  const [tanggal, setTanggal] = useState(jadwalTanggal ?? '');
   return (
     <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
       <input type="hidden" name="participantId" value={participantId} />
@@ -242,7 +246,7 @@ function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, pe
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="okb-tanggal" className={ADMIN_LABEL}>Tanggal</Label>
-          <Input id="okb-tanggal" type="date" name="jadwalTanggal" required defaultValue={jadwalTanggal ?? ''} className={ADMIN_FIELD} />
+          <DateField id="okb-tanggal" name="jadwalTanggal" value={tanggal} placeholder="Pilih tanggal" onChange={setTanggal} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="okb-gelombang" className={ADMIN_LABEL}>Gelombang</Label>
@@ -258,10 +262,64 @@ function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, pe
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" name="intent" value="schedule" disabled={pending || !gelombang} className={ADMIN_PRIMARY_BUTTON}>Simpan jadwal</Button>
+        <Button type="submit" name="intent" value="schedule" disabled={pending || !tanggal || !gelombang} className={ADMIN_PRIMARY_BUTTON}>
+          <CalendarCheck aria-hidden="true" className="size-3.5" />Simpan jadwal
+        </Button>
         {onCancel && <Button type="button" onClick={onCancel} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>}
       </div>
     </form>
+  );
+}
+
+/** yyyy-MM-dd string <-> Date, read in local time so the chosen day never shifts. */
+function parseIsoDate(value: string) {
+  const date = parse(value, 'yyyy-MM-dd', new Date());
+  return value && isValid(date) ? date : undefined;
+}
+
+/** Date picker matching FormSelect; the value is submitted as yyyy-MM-dd through a hidden input. */
+function DateField({ id, name, value, placeholder, onChange }: {
+  id: string;
+  name: string;
+  value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = parseIsoDate(value);
+  return (
+    <>
+      <input type="hidden" name={name} value={value} />
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            id={id}
+            type="button"
+            className={cn(
+              'flex w-full items-center gap-2 border border-gray-200 bg-white px-3 text-left shadow-sm transition-all hover:border-gray-300 focus:border-[#00AA13] focus:outline-none focus:ring-1 focus:ring-[#00AA13] data-[state=open]:border-[#00AA13] data-[state=open]:ring-1 data-[state=open]:ring-[#00AA13]',
+              ADMIN_FIELD,
+              selected ? 'text-gray-900' : 'text-gray-400',
+            )}
+          >
+            <CalendarDays aria-hidden="true" className="size-4 shrink-0 text-slate-500" />
+            <span className="min-w-0 flex-1 truncate">{selected ? format(selected, 'EEEE, d MMMM yyyy', { locale: idLocale }) : placeholder}</span>
+            <ChevronDown aria-hidden="true" className="size-4 shrink-0 opacity-50" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-auto p-0">
+          <Calendar
+            mode="single"
+            locale={idLocale}
+            selected={selected}
+            defaultMonth={selected ?? new Date()}
+            onSelect={(date) => {
+              onChange(date ? format(date, 'yyyy-MM-dd') : '');
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }
 

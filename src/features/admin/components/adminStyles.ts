@@ -3,7 +3,7 @@
  * primary (school green, one per section), secondary (white), danger (red) and the verified state.
  */
 export const ADMIN_ACTION_BUTTON = 'h-8 gap-1.5 rounded-lg px-3 text-xs font-semibold shadow-none';
-export const ADMIN_PRIMARY_BUTTON = `${ADMIN_ACTION_BUTTON} border border-transparent bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-foreground`;
+export const ADMIN_PRIMARY_BUTTON = `${ADMIN_ACTION_BUTTON} border border-transparent bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-foreground disabled:bg-slate-100 disabled:text-slate-400 disabled:opacity-100`;
 export const ADMIN_SECONDARY_BUTTON = `${ADMIN_ACTION_BUTTON} border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900`;
 export const ADMIN_DANGER_BUTTON = `${ADMIN_ACTION_BUTTON} border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800`;
 export const ADMIN_DANGER_SOLID_BUTTON = `${ADMIN_ACTION_BUTTON} border border-transparent bg-rose-700 text-white hover:bg-rose-800 hover:text-white`;
