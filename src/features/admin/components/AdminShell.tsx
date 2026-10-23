@@ -9,7 +9,7 @@ import type { AdminSection } from './AdminNavigation';
 
 const SIDEBAR_STORAGE_KEY = 'admin-sidebar-collapsed';
 const SIDEBAR_PREFERENCE_EVENT = 'admin-sidebar-preference';
-/** The sidebar starts minimised until the admin expands it, so the first login opens on the full-width content. */
+/** The sidebar starts hidden until the admin expands it, so the first login opens on the full-width content. */
 let fallbackSidebarCollapsed = true;
 
 function subscribeToSidebarPreference(onChange: () => void) {
@@ -57,7 +57,7 @@ export function AdminShell({ active, children }: { active?: AdminSection; childr
 
   return <div className="min-h-screen bg-[var(--admin-canvas)] text-foreground">
     <DashboardSidebar active={activeSection} collapsed={sidebarCollapsed} onToggle={toggleSidebarPreference} />
-    <main data-testid="admin-content" data-sidebar-state={sidebarCollapsed ? 'mini' : 'expanded'} className={`min-w-0 transition-[padding] duration-200 ease-in-out motion-reduce:transition-none ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-[288px]'}`}>
+    <main data-testid="admin-content" data-sidebar-state={sidebarCollapsed ? 'collapsed' : 'expanded'} className={`min-w-0 transition-[padding] duration-200 ease-in-out motion-reduce:transition-none ${sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-[288px]'}`}>
       <header className="sticky top-0 z-40 flex h-[68px] items-center border-b border-[var(--admin-border)] bg-[var(--admin-surface)] px-4 sm:px-6 lg:hidden">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3"><Image src="/logo.png" alt="Logo SD Plus 3 Al-Muhajirin" width={42} height={42} className="h-[42px] w-[42px] shrink-0 object-contain" /><div className="min-w-0"><p className="truncate text-xs font-extrabold uppercase">SD Plus 3 Al-Muhajirin</p><p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--admin-sidebar)]">Admin SPMB</p></div></div>

@@ -12,7 +12,7 @@ export function AdminDashboard({ summary }: { summary: AdminDashboardSummary }) 
   return (
     <>
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">Ringkasan administrasi</p><h1 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950 sm:text-3xl">Dashboard Pendaftaran</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Pekerjaan yang menunggu Anda, sisa kuota, dan jadwal OKB terdekat.</p></div>
+        <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">Ringkasan administrasi</p><h1 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950 sm:text-3xl">Dashboard Pendaftaran</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Lihat pendaftar yang perlu ditindaklanjuti, sisa kursi tiap kelas, dan OKB yang sudah dekat.</p></div>
         <Link href="/admin/pendaftar" className="inline-flex items-center gap-1 self-start text-sm font-semibold text-emerald-700 hover:underline sm:self-auto">Lihat semua pendaftar<ChevronRight aria-hidden="true" className="size-4" /></Link>
       </section>
       <Separator decorative className="my-6 bg-slate-200/80" />

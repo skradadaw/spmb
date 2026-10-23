@@ -39,7 +39,7 @@ export default async function ParticipantsPage({ searchParams }: Props) {
       <div className="flex flex-col gap-2">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
         <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Data Pendaftar</h1>
-        <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">Cari dan lihat data pendaftar yang sudah masuk ke sistem pendaftaran.</p>
+        <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">Cari pendaftar, lalu buka detailnya untuk memeriksa berkas dan mengatur jadwal OKB.</p>
       </div>
       <ParticipantExportDialog counts={exportCounts} />
     </section>

@@ -9,16 +9,15 @@ export const ADMIN_NAV_ITEMS = [
   { key: 'capacity', href: '/admin/kuota', label: 'Kuota Kelas', icon: Armchair },
 ] as const satisfies ReadonlyArray<{ key: AdminSection; href: string; label: string; icon: unknown }>;
 
-/** Desktop sidebar navigation; the mobile menu is AdminMobileMenu. */
-export function AdminNavigation({ active, collapsed = false }: { active: AdminSection; collapsed?: boolean }) {
-  return <nav aria-label="Navigasi admin" className="mt-3 space-y-1">
-    {ADMIN_NAV_ITEMS.map(({ key, href, label, icon: Icon }) => <Link key={key} href={href} aria-label={collapsed ? label : undefined} title={collapsed ? label : undefined} aria-current={active === key ? 'page' : undefined} className={cn(
-      'flex h-11 items-center rounded-xl text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current',
-      collapsed ? 'justify-center gap-0 px-0 text-white/80 transition-[gap,padding,color] duration-200 ease-in-out hover:bg-white/10 hover:text-white' : 'gap-3 px-3 text-white/80 transition-[gap,padding,color] duration-200 ease-in-out hover:bg-white/10 hover:text-white',
-      active === key && 'bg-white/12 text-white ring-1 ring-inset ring-white/10',
-    )}><Icon aria-hidden="true" className="h-[18px] w-[18px] shrink-0" /><span aria-hidden={collapsed} className={cn(
-      'overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out motion-reduce:transition-none',
-      collapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100',
-    )}>{label}</span></Link>)}
+/** Desktop sidebar navigation, compact rows in the style of claude.ai; the mobile menu is AdminMobileMenu. */
+export function AdminNavigation({ active }: { active: AdminSection }) {
+  return <nav aria-label="Navigasi admin" className="mt-2">
+    <p className="px-2.5 pb-1.5 pt-3 text-xs font-medium text-white/50">Menu utama</p>
+    <div className="space-y-0.5">
+      {ADMIN_NAV_ITEMS.map(({ key, href, label, icon: Icon }) => <Link key={key} href={href} aria-current={active === key ? 'page' : undefined} className={cn(
+        'flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm text-white/85 transition-colors duration-150 hover:bg-white/[0.08] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300',
+        active === key && 'bg-white/[0.12] font-medium text-white',
+      )}><Icon aria-hidden="true" className="size-4 shrink-0" />{label}</Link>)}
+    </div>
   </nav>;
 }

@@ -25,8 +25,8 @@ export default async function ClassCapacityPage() {
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
       <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Kuota Kelas</h1>
       <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
-        Atur pembagian {REGISTRATION_CAPACITY} kursi Siswa Baru per Pilihan Kelas. Pilihan Kelas yang penuh tidak dapat dipilih di formulir.
-        Pendaftar Ditolak, Dibatalkan, dan Pindahan tidak memakai kursi.
+        Bagi {REGISTRATION_CAPACITY} kursi Siswa Baru ke tiap Pilihan Kelas. Kelas yang sudah penuh otomatis tidak bisa dipilih di formulir.
+        Pendaftar Ditolak, Dibatalkan, dan Pindahan tidak ikut dihitung.
       </p>
     </section>
     <div className="mt-6">

@@ -18,39 +18,41 @@ describe('AdminShell navigation', () => {
     });
   });
 
-  it('starts minimised on the first visit', () => {
+  it('starts hidden on the first visit, leaving only the panel toggle', () => {
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
+    const sidebar = screen.getByTestId('admin-sidebar');
 
-    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('mini');
-    expect(screen.getByRole('button', { name: 'Perluas sidebar' }).getAttribute('aria-expanded')).toBe('false');
+    expect(sidebar.getAttribute('data-state')).toBe('collapsed');
+    expect(sidebar.hasAttribute('inert')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Tampilkan sidebar' }).getAttribute('aria-expanded')).toBe('false');
   });
 
   it('remembers the expanded preference', async () => {
     const { unmount } = render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
-    fireEvent.click(screen.getByRole('button', { name: 'Perluas sidebar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tampilkan sidebar' }));
     expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
+    expect(screen.getByTestId('admin-sidebar').hasAttribute('inert')).toBe(false);
     expect(window.localStorage.getItem('admin-sidebar-collapsed')).toBe('false');
 
     unmount();
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Minimalkan sidebar' })).toBeDefined());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sembunyikan sidebar' })).toBeDefined());
   });
 
-  it('collapses the desktop sidebar to icon navigation and remembers the preference', async () => {
+  it('hides the desktop sidebar and remembers the preference', async () => {
     window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     const { unmount } = render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
-    const collapseButton = screen.getByRole('button', { name: 'Minimalkan sidebar' });
 
-    fireEvent.click(collapseButton);
+    fireEvent.click(screen.getByRole('button', { name: 'Sembunyikan sidebar' }));
 
-    expect(screen.getByRole('button', { name: 'Perluas sidebar' }).getAttribute('aria-expanded')).toBe('false');
-    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('mini');
-    expect(screen.getByTestId('admin-content').getAttribute('data-sidebar-state')).toBe('mini');
+    expect(screen.getByRole('button', { name: 'Tampilkan sidebar' }).getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('collapsed');
+    expect(screen.getByTestId('admin-content').getAttribute('data-sidebar-state')).toBe('collapsed');
     expect(window.localStorage.getItem('admin-sidebar-collapsed')).toBe('true');
 
     unmount();
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Perluas sidebar' })).toBeDefined());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Tampilkan sidebar' })).toBeDefined());
   });
 
   it('toggles the sidebar with Ctrl+B', () => {
@@ -58,26 +60,21 @@ describe('AdminShell navigation', () => {
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
 
     fireEvent.keyDown(window, { key: 'b', ctrlKey: true });
-    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('mini');
+    expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('collapsed');
 
     fireEvent.keyDown(window, { key: 'b', ctrlKey: true });
     expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
   });
 
-  it('keeps sidebar labels mounted while switching to mini mode', () => {
+  it('keeps logout inside the account menu', () => {
     window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);
     const sidebar = screen.getByTestId('admin-sidebar');
-    const summaryLabel = within(sidebar).getByText('Ringkasan');
-    const schoolLabel = within(sidebar).getByText('SD Plus 3 Al-Muhajirin');
-    const sessionLabel = within(sidebar).getByText('Sesi administrator');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Minimalkan sidebar' }));
-
-    expect(summaryLabel.isConnected).toBe(true);
-    expect(summaryLabel.getAttribute('aria-hidden')).toBe('true');
-    expect(schoolLabel.isConnected).toBe(true);
-    expect(sessionLabel.isConnected).toBe(true);
+    expect(within(sidebar).getByRole('link', { name: 'Ringkasan' }).getAttribute('aria-current')).toBe('page');
+    expect(within(sidebar).queryByRole('button', { name: 'Keluar dari panel admin' })).toBeNull();
+    fireEvent.click(within(sidebar).getByRole('button', { name: 'Menu akun admin' }));
+    expect(screen.getByRole('button', { name: 'Keluar dari panel admin' })).toBeDefined();
   });
 
   it('opens and closes the mobile admin navigation from a hamburger button', () => {

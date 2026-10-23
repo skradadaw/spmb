@@ -45,7 +45,7 @@ describe('AdminDashboard', () => {
     expect(screen.getByText('96')).toBeDefined();
     expect(screen.getByRole('progressbar', { name: 'Bilingual: 48 dari 56 kursi' }).getAttribute('aria-valuenow')).toBe('86');
     expect(screen.getByText('Penuh')).toBeDefined();
-    expect(screen.getAllByText('sisa 8')).toHaveLength(2);
+    expect(screen.getAllByText('Sisa 8 kursi')).toHaveLength(2);
     expect(screen.getByText(/Pindahan, di luar kuota/).textContent).toContain('7');
   });
 
