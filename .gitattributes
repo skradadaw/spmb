@@ -1,0 +1,2 @@
+# PDF jangan pernah diubah akhir barisnya; isinya biner meski sebagian berupa teks.
+*.pdf binary
