@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/features/auth/session', () => ({ getAdminSession: mocks.getAdminSession }));
 vi.mock('@/features/registration/server/supabaseAdmin', () => ({ getSupabaseAdmin: mocks.getSupabaseAdmin }));
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect, notFound: mocks.notFound }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ host: 'spmb.example', 'x-forwarded-proto': 'https' }) }));
 
 import ParticipantPage from '../page';
 

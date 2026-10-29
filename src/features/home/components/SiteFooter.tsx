@@ -16,6 +16,7 @@ const QUICK_LINKS = [
   ['Biaya OKB dan Berkas yang disiapkan', '#persiapan'],
   ['Unduh rincian biaya (PDF)', registrationInfo.feeDocument],
   ['Isi formulir pendaftaran', '/pendaftaran'],
+  ['Cek tahap pendaftaran dan Hasil OKB', '/hasil-okb'],
 ] as const;
 
 const HEADING = 'text-xs font-bold uppercase tracking-[0.16em] text-amber-300';

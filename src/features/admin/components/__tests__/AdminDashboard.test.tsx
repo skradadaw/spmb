@@ -7,7 +7,7 @@ import { AdminDashboard } from '../AdminDashboard';
 const summary: AdminDashboardSummary = {
   today: '2026-10-18',
   totalRegistrations: 60,
-  tasks: { uploading: 4, awaiting: 12, verified: 5, absent: 2, decision: 0 },
+  tasks: { uploading: 4, awaiting: 12, verified: 5, absent: 2, decision: 0, unannounced: 3 },
   attention: { any: 5, nisn: 3 },
   capacity: [{ label: 'Reguler', kuota: 28, terpakai: 20 }, { label: 'Bilingual', kuota: 56, terpakai: 48 }, { label: 'Tahfizh', kuota: 28, terpakai: 28 }],
   transfers: 7,
@@ -29,6 +29,8 @@ describe('AdminDashboard', () => {
     expect(tile('Tidak hadir OKB').getAttribute('href')).toBe('/admin/pendaftar?okb=terlewat');
     expect(tile('Menunggu keputusan').getAttribute('href')).toBe('/admin/pendaftar?status=Sudah%20OKB');
     expect(tile('Belum selesai unggah').getAttribute('href')).toBe('/admin/pendaftar?status=Menunggu%20Unggahan');
+    expect(tile('Belum diumumkan').getAttribute('href')).toBe('/admin/pendaftar?pengumuman=belum');
+    expect(tile('Belum diumumkan').textContent).toContain('3');
     expect(tile('Perlu perhatian').getAttribute('href')).toBe('/admin/pendaftar?perhatian=semua');
     expect(screen.getByRole('link', { name: /3\s*NISN tidak sesuai/ }).getAttribute('href')).toBe('/admin/pendaftar?perhatian=nisn');
     expect(tile('Perlu diverifikasi').textContent).toContain('12');

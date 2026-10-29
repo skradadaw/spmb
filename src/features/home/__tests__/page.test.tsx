@@ -65,6 +65,7 @@ describe('Open Booking landing page', () => {
       ['Kelas', '#kelas'],
       ['Biaya dan Berkas', '#persiapan'],
       ['FAQ', '#faq'],
+      ['Cek Hasil OKB', '/hasil-okb'],
     ]);
   });
 
@@ -110,7 +111,7 @@ describe('Open Booking landing page', () => {
     expect(mobileNavigation.className).toContain('bg-gradient-to-b');
     expect(within(mobileNavigation).getByText('Menu Utama')).toBeDefined();
     expect(within(mobileNavigation).getByText('Informasi Open Booking')).toBeDefined();
-    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(7);
+    expect(within(mobileNavigation).getAllByRole('link')).toHaveLength(8);
     expect(within(mobileNavigation).getByRole('link', { name: 'Daftar Sekarang' })).toBeDefined();
 
     fireEvent.click(within(mobileNavigation).getByRole('link', { name: 'Jadwal' }));
@@ -415,6 +416,7 @@ describe('Open Booking landing page', () => {
       ['Biaya OKB dan Berkas yang disiapkan', '#persiapan'],
       ['Unduh rincian biaya (PDF)', '/rincian-biaya-2027-2028.pdf'],
       ['Isi formulir pendaftaran', '/pendaftaran'],
+      ['Cek tahap pendaftaran dan Hasil OKB', '/hasil-okb'],
     ]);
     // Contacts are a plain list, not boxed in a card.
     expect(footer.querySelector('.rounded-3xl')).toBeNull();

@@ -1,11 +1,12 @@
-import { Armchair, LayoutDashboard, ScanLine, UsersRound } from 'lucide-react';
+import { Armchair, LayoutDashboard, Megaphone, ScanLine, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-export type AdminSection = 'summary' | 'participants' | 'attendance' | 'capacity';
+export type AdminSection = 'summary' | 'participants' | 'attendance' | 'announcement' | 'capacity';
 export const ADMIN_NAV_ITEMS = [
   { key: 'summary', href: '/admin', label: 'Ringkasan', icon: LayoutDashboard },
   { key: 'participants', href: '/admin/pendaftar', label: 'Data Pendaftar', icon: UsersRound },
   { key: 'attendance', href: '/admin/scan', label: 'Scan Kehadiran', icon: ScanLine },
+  { key: 'announcement', href: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
   { key: 'capacity', href: '/admin/kuota', label: 'Kuota Kelas', icon: Armchair },
 ] as const satisfies ReadonlyArray<{ key: AdminSection; href: string; label: string; icon: unknown }>;
 

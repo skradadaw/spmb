@@ -3,7 +3,7 @@
 import { useActionState, useState, type ReactNode } from 'react';
 import { format, parse, isValid } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { CalendarCheck, CalendarClock, CalendarDays, CalendarX2, Check, ChevronDown, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
+import { CalendarCheck, CalendarClock, CalendarDays, CalendarX2, Check, ChevronDown, Download, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -28,6 +29,9 @@ import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
 import { CANCELLABLE_STATUSES } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
 import { updateParticipantStatusAction, type ParticipantStatusIntent, type UpdateParticipantStatusState } from '../actions/updateParticipantStatusAction';
+import { saveNomorVaAction, type SaveNomorVaState } from '../actions/saveNomorVaAction';
+import { NOMOR_VA_LENGTH } from '../nomorVa';
+import { AnnouncementControl } from '@/features/admin/announcement/components/AnnouncementControl';
 
 const initialState: UpdateParticipantStatusState = { status: 'idle', message: '' };
 type FormAction = (formData: FormData) => void;
@@ -41,6 +45,8 @@ type Props = {
   jadwalGelombang: string | null;
   pilihanKelas: string | null;
   kelasPenempatan: string | null;
+  nomorVa: string | null;
+  diumumkanPada: string | null;
 };
 
 const STEPS = ['Berkas', 'Jadwal OKB', 'Hadir OKB', 'Keputusan'] as const;
@@ -57,7 +63,7 @@ function currentStep(status: string) {
   }
 }
 
-export function ParticipantStatusPanel({ participantId, status, previousStatus, jadwalTanggal, jadwalGelombang, pilihanKelas, kelasPenempatan }: Props) {
+export function ParticipantStatusPanel({ participantId, status, previousStatus, jadwalTanggal, jadwalGelombang, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
   const [state, formAction, pending] = useActionState(updateParticipantStatusAction, initialState);
   const [rescheduling, setRescheduling] = useState(false);
   const cancelled = status === 'Dibatalkan';
@@ -157,12 +163,25 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
           </p>
         )}
 
+        {status === 'Diterima' && <NomorVaForm participantId={participantId} nomorVa={nomorVa} locked={Boolean(diumumkanPada)} />}
+
+        {status === 'Diterima' && nomorVa && (
+          <a href={`/admin/pendaftar/${participantId}/surat-penerimaan`} download className={cn(ADMIN_SECONDARY_BUTTON, 'inline-flex items-center gap-1.5')}>
+            <Download aria-hidden="true" className="size-3.5" />Unduh Surat Penerimaan
+          </a>
+        )}
+
+        {(status === 'Diterima' || status === 'Ditolak') && (
+          <AnnouncementControl participantId={participantId} status={status} diumumkanPada={diumumkanPada} />
+        )}
+
         {canDecide && (
           <DecisionForm
             participantId={participantId}
             status={status}
             pilihanKelas={pilihanKelas}
             kelasPenempatan={kelasPenempatan}
+            announced={Boolean(diumumkanPada)}
             pending={pending}
             formAction={formAction}
           />
@@ -323,19 +342,23 @@ function DateField({ id, name, value, placeholder, onChange }: {
   );
 }
 
-function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, pending, formAction }: {
+function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, announced, pending, formAction }: {
   participantId: string;
   status: string;
   pilihanKelas: string | null;
   kelasPenempatan: string | null;
+  /** Hasilnya sudah diumumkan: orang tua langsung melihat perubahan, jadi minta konfirmasi dulu. */
+  announced: boolean;
   pending: boolean;
   formAction: FormAction;
 }) {
   const [keputusan, setKeputusan] = useState(status === 'Diterima' || status === 'Ditolak' ? status : '');
   const [kelas, setKelas] = useState(kelasPenempatan ?? (CLASS_OPTIONS as readonly string[]).find((option) => option === pilihanKelas) ?? '');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const formId = `decision-${participantId}`;
 
   return (
-    <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
+    <form id={formId} action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
       <input type="hidden" name="participantId" value={participantId} />
       <input type="hidden" name="keputusan" value={keputusan} />
       <h3 className={ADMIN_SECTION_TITLE}>{status === 'Sudah OKB' ? 'Keputusan Penerimaan' : 'Ubah Keputusan Penerimaan'}</h3>
@@ -359,7 +382,71 @@ function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, pe
           className={ADMIN_FIELD}
         />
       </div>
-      <Button type="submit" name="intent" value="decide" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON}>Simpan keputusan</Button>
+      {announced ? (
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogTrigger render={<Button type="button" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON} />}>Simpan keputusan</AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ubah keputusan yang sudah diumumkan?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Hasil pendaftar ini sudah diumumkan. Orang tua akan langsung melihat keputusan dan Kelas Penempatan yang baru di halaman Cek Hasil OKB.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Kembali</AlertDialogCancel>
+              <Button type="submit" form={formId} name="intent" value="decide" disabled={pending} onClick={() => setConfirmOpen(false)} className={ADMIN_PRIMARY_BUTTON}>Ya, simpan keputusan</Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ) : (
+        <Button type="submit" name="intent" value="decide" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON}>Simpan keputusan</Button>
+      )}
+    </form>
+  );
+}
+
+const initialNomorVaState: SaveNomorVaState = { status: 'idle', message: '' };
+
+/** Nomor VA dari bank untuk Pendaftar Diterima; spasi dan tanda hubung dibuang saat disimpan. */
+function NomorVaForm({ participantId, nomorVa, locked }: { participantId: string; nomorVa: string | null; locked: boolean }) {
+  const [state, formAction, pending] = useActionState(saveNomorVaAction, initialNomorVaState);
+  // Setelah diumumkan, orang tua mungkin sudah memakai Nomor VA ini; mengubahnya perlu menarik pengumuman dulu.
+  if (locked) {
+    return (
+      <div className="space-y-1 rounded-xl border border-slate-200 p-3">
+        <p className={ADMIN_SECTION_TITLE}>Nomor VA</p>
+        <p data-nomor-va className="font-mono text-sm font-semibold tabular-nums text-slate-950">{nomorVa ?? 'Belum diisi'}</p>
+        <p className="text-[11px] leading-4 text-slate-500">Terkunci karena hasil sudah diumumkan. Tarik pengumuman untuk mengubahnya.</p>
+      </div>
+    );
+  }
+  return (
+    <form action={formAction} className="space-y-2 rounded-xl border border-slate-200 p-3">
+      <input type="hidden" name="participantId" value={participantId} />
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor="nomor-va" className={ADMIN_SECTION_TITLE}>Nomor VA</Label>
+        {!nomorVa && <span className="text-[11px] font-medium text-amber-700">Belum diisi</span>}
+      </div>
+      {/* key: isian kembali ke nilai tersimpan setelah halaman dimuat ulang. */}
+      <Input
+        key={nomorVa ?? ''}
+        id="nomor-va"
+        name="nomorVa"
+        inputMode="numeric"
+        autoComplete="off"
+        defaultValue={nomorVa ?? ''}
+        placeholder={`${NOMOR_VA_LENGTH} digit dari bank`}
+        className={cn(ADMIN_FIELD, 'font-mono tabular-nums')}
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>Simpan Nomor VA</Button>
+        {nomorVa && <Button type="submit" name="clear" value="1" disabled={pending} className={ADMIN_SECONDARY_BUTTON}>Kosongkan</Button>}
+      </div>
+      {state.message && (
+        <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>
+          {state.message}
+        </p>
+      )}
     </form>
   );
 }

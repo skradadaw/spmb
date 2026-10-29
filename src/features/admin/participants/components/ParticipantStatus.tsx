@@ -48,6 +48,12 @@ export function ParticipantWaveNote({ wave }: { wave: string | null }) {
   return <p data-wave className="mt-0.5 break-words text-[11px] font-medium leading-4 text-sky-700">{wave}</p>;
 }
 
+/** Pendaftar Diterima yang belum bisa diumumkan karena Nomor VA-nya belum diisi. */
+export function ParticipantVaNote({ missing }: { missing: boolean }) {
+  if (!missing) return null;
+  return <p data-va-missing className="mt-0.5 break-words text-[11px] font-medium leading-4 text-amber-700">VA belum diisi</p>;
+}
+
 export function attentionItems(attention: ParticipantAttention) {
   return [
     attention.nisnMismatch && 'NISN tidak sesuai',

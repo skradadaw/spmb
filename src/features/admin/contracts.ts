@@ -9,7 +9,8 @@ export type AdminDashboardSummary = {
   /** Semua Pendaftar kecuali Menunggu Unggahan, yang belum dianggap mendaftar. */
   totalRegistrations: number;
   /** Jumlah per tugas admin; masing-masing membuka Data Pendaftar dengan filter yang sesuai. */
-  tasks: { uploading: number; awaiting: number; verified: number; absent: number; decision: number };
+  /** unannounced: Diterima/Ditolak yang belum diumumkan kepada orang tua. */
+  tasks: { uploading: number; awaiting: number; verified: number; absent: number; decision: number; unannounced: number };
   /** Perlu Perhatian counts; Dibatalkan and Ditolak are never included. */
   attention: { any: number; nisn: number };
   capacity: ClassUsage[];

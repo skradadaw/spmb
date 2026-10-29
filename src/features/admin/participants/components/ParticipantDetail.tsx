@@ -19,7 +19,7 @@ import { ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } fro
 import { Textarea } from '@/components/ui/textarea';
 import type { ParticipantDetail as ParticipantDetailData } from '../contracts';
 import { formatParticipantFieldValue } from '../presentation';
-import { whatsAppWebHref } from '../whatsapp';
+import { resultAnnouncementMessage, whatsAppWebHref } from '../whatsapp';
 
 const shortDate = (value: string) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(value));
 
@@ -31,7 +31,8 @@ function getDocumentContentType(path: string) {
   return 'application/octet-stream';
 }
 
-export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }: { participant: ParticipantDetailData; backHref?: string }) {
+/** siteOrigin: alamat situs publik untuk tautan Cek Hasil OKB di pesan WhatsApp. */
+export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', siteOrigin }: { participant: ParticipantDetailData; backHref?: string; siteOrigin?: string }) {
   const uploadedDocuments = participant.documents.filter(document => document.path);
   const reviewedCount = uploadedDocuments.filter(document => participant.documentReviews[document.id]).length;
   // The version in the URL changes when a Berkas Pengganti is uploaded, so the browser may cache each file.
@@ -44,8 +45,12 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
   }));
   const childName = participant.identity.namaLengkap ? formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap) : 'ananda';
   const greeting = `Assalamu'alaikum Bapak/Ibu, kami dari panitia SPMB ingin menghubungi terkait pendaftaran ${childName}${participant.registration.nomorPendaftaran ? ` (${participant.registration.nomorPendaftaran})` : ''}.`;
-  const fatherHref = whatsAppWebHref(participant.father.telepon, greeting);
-  const motherHref = whatsAppWebHref(participant.mother.telepon, greeting);
+  // Setelah diumumkan, tombol WhatsApp membawa pesan siap kirim berisi tautan Cek Hasil OKB.
+  const message = participant.diumumkanPada && siteOrigin
+    ? resultAnnouncementMessage(childName, participant.registration.nomorPendaftaran ?? null, `${siteOrigin}/hasil-okb`)
+    : greeting;
+  const fatherHref = whatsAppWebHref(participant.father.telepon, message);
+  const motherHref = whatsAppWebHref(participant.mother.telepon, message);
   // Parents often share one number; show a single button then.
   const contacts = fatherHref && fatherHref === motherHref
     ? [{ label: 'WA orang tua', href: fatherHref }]
@@ -173,6 +178,8 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar' }
             jadwalGelombang={participant.okb.jadwalGelombang ?? null}
             pilihanKelas={participant.registration.pilihanKelas ?? null}
             kelasPenempatan={participant.decision.kelasPenempatan ?? null}
+            nomorVa={participant.nomorVa}
+            diumumkanPada={participant.diumumkanPada}
           />
         </StickyAside>
       </div>

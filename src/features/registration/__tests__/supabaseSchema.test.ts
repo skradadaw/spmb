@@ -291,6 +291,61 @@ describe('Supabase registration security schema', () => {
     expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.next_registration_number() FROM PUBLIC, anon, authenticated;');
   });
 
+  it('stores one 16-digit Nomor VA per Pendaftar, never shared', () => {
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_va VARCHAR(16);');
+    expect(compactSchema).toContain("ADD CONSTRAINT pendaftar_nomor_va_check CHECK (nomor_va IS NULL OR nomor_va ~ '^[0-9]{16}$');");
+    expect(compactSchema).toContain('CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_va ON public.pendaftar (nomor_va) WHERE nomor_va IS NOT NULL;');
+  });
+
+  it('announces results per Pendaftar or Gelombang in one transaction, only with a template and Nomor VA', () => {
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS diumumkan_pada TIMESTAMPTZ;');
+    const functionSql = compactSql(schema.match(/CREATE OR REPLACE FUNCTION public\.announce_results\([\s\S]*?\$\$;/)?.[0] ?? '');
+    expect(functionSql).toContain('IF (p_pendaftar_id IS NULL) = (p_gelombang IS NULL) OR p_umumkan IS NULL THEN');
+    expect(functionSql).toContain('FOR UPDATE;');
+    expect(functionSql).toContain("IF NOT EXISTS (SELECT 1 FROM public.template_surat_penerimaan) THEN RETURN jsonb_build_object('status', 'no-template');");
+    expect(functionSql).toContain("AND status = 'Diterima' AND nomor_va IS NULL AND diumumkan_pada IS NULL;");
+    expect(functionSql).toContain("RETURN jsonb_build_object('status', 'missing-va', 'pendaftar', v_tanpa_va);");
+    expect(functionSql).toContain("SET diumumkan_pada = now() WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang) AND status IN ('Diterima', 'Ditolak') AND diumumkan_pada IS NULL");
+    expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.announce_results(UUID, SMALLINT, BOOLEAN) FROM PUBLIC, anon, authenticated;');
+    expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.announce_results(UUID, SMALLINT, BOOLEAN) TO service_role;');
+  });
+
+  it('imports Nomor VA all or nothing, only for Diterima without a Nomor VA and not yet announced', () => {
+    const functionSql = compactSql(schema.match(/CREATE OR REPLACE FUNCTION public\.import_nomor_va\([\s\S]*?\$\$;/)?.[0] ?? '');
+    expect(functionSql).toContain('LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;');
+    expect(functionSql).toContain("WHERE p.id IS NULL OR p.status <> 'Diterima' OR p.diumumkan_pada IS NOT NULL OR p.nomor_va IS NOT NULL OR x.va IS NULL OR x.va !~ '^[0-9]{16}$'");
+    expect(functionSql).toContain("WHEN unique_violation THEN RETURN jsonb_build_object('status', 'duplicate');");
+    expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.import_nomor_va(JSONB) FROM PUBLIC, anon, authenticated;');
+    expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.import_nomor_va(JSONB) TO service_role;');
+  });
+
+  it('keeps the one active Surat Penerimaan template in a private PDF-only bucket', () => {
+    expect(compactSchema).toContain(compactSql(`
+      INSERT INTO storage.buckets ( id, name, public, file_size_limit, allowed_mime_types ) VALUES (
+        'template_surat', 'template_surat', false, 5242880, ARRAY['application/pdf']
+      )
+    `));
+    expect(compactSchema).toContain("id TEXT PRIMARY KEY DEFAULT 'aktif' CHECK (id = 'aktif')");
+    expect(compactSchema).toContain('ALTER TABLE public.template_surat_penerimaan ENABLE ROW LEVEL SECURITY;');
+    expect(compactSchema).toContain('REVOKE ALL ON TABLE public.template_surat_penerimaan FROM PUBLIC, anon, authenticated;');
+    expect(compactSchema).toContain('GRANT ALL ON TABLE public.template_surat_penerimaan TO service_role;');
+  });
+
+  it('counts failed Cek Hasil OKB attempts per client privately in the database', () => {
+    expect(compactSchema).toContain('CREATE TABLE IF NOT EXISTS public.result_check_failures');
+    expect(compactSchema).toContain('ALTER TABLE public.result_check_failures ENABLE ROW LEVEL SECURITY;');
+    expect(compactSchema).toContain('REVOKE ALL ON TABLE public.result_check_failures FROM PUBLIC, anon, authenticated;');
+    const lockedSql = compactSql(schema.match(/CREATE OR REPLACE FUNCTION public\.is_result_check_locked\([\s\S]*?\$\$;/)?.[0] ?? '');
+    expect(lockedSql).toContain('failures >= p_limit AND window_started_at > now() - make_interval(secs => p_window_seconds)');
+    const recordSql = compactSql(schema.match(/CREATE OR REPLACE FUNCTION public\.record_result_check_failure\([\s\S]*?\$\$;/)?.[0] ?? '');
+    expect(recordSql).toContain('ON CONFLICT (identifier_hash) DO UPDATE');
+    for (const fn of ['is_result_check_locked(TEXT, INTEGER, INTEGER)', 'record_result_check_failure(TEXT, INTEGER)']) {
+      expect(compactSchema).toContain(`REVOKE ALL ON FUNCTION public.${fn} FROM PUBLIC, anon, authenticated;`);
+      expect(compactSchema).toContain(`GRANT EXECUTE ON FUNCTION public.${fn} TO service_role;`);
+    }
+    expect(compactSchema).toContain("DELETE FROM public.result_check_failures WHERE window_started_at < now() - interval '1 day';");
+  });
+
   it('aggregates the admin dashboard in the database, sharing the Kuota rule with the capacity menu', () => {
     const functionSql = compactSql(schema.match(
       /CREATE OR REPLACE FUNCTION public\.get_admin_dashboard_summary\([\s\S]*?\$\$;/,

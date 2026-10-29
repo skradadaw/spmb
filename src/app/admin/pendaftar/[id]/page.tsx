@@ -3,6 +3,7 @@ import { ParticipantDetail } from '@/features/admin/participants/components/Part
 import { createParticipantsRepository } from '@/features/admin/participants/server/participantsRepository';
 import { getAdminSession } from '@/features/auth/session';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
+import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { PARTICIPANT_DEFAULT_STATUSES } from '@/features/admin/participants/contracts';
 import { parseParticipantListQuery, participantListHref } from '@/features/admin/participants/query';
@@ -40,5 +41,11 @@ export default async function ParticipantPage({ params, searchParams }: Props) {
 
   if (!participant) notFound();
 
-  return <ParticipantDetail participant={participant} backHref={backHref} />;
+  // Alamat situs yang sedang dibuka admin, untuk tautan Cek Hasil OKB di pesan WhatsApp.
+  const requestHeaders = await headers();
+  const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host');
+  const protocol = requestHeaders.get('x-forwarded-proto') ?? (host?.startsWith('localhost') ? 'http' : 'https');
+  const siteOrigin = host ? `${protocol}://${host}` : undefined;
+
+  return <ParticipantDetail participant={participant} backHref={backHref} siteOrigin={siteOrigin} />;
 }

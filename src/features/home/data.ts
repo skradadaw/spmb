@@ -96,6 +96,7 @@ export const navigationItems = [
   ['Kelas', '#kelas'],
   ['Biaya dan Berkas', '#persiapan'],
   ['FAQ', '#faq'],
+  ['Cek Hasil OKB', '/hasil-okb'],
 ] as const;
 
 export const socialLinks = [

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, CalendarPlus, CalendarX2, Check, ChevronRight, ClipboardCheck, Gavel, Upload } from 'lucide-react';
+import { AlertTriangle, CalendarPlus, CalendarX2, Check, ChevronRight, ClipboardCheck, Gavel, Megaphone, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AdminDashboardSummary } from '../contracts';
 
@@ -34,6 +34,7 @@ export function DashboardTasks({ tasks, attention }: Pick<AdminDashboardSummary,
     { label: 'Perlu dijadwalkan OKB', action: 'Tetapkan Jadwal OKB', count: tasks.verified, href: statusHref('Terverifikasi'), icon: CalendarPlus },
     { label: 'Tidak hadir OKB', action: 'Jadwalkan ulang atau batalkan', count: tasks.absent, href: '/admin/pendaftar?okb=terlewat', icon: CalendarX2 },
     { label: 'Menunggu keputusan', action: 'Masukkan Keputusan Penerimaan', count: tasks.decision, href: statusHref('Sudah OKB'), icon: Gavel },
+    { label: 'Belum diumumkan', action: 'Umumkan Hasil OKB', count: tasks.unannounced, href: '/admin/pendaftar?pengumuman=belum', icon: Megaphone },
     { label: 'Belum selesai unggah', action: 'Hubungi orang tua', count: tasks.uploading, href: statusHref('Menunggu Unggahan'), icon: Upload },
   ];
   const attentionTask: Task = { label: 'Perlu perhatian', action: 'NISN atau Berkas bermasalah', count: attention.any, href: '/admin/pendaftar?perhatian=semua', icon: AlertTriangle };

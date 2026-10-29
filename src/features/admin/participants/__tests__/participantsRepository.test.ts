@@ -5,7 +5,7 @@ import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contrac
 import { parseParticipantListQuery } from '../query';
 
 function fixture() {
-  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(), gt: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(), lt: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
+  const q = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(), gt: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(), lt: vi.fn().mockReturnThis(), is: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range: vi.fn().mockResolvedValue({ data: [], count: 0, error: null }), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) };
   return { q, repo: createParticipantsRepository({ from: vi.fn(() => q) } as unknown as SupabaseClient) };
 }
 describe('participants repository', () => {
@@ -133,6 +133,35 @@ describe('participants repository', () => {
     q.range.mockResolvedValueOnce({ data: null, count: 1, error: null });
     await expect(repo.list(parseParticipantListQuery(new URLSearchParams()))).rejects.toThrow('Data pendaftar tidak dapat dimuat.');
   });
+  it('filters decided results by whether they are announced', async () => {
+    const pending = fixture();
+    pending.q.range.mockResolvedValueOnce({ data: [], count: 0, error: null });
+    await pending.repo.list(parseParticipantListQuery(new URLSearchParams('pengumuman=belum')));
+    expect(pending.q.in).toHaveBeenCalledWith('status', ['Diterima', 'Ditolak']);
+    expect(pending.q.is).toHaveBeenCalledWith('diumumkan_pada', null);
+
+    const announced = fixture();
+    announced.q.range.mockResolvedValueOnce({ data: [], count: 0, error: null });
+    await announced.repo.list(parseParticipantListQuery(new URLSearchParams('pengumuman=sudah')));
+    expect(announced.q.not).toHaveBeenCalledWith('diumumkan_pada', 'is', 'null');
+  });
+
+  it('marks a Pendaftar Diterima without Nomor VA in the list and reads the Nomor VA on the detail', async () => {
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: [
+      { id: 'a', status: 'Diterima', nomor_va: null },
+      { id: 'b', status: 'Diterima', nomor_va: '7456012627300120' },
+      { id: 'c', status: 'Ditolak', nomor_va: null },
+    ], count: 3, error: null });
+    const result = await repo.list(parseParticipantListQuery(new URLSearchParams()));
+    expect(result.items.map(item => item.vaMissing)).toEqual([true, false, false]);
+    expect(PARTICIPANT_LIST_COLUMNS).toContain('nomor_va');
+
+    q.maybeSingle.mockResolvedValue({ data: { id: 'b', status: 'Diterima', nomor_va: '7456012627300120' }, error: null });
+    expect((await repo.getById('b'))?.nomorVa).toBe('7456012627300120');
+    expect(PARTICIPANT_DETAIL_COLUMNS).toContain('nomor_va');
+  });
+
   it('returns safe mapped detail and never selects submission secrets', async () => {
     const { q, repo } = fixture();
     q.maybeSingle.mockResolvedValue({ data: { id: 'a', nama_lengkap: 'Ani', nama_ayah: 'Budi', submission_secret_hash: 'secret', dokumen_akta_kelahiran: 'registrations/a/aktaKelahiran.pdf', dokumen_kartu_keluarga: 'registrations/a/kartuKeluarga.jpg', dokumen_pas_foto: 'registrations/a/pasFoto.png', dokumen_bukti_pembayaran: 'registrations/a/buktiPembayaran.webp' }, error: null });

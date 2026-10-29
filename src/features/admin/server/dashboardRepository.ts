@@ -69,7 +69,7 @@ export function createAdminDashboardRepository(client: DashboardClient) {
         totalRegistrations: num(data.total),
         tasks: {
           uploading: num(data.tasks?.uploading), awaiting: num(data.tasks?.awaiting), verified: num(data.tasks?.verified),
-          absent: num(data.tasks?.absent), decision: num(data.tasks?.decision),
+          absent: num(data.tasks?.absent), decision: num(data.tasks?.decision), unannounced: num(data.tasks?.unannounced),
         },
         attention: { any: num(data.attention?.any), nisn: num(data.attention?.nisn) },
         capacity: CLASS_OPTIONS.map(label => ({ label, kuota: num(capacity.get(label)?.kuota), terpakai: num(capacity.get(label)?.terpakai) })),

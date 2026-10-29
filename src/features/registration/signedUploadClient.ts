@@ -37,9 +37,9 @@ export async function uploadSignedDocuments(
   }
 }
 
-/** Uploads one file to a signed path, e.g. an admin Berkas Pengganti. */
-export async function uploadToSignedTarget(path: string, token: string, file: File) {
-  const { error } = await getUploadClient().storage.from('dokumen_pendaftaran').uploadToSignedUrl(path, token, file, {
+/** Uploads one file to a signed path, e.g. an admin Berkas Pengganti or a Surat Penerimaan template. */
+export async function uploadToSignedTarget(path: string, token: string, file: File, bucket = 'dokumen_pendaftaran') {
+  const { error } = await getUploadClient().storage.from(bucket).uploadToSignedUrl(path, token, file, {
     contentType: file.type,
     cacheControl: '3600',
   });

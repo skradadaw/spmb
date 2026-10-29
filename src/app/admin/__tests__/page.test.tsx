@@ -49,7 +49,7 @@ describe('AdminPage', () => {
   it('renders a calm dashboard for zero registrations', async () => {
     mocks.getSupabaseAdmin.mockReturnValue(clientReturning(0));
     render(await AdminPage());
-    expect(screen.getAllByText('Tidak ada yang perlu dikerjakan')).toHaveLength(6);
+    expect(screen.getAllByText('Tidak ada yang perlu dikerjakan')).toHaveLength(7);
     expect(screen.getByText('Belum ada Jadwal OKB mendatang.')).toBeDefined();
   });
 

@@ -41,7 +41,7 @@ function getSidebarPreference() {
 
 export function AdminShell({ active, children }: { active?: AdminSection; children: React.ReactNode }) {
   const pathname = usePathname();
-  const activeSection: AdminSection = active ?? (pathname.startsWith('/admin/pendaftar') ? 'participants' : pathname.startsWith('/admin/kuota') ? 'capacity' : pathname.startsWith('/admin/scan') ? 'attendance' : 'summary');
+  const activeSection: AdminSection = active ?? (pathname.startsWith('/admin/pendaftar') ? 'participants' : pathname.startsWith('/admin/kuota') ? 'capacity' : pathname.startsWith('/admin/scan') ? 'attendance' : pathname.startsWith('/admin/pengumuman') ? 'announcement' : 'summary');
   const sidebarCollapsed = useSyncExternalStore(subscribeToSidebarPreference, getSidebarPreference, () => true);
 
   // Ctrl/Cmd+B, the usual shortcut for showing and hiding a sidebar.

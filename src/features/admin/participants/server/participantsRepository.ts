@@ -15,6 +15,7 @@ type Query = {
   in: (column: string, values: readonly string[]) => Query;
   not: (column: string, operator: string, value: string) => Query;
   lt: (column: string, value: string) => Query;
+  is: (column: string, value: null) => Query;
   or: (filters: string) => Query;
   order: (column: string, options?: { ascending?: boolean }) => Query;
   range: (from: number, to: number) => Result<unknown[]>;
@@ -53,6 +54,8 @@ function applyFilters(request: Query, query: ParticipantListQuery) {
   // Tidak Hadir OKB: tanggal Jadwal OKB sudah lewat tanpa Scan Kehadiran.
   if (query.okbMissed) request = request.eq('status', 'Terjadwal OKB').lt('jadwal_okb_tanggal', jakartaToday());
   if (query.waveFilter) request = request.eq('status', 'Terjadwal OKB').eq('jadwal_okb_gelombang', String(query.waveFilter));
+  if (query.announcementFilter === 'belum') request = request.in('status', ['Diterima', 'Ditolak']).is('diumumkan_pada', null);
+  if (query.announcementFilter === 'sudah') request = request.not('diumumkan_pada', 'is', 'null');
   if (query.attentionFilter) {
     request = request.not('status', 'in', EXCLUDED_STATUS_LIST);
     if (query.attentionFilter === 'nisn') request = request.eq('nisn_tidak_sesuai', true);
@@ -67,7 +70,7 @@ function mapList(row: Record<string, unknown>): ParticipantListItem {
     id: String(row.id), nomorPendaftaran: text(row.nomor_pendaftaran), namaLengkap: text(row.nama_lengkap) ?? 'Nama belum diisi', asalSekolah: text(row.asal_sekolah),
     pilihanKelas: text(row.pilihan_kelas) ?? 'Belum diisi', kelasPenempatan: text(row.kelas_penempatan), kelasTujuan: text(row.kelas_tujuan), jenisPendaftaran: text(row.jenis_pendaftaran) ?? 'Belum diisi',
     status, jadwalGelombang: status === 'Terjadwal OKB' ? fieldValue('jadwal_okb_gelombang', row.jadwal_okb_gelombang) : null,
-    createdAt: text(row.created_at), attention: mapAttention(row, status),
+    createdAt: text(row.created_at), attention: mapAttention(row, status), vaMissing: status === 'Diterima' && !text(row.nomor_va),
   };
 }
 
@@ -166,6 +169,7 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         referral: group('referral'), okb: group('okb'), decision: group('decision'), formValues: fromPendaftarRow(row), previousStatus: text(row.status_sebelum_dibatalkan),
         address: group('address'), father: group('father'), mother: group('mother'),
         documents: DOCUMENT_DEFINITIONS.map(doc => ({ id: doc.id, title: doc.title, path: text(row[doc.dbColumn]) })), documentReviews, adminNote: text(row.catatan_admin), nisnMismatch: row.nisn_tidak_sesuai === true,
+        nomorVa: text(row.nomor_va), diumumkanPada: text(row.diumumkan_pada),
       };
     },
   };

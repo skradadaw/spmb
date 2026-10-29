@@ -7,6 +7,14 @@ export function toWhatsAppNumber(phone: string | null | undefined) {
   return null;
 }
 
+/** Pesan setelah Pengumuman Hasil OKB: tautan Cek Hasil OKB dan Nomor Pendaftaran untuk login. */
+export function resultAnnouncementMessage(childName: string, nomorPendaftaran: string | null, resultCheckUrl: string) {
+  return [
+    `Assalamu'alaikum Bapak/Ibu, Hasil OKB ${childName} di SD Plus 3 Al-Muhajirin sudah diumumkan.`,
+    `Silakan cek di ${resultCheckUrl} dengan Nomor Pendaftaran ${nomorPendaftaran ?? '(lihat Bukti Pendaftaran)'} dan tanggal lahir Ananda.`,
+  ].join('\n');
+}
+
 export function whatsAppWebHref(phone: string | null | undefined, text?: string) {
   const number = toWhatsAppNumber(phone);
   if (!number) return null;

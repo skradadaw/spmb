@@ -107,9 +107,18 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS status_sebelum_dibatalkan 
 
 -- Keputusan Penerimaan
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS kelas_penempatan VARCHAR(50);
+-- Pengumuman Hasil OKB: terisi sejak Keputusan Penerimaan dapat dilihat orang tua.
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS diumumkan_pada TIMESTAMPTZ;
 
 -- Nomor Pendaftaran (OB-<tahun ajaran>-<urut>), diberikan saat pendaftaran berhasil
 ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_pendaftaran VARCHAR(20);
+
+-- Nomor VA: 16 digit dari bank untuk Pendaftar Diterima, berbeda untuk setiap Pendaftar.
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_va VARCHAR(16);
+ALTER TABLE public.pendaftar DROP CONSTRAINT IF EXISTS pendaftar_nomor_va_check;
+ALTER TABLE public.pendaftar
+  ADD CONSTRAINT pendaftar_nomor_va_check
+  CHECK (nomor_va IS NULL OR nomor_va ~ '^[0-9]{16}$');
 
 -- 4. Indeks
 CREATE INDEX IF NOT EXISTS idx_pendaftar_nik ON public.pendaftar (nik);
@@ -138,6 +147,10 @@ WHERE submission_id IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_pendaftaran
 ON public.pendaftar (nomor_pendaftaran)
 WHERE nomor_pendaftaran IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_va
+ON public.pendaftar (nomor_va)
+WHERE nomor_va IS NOT NULL;
 
 -- Nomor urut berikutnya untuk Open Booking 2027/2028. Ganti prefiks untuk tahun ajaran berikutnya.
 CREATE OR REPLACE FUNCTION public.next_registration_number()
@@ -459,6 +472,136 @@ $$;
 REVOKE ALL ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) TO service_role;
 
+-- Pengumuman Hasil OKB untuk satu Pendaftar atau satu Gelombang OKB, dalam satu transaksi.
+-- Mengumumkan ditolak seluruhnya bila belum ada template aktif atau ada Pendaftar Diterima tanpa Nomor VA.
+CREATE OR REPLACE FUNCTION public.announce_results(
+  p_pendaftar_id UUID,
+  p_gelombang SMALLINT,
+  p_umumkan BOOLEAN
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_tanpa_va JSONB;
+  v_diterima INTEGER;
+  v_ditolak INTEGER;
+  v_dilewati INTEGER;
+  v_ditarik INTEGER;
+BEGIN
+  IF (p_pendaftar_id IS NULL) = (p_gelombang IS NULL) OR p_umumkan IS NULL THEN
+    RETURN jsonb_build_object('status', 'invalid');
+  END IF;
+
+  -- Baris sasaran dikunci agar keputusan dan Nomor VA tidak berubah di tengah pengumuman.
+  PERFORM 1 FROM public.pendaftar
+  WHERE id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang
+  FOR UPDATE;
+
+  IF p_pendaftar_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.pendaftar WHERE id = p_pendaftar_id AND status IN ('Diterima', 'Ditolak')
+  ) THEN
+    RETURN jsonb_build_object('status', 'invalid');
+  END IF;
+
+  IF NOT p_umumkan THEN
+    UPDATE public.pendaftar
+    SET diumumkan_pada = NULL
+    WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang)
+      AND diumumkan_pada IS NOT NULL;
+    GET DIAGNOSTICS v_ditarik = ROW_COUNT;
+    RETURN jsonb_build_object('status', 'ok', 'ditarik', v_ditarik);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM public.template_surat_penerimaan) THEN
+    RETURN jsonb_build_object('status', 'no-template');
+  END IF;
+
+  SELECT COALESCE(jsonb_agg(jsonb_build_object('nama', nama_lengkap, 'nomor', nomor_pendaftaran) ORDER BY nama_lengkap), '[]'::JSONB)
+  INTO v_tanpa_va
+  FROM public.pendaftar
+  WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang)
+    AND status = 'Diterima'
+    AND nomor_va IS NULL
+    AND diumumkan_pada IS NULL;
+
+  IF jsonb_array_length(v_tanpa_va) > 0 THEN
+    RETURN jsonb_build_object('status', 'missing-va', 'pendaftar', v_tanpa_va);
+  END IF;
+
+  -- Yang belum diputuskan dilewati dan dilaporkan.
+  SELECT count(*) INTO v_dilewati
+  FROM public.pendaftar
+  WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang) AND status = 'Sudah OKB';
+
+  WITH diumumkan AS (
+    UPDATE public.pendaftar
+    SET diumumkan_pada = now()
+    WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang)
+      AND status IN ('Diterima', 'Ditolak')
+      AND diumumkan_pada IS NULL
+    RETURNING status
+  )
+  SELECT count(*) FILTER (WHERE status = 'Diterima'), count(*) FILTER (WHERE status = 'Ditolak')
+  INTO v_diterima, v_ditolak
+  FROM diumumkan;
+
+  RETURN jsonb_build_object('status', 'ok', 'diterima', v_diterima, 'ditolak', v_ditolak, 'dilewati', v_dilewati);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.announce_results(UUID, SMALLINT, BOOLEAN) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.announce_results(UUID, SMALLINT, BOOLEAN) TO service_role;
+
+-- Impor Nomor VA: semua pasangan tersimpan atau tidak sama sekali. Hanya Pendaftar Diterima
+-- yang belum diumumkan dan belum punya Nomor VA; selain itu impor ditolak karena data sudah berubah.
+CREATE OR REPLACE FUNCTION public.import_nomor_va(p_pasangan JSONB)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_disimpan INTEGER;
+BEGIN
+  IF jsonb_typeof(p_pasangan) <> 'array' OR jsonb_array_length(p_pasangan) = 0 THEN
+    RETURN jsonb_build_object('status', 'invalid');
+  END IF;
+
+  LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
+
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_to_recordset(p_pasangan) AS x(nomor TEXT, va TEXT)
+    LEFT JOIN public.pendaftar AS p ON p.nomor_pendaftaran = x.nomor
+    WHERE p.id IS NULL
+      OR p.status <> 'Diterima'
+      OR p.diumumkan_pada IS NOT NULL
+      OR p.nomor_va IS NOT NULL
+      OR x.va IS NULL
+      OR x.va !~ '^[0-9]{16}$'
+  ) THEN
+    RETURN jsonb_build_object('status', 'stale');
+  END IF;
+
+  UPDATE public.pendaftar AS p
+  SET nomor_va = x.va
+  FROM jsonb_to_recordset(p_pasangan) AS x(nomor TEXT, va TEXT)
+  WHERE p.nomor_pendaftaran = x.nomor;
+  GET DIAGNOSTICS v_disimpan = ROW_COUNT;
+
+  RETURN jsonb_build_object('status', 'ok', 'disimpan', v_disimpan);
+EXCEPTION
+  WHEN unique_violation THEN
+    RETURN jsonb_build_object('status', 'duplicate');
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.import_nomor_va(JSONB) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.import_nomor_va(JSONB) TO service_role;
+
 -- Admin mengubah Jenis Pendaftaran / Pilihan Kelas; kursi baru hanya diberikan bila kuota kelas tujuan masih ada.
 CREATE OR REPLACE FUNCTION public.update_applicant_registration(
   p_pendaftar_id UUID,
@@ -540,7 +683,9 @@ AS $$
         'verified', count(*) FILTER (WHERE status = 'Terverifikasi'),
         -- Tidak Hadir OKB: tanggal Jadwal OKB sudah lewat tanpa Scan Kehadiran.
         'absent', count(*) FILTER (WHERE status = 'Terjadwal OKB' AND jadwal_okb_tanggal < (SELECT d FROM today)),
-        'decision', count(*) FILTER (WHERE status = 'Sudah OKB')
+        'decision', count(*) FILTER (WHERE status = 'Sudah OKB'),
+        -- Keputusan Penerimaan yang belum dibuka untuk orang tua.
+        'unannounced', count(*) FILTER (WHERE status IN ('Diterima', 'Ditolak') AND diumumkan_pada IS NULL)
       )
       FROM public.pendaftar
     ),
@@ -619,6 +764,33 @@ ON CONFLICT (id) DO UPDATE SET
 DROP POLICY IF EXISTS "Public Upload Dokumen" ON storage.objects;
 DROP POLICY IF EXISTS "Public Read Dokumen" ON storage.objects;
 
+-- 7a. Template Surat Penerimaan (lihat docs/adr/0002-surat-penerimaan-dari-satu-template.md)
+-- Bucket privat terpisah dari Berkas; hanya diakses server dengan service role.
+INSERT INTO storage.buckets (
+  id, name, public, file_size_limit, allowed_mime_types
+) VALUES (
+  'template_surat',
+  'template_surat',
+  false,
+  5242880,
+  ARRAY['application/pdf']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- Satu baris saja: template yang sedang aktif.
+CREATE TABLE IF NOT EXISTS public.template_surat_penerimaan (
+  id TEXT PRIMARY KEY DEFAULT 'aktif' CHECK (id = 'aktif'),
+  path TEXT NOT NULL,
+  diunggah_pada TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.template_surat_penerimaan ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.template_surat_penerimaan FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.template_surat_penerimaan TO service_role;
+
 -- 8. Pembatasan laju pendaftaran atomik (hanya service role)
 CREATE TABLE IF NOT EXISTS public.registration_rate_limits (
   identifier_hash TEXT PRIMARY KEY,
@@ -674,6 +846,67 @@ REVOKE ALL ON FUNCTION public.consume_registration_rate_limit(TEXT, INTEGER, INT
 FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.consume_registration_rate_limit(TEXT, INTEGER, INTEGER)
 TO service_role;
+
+-- 8a. Pembatasan percobaan gagal Cek Hasil OKB per klien (hanya service role).
+-- Dicatat di database karena instance serverless tidak berbagi memori.
+CREATE TABLE IF NOT EXISTS public.result_check_failures (
+  identifier_hash TEXT PRIMARY KEY,
+  window_started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  failures INTEGER NOT NULL DEFAULT 1 CHECK (failures > 0)
+);
+
+ALTER TABLE public.result_check_failures ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.result_check_failures FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.result_check_failures TO service_role;
+
+-- Terkunci bila kegagalan dalam jendela waktu yang masih berjalan sudah mencapai batas.
+CREATE OR REPLACE FUNCTION public.is_result_check_locked(
+  p_identifier_hash TEXT,
+  p_limit INTEGER,
+  p_window_seconds INTEGER
+)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.result_check_failures
+    WHERE identifier_hash = p_identifier_hash
+      AND failures >= p_limit
+      AND window_started_at > now() - make_interval(secs => p_window_seconds)
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.record_result_check_failure(
+  p_identifier_hash TEXT,
+  p_window_seconds INTEGER
+)
+RETURNS INTEGER
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  INSERT INTO public.result_check_failures AS f (identifier_hash, window_started_at, failures)
+  VALUES (p_identifier_hash, now(), 1)
+  ON CONFLICT (identifier_hash) DO UPDATE
+  SET
+    window_started_at = CASE
+      WHEN f.window_started_at <= now() - make_interval(secs => p_window_seconds) THEN now()
+      ELSE f.window_started_at
+    END,
+    failures = CASE
+      WHEN f.window_started_at <= now() - make_interval(secs => p_window_seconds) THEN 1
+      ELSE f.failures + 1
+    END
+  RETURNING failures;
+$$;
+
+REVOKE ALL ON FUNCTION public.is_result_check_locked(TEXT, INTEGER, INTEGER) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.is_result_check_locked(TEXT, INTEGER, INTEGER) TO service_role;
+REVOKE ALL ON FUNCTION public.record_result_check_failure(TEXT, INTEGER) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.record_result_check_failure(TEXT, INTEGER) TO service_role;
 
 -- Finalisasi pendaftaran dan reservasi kuota Pilihan Kelas dilakukan dalam satu transaksi.
 DROP FUNCTION IF EXISTS public.finalize_registration_with_capacity(UUID, INTEGER);
@@ -753,6 +986,9 @@ SET search_path = public
 AS $$
 BEGIN
   DELETE FROM public.registration_rate_limits
+  WHERE window_started_at < now() - interval '1 day';
+
+  DELETE FROM public.result_check_failures
   WHERE window_started_at < now() - interval '1 day';
 
   RETURN QUERY

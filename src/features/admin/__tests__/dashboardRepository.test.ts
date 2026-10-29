@@ -4,7 +4,7 @@ import { AdminDashboardLoadError, createAdminDashboardRepository } from '../serv
 const payload = {
   today: '2026-10-18',
   total: 60,
-  tasks: { uploading: 4, awaiting: 12, verified: 5, absent: 2, decision: 1 },
+  tasks: { uploading: 4, awaiting: 12, verified: 5, absent: 2, decision: 1, unannounced: 6 },
   attention: { any: 2, nisn: 1 },
   capacity: [{ label: 'Tahfizh', kuota: 28, terpakai: 28 }, { label: 'Reguler', kuota: 28, terpakai: 20 }, { label: 'Bilingual', kuota: 56, terpakai: 48 }],
   transfers: 7,
@@ -44,7 +44,7 @@ describe('admin dashboard repository', () => {
     const { client } = clientReturning({ today: '2026-10-18', total: null, capacity: [], acceptedByClass: [], schedule: [] });
     const summary = await createAdminDashboardRepository(client).getSummary();
     expect(summary.totalRegistrations).toBe(0);
-    expect(summary.tasks).toEqual({ uploading: 0, awaiting: 0, verified: 0, absent: 0, decision: 0 });
+    expect(summary.tasks).toEqual({ uploading: 0, awaiting: 0, verified: 0, absent: 0, decision: 0, unannounced: 0 });
     expect(summary.attention).toEqual({ any: 0, nisn: 0 });
     expect(summary.capacity.every(row => row.kuota === 0 && row.terpakai === 0)).toBe(true);
   });

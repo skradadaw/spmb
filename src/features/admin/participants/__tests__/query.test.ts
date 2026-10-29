@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { parseParticipantListQuery, participantListHref, escapeSearch, paginationPages } from '../query';
+import { parseParticipantListQuery, participantListHref, escapeSearch, hasActiveFilters, paginationPages } from '../query';
 
 describe('participant query', () => {
   it('normalizes invalid pages and allowlists filters', () => {
-    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, waveFilter: null, page: 1, pageSize: 20 });
+    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, waveFilter: null, announcementFilter: null, page: 1, pageSize: 20 });
     expect(parseParticipantListQuery(new URLSearchParams('page=2.5')).page).toBe(1);
   });
   it('allowlists the Perlu Perhatian filter and keeps it in links', () => {
@@ -12,6 +12,14 @@ describe('participant query', () => {
     expect(participantListHref(query, 2)).toBe('/admin/pendaftar?perhatian=nisn&page=2');
     expect(parseParticipantListQuery(new URLSearchParams('perhatian=__all__')).attentionFilter).toBeNull();
   });
+  it('allowlists the Pengumuman filter, keeps it in links and counts it as active', () => {
+    const query = parseParticipantListQuery(new URLSearchParams('pengumuman=belum&status=Diterima'));
+    expect(query.announcementFilter).toBe('belum');
+    expect(participantListHref(query)).toBe('/admin/pendaftar?status=Diterima&pengumuman=belum');
+    expect(hasActiveFilters(parseParticipantListQuery(new URLSearchParams('pengumuman=sudah')))).toBe(true);
+    expect(parseParticipantListQuery(new URLSearchParams('pengumuman=kemarin')).announcementFilter).toBeNull();
+  });
+
   it('allowlists the Gelombang OKB filter and keeps it in links', () => {
     const query = parseParticipantListQuery(new URLSearchParams('gelombang=2&kelas=Reguler'));
     expect(query.waveFilter).toBe(2);

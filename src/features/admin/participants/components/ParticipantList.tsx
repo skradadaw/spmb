@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import type { ParticipantListItem, ParticipantListQuery, ParticipantListResult } from '../contracts';
 import { paginationPages, participantListHref } from '../query';
 import { ParticipantPageSize } from './ParticipantPageSize';
-import { participantDate, ParticipantStatus, ParticipantAttentionNote, ParticipantWaveNote } from './ParticipantStatus';
+import { participantDate, ParticipantStatus, ParticipantAttentionNote, ParticipantVaNote, ParticipantWaveNote } from './ParticipantStatus';
 import { formatParticipantFieldValue } from '../presentation';
 
 /** Kelas yang ditampilkan: Kelas Penempatan begitu Panitia menetapkannya, selain itu Pilihan Kelas. */
@@ -40,7 +40,7 @@ function MobileParticipantCard({ item, href }: { item: ParticipantListItem; href
       </div>
       <div className="mt-3 rounded-xl bg-[var(--admin-canvas)] px-3 py-2">
         <ParticipantStatus status={item.status} />
-        <ParticipantWaveNote wave={item.jadwalGelombang} />
+        <ParticipantWaveNote wave={item.jadwalGelombang} /><ParticipantVaNote missing={item.vaMissing} />
         <ParticipantAttentionNote attention={item.attention} />
       </div>
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
@@ -75,7 +75,7 @@ export function ParticipantList({ result, query }: { result: ParticipantListResu
     <div className="mb-5 flex flex-wrap items-center justify-between gap-2"><h2 className="text-sm font-bold">{result.total} pendaftar ditemukan</h2><p className="text-xs text-[var(--admin-muted)]">Halaman {result.page} dari {result.totalPages}</p></div>
     {result.items.length === 0 ? <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[var(--admin-border)] bg-[var(--admin-canvas)] px-4 py-12 text-center"><Inbox aria-hidden="true" className="size-8 text-[var(--admin-muted)]" /><p className="text-sm text-[var(--admin-muted)]">Belum ada pendaftar yang sesuai dengan pencarian.</p><ButtonLink href="/admin/pendaftar" variant="outline">Reset filter</ButtonLink></div> : <>
       <div className="hidden overflow-hidden rounded-xl border border-[var(--admin-border)] md:block"><Table><TableHeader className="bg-[var(--admin-canvas)]"><TableRow><TableHead>Nama pendaftar</TableHead><TableHead>Asal TK</TableHead><TableHead>Kelas</TableHead><TableHead>Jenis</TableHead><TableHead>Tanggal masuk</TableHead><TableHead>Status</TableHead><TableHead><span className="sr-only">Aksi</span></TableHead></TableRow></TableHeader><TableBody>
-        {result.items.map(item => <TableRow key={item.id}><TableCell className="max-w-64 whitespace-normal break-words"><span className="block font-semibold">{formatParticipantFieldValue('identity', 'namaLengkap', item.namaLengkap)}</span>{item.nomorPendaftaran && <span className="mt-0.5 block font-mono text-xs text-[var(--admin-muted)]">{item.nomorPendaftaran}</span>}</TableCell><TableCell className="max-w-48 whitespace-normal break-words">{item.asalSekolah ? formatParticipantFieldValue('school', 'asalSekolah', item.asalSekolah) : 'Belum diisi'}</TableCell><TableCell>{classLabel(item)}</TableCell><TableCell>{typeLabel(item)}</TableCell><TableCell className="text-[var(--admin-muted)]">{participantDate(item.createdAt)}</TableCell><TableCell className="max-w-48 whitespace-normal"><ParticipantStatus status={item.status} /><ParticipantWaveNote wave={item.jadwalGelombang} /><ParticipantAttentionNote attention={item.attention} /></TableCell><TableCell><ButtonLink href={detailHref(item.id)} aria-label={`Lihat detail ${formatParticipantFieldValue('identity', 'namaLengkap', item.namaLengkap)}`} variant="outline" size="sm">Detail<ArrowUpRight aria-hidden="true" /></ButtonLink></TableCell></TableRow>)}
+        {result.items.map(item => <TableRow key={item.id}><TableCell className="max-w-64 whitespace-normal break-words"><span className="block font-semibold">{formatParticipantFieldValue('identity', 'namaLengkap', item.namaLengkap)}</span>{item.nomorPendaftaran && <span className="mt-0.5 block font-mono text-xs text-[var(--admin-muted)]">{item.nomorPendaftaran}</span>}</TableCell><TableCell className="max-w-48 whitespace-normal break-words">{item.asalSekolah ? formatParticipantFieldValue('school', 'asalSekolah', item.asalSekolah) : 'Belum diisi'}</TableCell><TableCell>{classLabel(item)}</TableCell><TableCell>{typeLabel(item)}</TableCell><TableCell className="text-[var(--admin-muted)]">{participantDate(item.createdAt)}</TableCell><TableCell className="max-w-48 whitespace-normal"><ParticipantStatus status={item.status} /><ParticipantWaveNote wave={item.jadwalGelombang} /><ParticipantVaNote missing={item.vaMissing} /><ParticipantAttentionNote attention={item.attention} /></TableCell><TableCell><ButtonLink href={detailHref(item.id)} aria-label={`Lihat detail ${formatParticipantFieldValue('identity', 'namaLengkap', item.namaLengkap)}`} variant="outline" size="sm">Detail<ArrowUpRight aria-hidden="true" /></ButtonLink></TableCell></TableRow>)}
       </TableBody></Table></div>
       <ul aria-label="Daftar pendaftar" className="space-y-3 md:hidden">{result.items.map(item => <li key={item.id}><MobileParticipantCard item={item} href={detailHref(item.id)} /></li>)}</ul>
     </>}

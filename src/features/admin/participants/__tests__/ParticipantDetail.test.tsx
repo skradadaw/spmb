@@ -26,6 +26,8 @@ const participant: ParticipantDetailData = {
   },
   adminNote: null,
   nisnMismatch: false,
+  nomorVa: null,
+  diumumkanPada: null,
   documents: [
     { id: 'aktaKelahiran', title: 'Akta Kelahiran', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/aktaKelahiran.pdf' },
     { id: 'kartuKeluarga', title: 'Kartu Keluarga', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/kartuKeluarga.jpg' },
@@ -271,6 +273,90 @@ describe('ParticipantDetail', () => {
     }} />);
     expect(screen.getByText('(Pilihan Kelas: Tahfizh)', { exact: false })).toBeDefined();
     expect(screen.getByText('Ubah Keputusan Penerimaan')).toBeDefined();
+  });
+
+  it('asks for the Nomor VA only once the Pendaftar is Diterima', () => {
+    for (const status of ['Sudah OKB', 'Ditolak', 'Dibatalkan']) {
+      const { unmount } = render(<ParticipantDetail participant={{ ...participant, status }} />);
+      expect(screen.queryByLabelText('Nomor VA')).toBeNull();
+      unmount();
+    }
+
+    const { unmount } = render(<ParticipantDetail participant={{ ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' } }} />);
+    expect((screen.getByLabelText('Nomor VA') as HTMLInputElement).value).toBe('');
+    expect(screen.getByText('Belum diisi', { selector: 'span' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Simpan Nomor VA' })).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Kosongkan' })).toBeNull();
+    unmount();
+
+    render(<ParticipantDetail participant={{ ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' }, nomorVa: '7456012627300120' }} />);
+    expect((screen.getByLabelText('Nomor VA') as HTMLInputElement).value).toBe('7456012627300120');
+    const clear = screen.getByRole('button', { name: 'Kosongkan' }) as HTMLButtonElement;
+    expect([clear.name, clear.value]).toEqual(['clear', '1']);
+  });
+
+  it('offers announcing a decided result and shows it is not visible to parents yet', () => {
+    for (const status of ['Sudah OKB', 'Dibatalkan']) {
+      const { unmount } = render(<ParticipantDetail participant={{ ...participant, status }} />);
+      expect(document.querySelector('[data-announcement]')).toBeNull();
+      unmount();
+    }
+    render(<ParticipantDetail participant={{ ...participant, status: 'Ditolak' }} />);
+    const section = document.querySelector('[data-announcement]') as HTMLElement;
+    expect(within(section).getByText('Belum diumumkan')).toBeDefined();
+    fireEvent.click(within(section).getByRole('button', { name: 'Umumkan' }));
+    expect(screen.getByText('Umumkan hasil Ditolak?')).toBeDefined();
+    const confirm = screen.getByRole('button', { name: 'Ya, umumkan' }) as HTMLButtonElement;
+    expect([confirm.name, confirm.value]).toEqual(['intent', 'announce']);
+  });
+
+  it('lets the admin download the Surat Penerimaan once the Nomor VA is filled, even before announcing', () => {
+    const accepted = { ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' } };
+    const { unmount } = render(<ParticipantDetail participant={accepted} />);
+    expect(screen.queryByRole('link', { name: 'Unduh Surat Penerimaan' })).toBeNull();
+    unmount();
+    render(<ParticipantDetail participant={{ ...accepted, nomorVa: '7456012627300120' }} />);
+    expect(screen.getByRole('link', { name: 'Unduh Surat Penerimaan' }).getAttribute('href')).toBe(`/admin/pendaftar/${participant.id}/surat-penerimaan`);
+  });
+
+  it('asks for confirmation before changing a decision parents can already see', () => {
+    const decided = { ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' }, nomorVa: '7456012627300120' };
+    const { unmount } = render(<ParticipantDetail participant={decided} />);
+    expect((screen.getByRole('button', { name: 'Simpan keputusan' }) as HTMLButtonElement).type).toBe('submit');
+    unmount();
+
+    render(<ParticipantDetail participant={{ ...decided, diumumkanPada: '2027-02-09T01:00:00Z' }} />);
+    const save = screen.getByRole('button', { name: 'Simpan keputusan' }) as HTMLButtonElement;
+    expect(save.type).toBe('button');
+    fireEvent.click(save);
+    expect(screen.getByText('Ubah keputusan yang sudah diumumkan?')).toBeDefined();
+    const confirm = screen.getByRole('button', { name: 'Ya, simpan keputusan' }) as HTMLButtonElement;
+    expect([confirm.type, confirm.name, confirm.value]).toEqual(['submit', 'intent', 'decide']);
+    expect(confirm.getAttribute('form')).toBe(save.closest('form')?.id);
+  });
+
+  it('turns the WhatsApp message into the Cek Hasil OKB notice once announced', () => {
+    const announced = { ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' }, registration: { ...participant.registration, nomorPendaftaran: 'OB-2027-001' }, father: { ...participant.father, telepon: '081234567890' }, diumumkanPada: '2027-02-09T01:00:00Z' };
+    const { unmount } = render(<ParticipantDetail participant={{ ...announced, diumumkanPada: null }} siteOrigin="https://spmb.example" />);
+    expect(decodeURIComponent(screen.getByRole('link', { name: 'Hubungi ayah lewat WhatsApp Web' }).getAttribute('href')!)).not.toContain('/hasil-okb');
+    unmount();
+
+    render(<ParticipantDetail participant={announced} siteOrigin="https://spmb.example" />);
+    const text = decodeURIComponent(screen.getByRole('link', { name: 'Hubungi ayah lewat WhatsApp Web' }).getAttribute('href')!);
+    expect(text).toContain('sudah diumumkan');
+    expect(text).toContain('https://spmb.example/hasil-okb');
+    expect(text).toContain('OB-2027-001');
+  });
+
+  it('locks the Nomor VA and offers withdrawing once the result is announced', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' }, nomorVa: '7456012627300120', diumumkanPada: '2027-02-09T01:00:00Z' }} />);
+    expect(screen.queryByLabelText('Nomor VA')).toBeNull();
+    expect(document.querySelector('[data-nomor-va]')?.textContent).toBe('7456012627300120');
+    expect(screen.getByText(/Terkunci karena hasil sudah diumumkan/)).toBeDefined();
+    const section = document.querySelector('[data-announcement]') as HTMLElement;
+    expect(within(section).getByText(/^Diumumkan 9 Feb 2027/)).toBeDefined();
+    fireEvent.click(within(section).getByRole('button', { name: 'Tarik pengumuman' }));
+    expect((screen.getByRole('button', { name: 'Ya, tarik pengumuman' }) as HTMLButtonElement).value).toBe('withdraw');
   });
 
   it('turns a detail group into a prefilled edit form and back', () => {

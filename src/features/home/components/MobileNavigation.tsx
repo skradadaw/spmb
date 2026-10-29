@@ -6,6 +6,7 @@ import {
   CalendarDays,
   ChevronRight,
   CircleArrowRight,
+  FileSearch,
   LockKeyhole,
   School,
   Menu,
@@ -31,6 +32,7 @@ const navigationIcons: Record<
   Kelas: School,
   'Biaya dan Berkas': WalletCards,
   FAQ: MessageCircleQuestion,
+  'Cek Hasil OKB': FileSearch,
 };
 
 export default function MobileNavigation({ items }: MobileNavigationProps) {

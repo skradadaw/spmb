@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toWhatsAppNumber, whatsAppWebHref } from '../whatsapp';
+import { resultAnnouncementMessage, toWhatsAppNumber, whatsAppWebHref } from '../whatsapp';
 
 describe('WhatsApp links', () => {
   it('normalises Indonesian numbers to the 62 prefix', () => {
@@ -7,6 +7,14 @@ describe('WhatsApp links', () => {
     expect(toWhatsAppNumber('+62 812-3456-7890')).toBe('6281234567890');
     expect(toWhatsAppNumber('6281234567890')).toBe('6281234567890');
     expect(toWhatsAppNumber('81234567890')).toBe('6281234567890');
+  });
+
+  it('writes a ready message pointing parents to Cek Hasil OKB with their Nomor Pendaftaran', () => {
+    const message = resultAnnouncementMessage('Siti Aminah', 'OB-2027-001', 'https://spmb.example/hasil-okb');
+    expect(message).toContain('Hasil OKB Siti Aminah di SD Plus 3 Al-Muhajirin sudah diumumkan.');
+    expect(message).toContain('https://spmb.example/hasil-okb');
+    expect(message).toContain('Nomor Pendaftaran OB-2027-001 dan tanggal lahir Ananda');
+    expect(message.toLowerCase()).not.toContain('lulus');
   });
 
   it('rejects empty or malformed numbers', () => {
