@@ -44,6 +44,14 @@ _Avoid_: rujukan, referral (untuk orangnya)
 Nomor pengenal pendek seorang Pendaftar berformat `OB-<tahun ajaran>-<urut>`, misalnya `OB-2027-001`, yang diberikan saat pendaftaran berhasil (Berkas selesai terunggah).
 _Avoid_: ID, kode pendaftaran
 
+**Nomor VA** (*Virtual Account Number*):
+Nomor rekening virtual 16 digit dari bank, diisi admin untuk seorang Pendaftar Diterima dan dipakai orang tua membayar Daftar Ulang. Nomornya acak dari bank (tidak bisa diturunkan dari data Pendaftar) dan berbeda untuk setiap Pendaftar.
+_Avoid_: rekening, nomor pembayaran
+
+**Surat Penerimaan** (*Acceptance Letter*):
+Dokumen PDF yang diunduh orang tua Pendaftar Diterima setelah Pengumuman Hasil OKB, terdiri atas surat pengumuman berisi nama anak dan Nomor VA, serta Surat Pernyataan orang tua yang ditandatangani di atas materai saat Daftar Ulang. Dibuat otomatis dari satu template yang diunggah admin dan berlaku untuk semua Kelas Penempatan maupun Pindahan. Pendaftar Ditolak tidak mendapat Surat Penerimaan.
+_Avoid_: surat kelulusan, SK lulus
+
 **Bukti Pendaftaran** (*Registration Proof*):
 Dokumen PDF yang diterima orang tua saat pendaftaran berhasil, memuat Nomor Pendaftaran, QR berisi Nomor Pendaftaran, nama anak, Jenis Pendaftaran, Pilihan Kelas, dan Kelas Tujuan (Pindahan). Ditunjukkan saat datang OKB; tidak memuat Jadwal OKB. Bila hilang, admin mengunduhkannya kembali.
 _Avoid_: kartu peserta, tiket
@@ -83,6 +91,7 @@ Urutan normal: **Menunggu Unggahan** → **Menunggu Verifikasi** → **Terverifi
 **Sudah OKB**: Pendaftar tercatat hadir mengikuti OKB dan menunggu Keputusan Penerimaan.
 
 **Diterima** / **Ditolak**: hasil Keputusan Penerimaan oleh Panitia. Ditolak selalu berarti tidak lolos OKB.
+_Avoid_: lulus, tidak lulus
 
 **Dibatalkan** (*Withdrawn*): Pendaftar gugur di luar Keputusan Penerimaan atas keputusan admin, misalnya Berkas palsu, tidak hadir OKB dan tidak dijadwalkan ulang, atau mengundurkan diri, termasuk setelah Diterima. Admin dapat memulihkan Pendaftar ke status sebelumnya selama kuota Pilihan Kelasnya masih tersedia.
 _Avoid_: Ditolak (untuk kasus ini)
@@ -101,6 +110,13 @@ _Avoid_: batalkan jadwal, Dibatalkan (untuk kasus ini)
 
 **Batalkan Kehadiran** (*Undo Attendance*):
 Pencabutan catatan hadir seorang Pendaftar Sudah OKB, misalnya karena salah scan, sehingga ia kembali Terjadwal OKB dengan Jadwal OKB yang sama.
+
+**Pengumuman Hasil OKB** (*OKB Result Announcement*):
+Pembukaan Keputusan Penerimaan seorang Pendaftar oleh admin agar dapat dilihat orang tuanya; sebelum diumumkan, keputusan hanya terlihat oleh admin. Dilakukan per Gelombang OKB atau per Pendaftar. Orang tua melihatnya dengan memasukkan Nomor Pendaftaran dan tanggal lahir anak.
+_Avoid_: pengumuman kelulusan
+
+**Daftar Ulang** (*Re-registration*):
+Kewajiban orang tua Pendaftar Diterima setelah Pengumuman Hasil OKB: membayar biaya secara bertahap lewat Nomor VA dan menandatangani Surat Pernyataan. Dilakukan dan dicatat di luar sistem.
 
 **Berkas Pengganti** (*Replacement Document*):
 File yang diunggah admin untuk menggantikan salah satu Berkas Pendaftar, kapan pun dan pada status apa pun. File lama dihapus, Berkas kembali berstatus belum diperiksa, dan status Pendaftar tidak berubah.
