@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ review: vi.fn() }));
+const mocks = vi.hoisted(() => ({ review: vi.fn(), payment: vi.fn() }));
 vi.mock('../actions/saveDocumentReviewAction', () => ({ saveDocumentReviewAction: mocks.review }));
+vi.mock('../actions/savePaymentMethodAction', () => ({ savePaymentMethodAction: mocks.payment }));
 vi.mock('../actions/replaceDocumentActions', () => ({ prepareDocumentReplacementAction: vi.fn(), commitDocumentReplacementAction: vi.fn() }));
 
 import { DocumentPreviewButton, formatFileSize, nextUnverifiedIndex, type ViewerDocument } from '../components/DocumentPreviewButton';
@@ -23,6 +24,7 @@ describe('document viewer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.review.mockResolvedValue(undefined);
+    mocks.payment.mockResolvedValue(undefined);
     vi.stubGlobal('fetch', vi.fn(async (input: string) => imageResponse(input.includes('image%2Fpng') ? 'image/png' : 'image/jpeg')));
     URL.createObjectURL = vi.fn(() => 'blob:preview');
     URL.revokeObjectURL = vi.fn();
@@ -95,6 +97,42 @@ describe('document viewer', () => {
     expect(screen.getByRole('button', { name: 'Ganti berkas Kartu Keluarga' })).toBeTruthy();
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Batalkan verifikasi Kartu Keluarga' })); });
     expect((mocks.review.mock.calls[0][0] as FormData).get('status')).toBe('unverified');
+  });
+
+  describe('Bukti Pembayaran', () => {
+    const payment = (verified: boolean, paymentMethod: 'cash' | 'transfer' | null): ViewerDocument[] => [
+      documents[0],
+      { id: 'buktiPembayaran', title: 'Bukti Pembayaran', href: `${base}/buktiPembayaran?contentType=image%2Fjpeg&v=o`, verified, replacedAt: null, paymentMethod },
+    ];
+    async function openPayment(items: ViewerDocument[]) {
+      render(<DocumentPreviewButton participantId={participantId} documents={items} index={1} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Lihat berkas Bukti Pembayaran' }));
+      return screen.findByRole('dialog', { name: 'Berkas Bukti Pembayaran' });
+    }
+
+    it('is verified by choosing Cash or Transfer instead of Verifikasi, then moves on', async () => {
+      await openPayment(payment(false, null));
+      expect(screen.queryByRole('button', { name: 'Verifikasi Bukti Pembayaran' })).toBeNull();
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Cash' })); });
+      const sent = mocks.payment.mock.calls[0][0] as FormData;
+      expect([sent.get('method'), sent.get('verify')]).toEqual(['cash', 'true']);
+      expect(mocks.review).not.toHaveBeenCalled();
+      expect(await screen.findByRole('dialog', { name: 'Berkas Akta Kelahiran' })).toBeTruthy();
+    });
+
+    it('shows the recorded method in place of Terverifikasi, with undo', async () => {
+      await openPayment(payment(true, 'transfer'));
+      expect(screen.getByText('Transfer').closest('button')).toBeNull();
+      expect(screen.getByText('Transfer').closest('[data-payment-method]')?.className).toContain('bg-sky-50');
+      expect(screen.queryByText('Terverifikasi')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Batalkan verifikasi Bukti Pembayaran' })).toBeTruthy();
+    });
+
+    it('asks for the method of one verified before methods were recorded, without verifying again', async () => {
+      await openPayment(payment(true, null));
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Transfer' })); });
+      expect((mocks.payment.mock.calls[0][0] as FormData).get('verify')).toBe('false');
+    });
   });
 
   it('offers a retry when the file cannot be loaded', async () => {

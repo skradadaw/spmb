@@ -5,7 +5,7 @@ import { format, parse, isValid } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { CalendarCheck, CalendarClock, CalendarDays, CalendarX2, Check, ChevronDown, Download, Pencil, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CollapsibleCard } from './CollapsibleCard';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -79,160 +79,155 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
   const decided = status === 'Diterima' || status === 'Ditolak';
 
   return (
-    <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
-      <CardHeader className="border-b border-slate-200 bg-slate-50/80 p-4 pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <CardTitle className="text-base font-semibold tracking-tight text-slate-950">Status &amp; OKB</CardTitle>
-            <p className="mt-1 text-xs leading-4 text-slate-600">{statusHint(status, previousStatus)}</p>
-          </div>
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800"><CalendarClock aria-hidden="true" className="size-4" /></span>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4 p-3 sm:p-4">
+    <CollapsibleCard
+      title="Status OKB"
+      hint={statusHint(status, previousStatus, nomorVa, diumumkanPada)}
+      contentClassName="space-y-4 p-3 sm:p-4"
+    >
+      <div className="border-b border-slate-200 pb-4">
         <StepIndicator current={currentStep(status)} muted={cancelled} />
+      </div>
 
-        {hasSchedule && (
-          <section className="space-y-2">
-            <h3 className={ADMIN_SECTION_TITLE}>Jadwal OKB</h3>
-            <dl className="grid grid-cols-2 divide-x divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <div className="px-3 py-2">
-                <dt className="text-[11px] font-medium text-slate-500">Tanggal</dt>
-                <dd className="mt-0.5 text-sm font-medium text-slate-950">{formatParticipantFieldValue('okb', 'jadwalTanggal', jadwalTanggal)}</dd>
-              </div>
-              <div className="px-3 py-2">
-                <dt className="text-[11px] font-medium text-slate-500">Gelombang</dt>
-                <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{jadwalGelombang ?? 'Belum diisi'}</dd>
-              </div>
-            </dl>
-          </section>
-        )}
+      {hasSchedule && (
+        <section className="space-y-2">
+          <h3 className={ADMIN_SECTION_TITLE}>Jadwal OKB</h3>
+          <dl className="grid grid-cols-2 divide-x divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div className="px-3 py-2">
+              <dt className="text-[11px] font-medium text-slate-500">Tanggal</dt>
+              <dd className="mt-0.5 text-sm font-medium text-slate-950">{formatParticipantFieldValue('okb', 'jadwalTanggal', jadwalTanggal)}</dd>
+            </div>
+            <div className="px-3 py-2">
+              <dt className="text-[11px] font-medium text-slate-500">Gelombang</dt>
+              <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{jadwalGelombang ?? 'Belum diisi'}</dd>
+            </div>
+          </dl>
+        </section>
+      )}
 
-        {status === 'Terjadwal OKB' && (
-          <div className={ADMIN_ACTIONS}>
-            <ConfirmDialog
-              participantId={participantId}
-              intent="unschedule"
-              trigger={<><CalendarX2 aria-hidden="true" className="size-3.5" />Hapus jadwal</>}
-              triggerClassName={ADMIN_DANGER_BUTTON}
-              title="Hapus Jadwal OKB?"
-              description="Tanggal dan Gelombang OKB dikosongkan, lalu pendaftar kembali Terverifikasi dan perlu dijadwalkan lagi. Kursinya tetap terpakai."
-              confirmLabel="Ya, hapus jadwal"
-              confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
-              pending={pending}
-              formAction={formAction}
-            />
-            {!rescheduling && (
-              <Button type="button" onClick={() => setRescheduling(true)} className={ADMIN_SECONDARY_BUTTON}>
-                <CalendarClock aria-hidden="true" className="size-3.5" />Jadwalkan ulang
-              </Button>
-            )}
-            <form action={formAction}>
-              <input type="hidden" name="participantId" value={participantId} />
-              <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
-                <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
-              </Button>
-            </form>
-          </div>
-        )}
-
-        {(status === 'Terverifikasi' || rescheduling) && (
-          <ScheduleForm
+      {status === 'Terjadwal OKB' && (
+        <div className={ADMIN_ACTIONS}>
+          <ConfirmDialog
             participantId={participantId}
-            title={rescheduling ? 'Jadwalkan ulang OKB' : 'Jadwalkan OKB'}
-            jadwalTanggal={jadwalTanggal}
-            jadwalGelombang={jadwalGelombang}
+            intent="unschedule"
+            trigger={<><CalendarX2 aria-hidden="true" className="size-3.5" />Hapus jadwal</>}
+            triggerClassName={ADMIN_DANGER_BUTTON}
+            title="Hapus Jadwal OKB?"
+            description="Tanggal dan Gelombang OKB dikosongkan, lalu pendaftar kembali Terverifikasi dan perlu dijadwalkan lagi. Kursinya tetap terpakai."
+            confirmLabel="Ya, hapus jadwal"
+            confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
             pending={pending}
             formAction={formAction}
-            onCancel={rescheduling ? () => setRescheduling(false) : undefined}
           />
-        )}
-
-        {status === 'Sudah OKB' && (
-          <div className={ADMIN_ACTIONS}>
-            <ConfirmDialog
-              participantId={participantId}
-              intent="unattend"
-              trigger={<><UserX aria-hidden="true" className="size-3.5" />Batalkan kehadiran</>}
-              triggerClassName={ADMIN_DANGER_BUTTON}
-              title="Batalkan kehadiran OKB?"
-              description="Gunakan bila kehadiran tercatat karena salah scan. Pendaftar kembali Terjadwal OKB dengan tanggal dan Gelombang yang sama."
-              confirmLabel="Ya, batalkan kehadiran"
-              confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
-              pending={pending}
-              formAction={formAction}
-            />
-          </div>
-        )}
-
-        {/* Keputusan, lalu Nomor VA, lalu Pengumuman: urutan kerja admin dari atas ke bawah. */}
-        {(status === 'Sudah OKB' || (decided && editingDecision)) && (
-          <DecisionForm
-            participantId={participantId}
-            status={status}
-            pilihanKelas={pilihanKelas}
-            kelasPenempatan={kelasPenempatan}
-            announced={Boolean(diumumkanPada)}
-            pending={pending}
-            formAction={formAction}
-            onCancel={decided ? () => setEditingDecision(false) : undefined}
-          />
-        )}
-
-        {decided && !editingDecision && (
-          <DecisionSummary
-            participantId={participantId}
-            status={status}
-            pilihanKelas={pilihanKelas}
-            kelasPenempatan={kelasPenempatan}
-            announced={Boolean(diumumkanPada)}
-            pending={pending}
-            formAction={formAction}
-            onEdit={() => setEditingDecision(true)}
-          />
-        )}
-
-        {status === 'Diterima' && (
-          <NomorVaForm participantId={participantId} nomorVa={nomorVa} locked={Boolean(diumumkanPada)} />
-        )}
-
-        {decided && (
-          <AnnouncementControl participantId={participantId} status={status} diumumkanPada={diumumkanPada} />
-        )}
-
-        {cancelled && (
-          <form action={formAction} className={ADMIN_ACTIONS}>
+          {!rescheduling && (
+            <Button type="button" onClick={() => setRescheduling(true)} className={ADMIN_SECONDARY_BUTTON}>
+              <CalendarClock aria-hidden="true" className="size-3.5" />Jadwalkan ulang
+            </Button>
+          )}
+          <form action={formAction}>
             <input type="hidden" name="participantId" value={participantId} />
-            <Button type="submit" name="intent" value="restore" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
-              <RotateCcw aria-hidden="true" className="size-3.5" />Pulihkan ke {previousStatus ?? 'Menunggu Verifikasi'}
+            <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
+              <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
             </Button>
           </form>
-        )}
+        </div>
+      )}
 
-        {state.message && (
-          <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>
-            {state.message}
-          </p>
-        )}
+      {(status === 'Terverifikasi' || rescheduling) && (
+        <ScheduleForm
+          participantId={participantId}
+          title={rescheduling ? 'Jadwalkan ulang OKB' : 'Jadwalkan OKB'}
+          jadwalTanggal={jadwalTanggal}
+          jadwalGelombang={jadwalGelombang}
+          pending={pending}
+          formAction={formAction}
+          onCancel={rescheduling ? () => setRescheduling(false) : undefined}
+        />
+      )}
 
-        {canCancel && (
-          <div className={cn(ADMIN_ACTIONS, 'border-t border-slate-200 pt-3')}>
-            <ConfirmDialog
-              participantId={participantId}
-              intent="cancel"
-              trigger={<><XCircle aria-hidden="true" className="size-3.5" />Batalkan pendaftar</>}
-              triggerClassName={ADMIN_DANGER_BUTTON}
-              title="Batalkan pendaftar ini?"
-              description="Gunakan untuk berkas palsu, tidak hadir OKB tanpa dijadwalkan ulang, atau mengundurkan diri. Kursinya akan dibebaskan untuk pendaftar lain. Tulis alasannya di catatan admin."
-              confirmLabel="Ya, batalkan pendaftar"
-              confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
-              pending={pending}
-              formAction={formAction}
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {status === 'Sudah OKB' && (
+        <div className={ADMIN_ACTIONS}>
+          <ConfirmDialog
+            participantId={participantId}
+            intent="unattend"
+            trigger={<><UserX aria-hidden="true" className="size-3.5" />Batalkan kehadiran</>}
+            triggerClassName={ADMIN_DANGER_BUTTON}
+            title="Batalkan kehadiran OKB?"
+            description="Gunakan bila kehadiran tercatat karena salah scan. Pendaftar kembali Terjadwal OKB dengan tanggal dan Gelombang yang sama."
+            confirmLabel="Ya, batalkan kehadiran"
+            confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
+            pending={pending}
+            formAction={formAction}
+          />
+        </div>
+      )}
+
+      {/* Keputusan, lalu Nomor VA, lalu Pengumuman: urutan kerja admin dari atas ke bawah. */}
+      {(status === 'Sudah OKB' || (decided && editingDecision)) && (
+        <DecisionForm
+          participantId={participantId}
+          status={status}
+          pilihanKelas={pilihanKelas}
+          kelasPenempatan={kelasPenempatan}
+          announced={Boolean(diumumkanPada)}
+          pending={pending}
+          formAction={formAction}
+          onCancel={decided ? () => setEditingDecision(false) : undefined}
+        />
+      )}
+
+      {decided && !editingDecision && (
+        <DecisionSummary
+          participantId={participantId}
+          status={status}
+          pilihanKelas={pilihanKelas}
+          kelasPenempatan={kelasPenempatan}
+          announced={Boolean(diumumkanPada)}
+          pending={pending}
+          formAction={formAction}
+          onEdit={() => setEditingDecision(true)}
+        />
+      )}
+
+      {status === 'Diterima' && (
+        <NomorVaForm participantId={participantId} nomorVa={nomorVa} locked={Boolean(diumumkanPada)} />
+      )}
+
+      {decided && (
+        <AnnouncementControl participantId={participantId} status={status} diumumkanPada={diumumkanPada} />
+      )}
+
+      {cancelled && (
+        <form action={formAction} className={ADMIN_ACTIONS}>
+          <input type="hidden" name="participantId" value={participantId} />
+          <Button type="submit" name="intent" value="restore" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
+            <RotateCcw aria-hidden="true" className="size-3.5" />Pulihkan ke {previousStatus ?? 'Menunggu Verifikasi'}
+          </Button>
+        </form>
+      )}
+
+      {state.message && (
+        <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>
+          {state.message}
+        </p>
+      )}
+
+      {canCancel && (
+        <div className={cn(ADMIN_ACTIONS, 'border-t border-slate-200 pt-3')}>
+          <ConfirmDialog
+            participantId={participantId}
+            intent="cancel"
+            trigger={<><XCircle aria-hidden="true" className="size-3.5" />Batalkan pendaftar</>}
+            triggerClassName={ADMIN_DANGER_BUTTON}
+            title="Batalkan pendaftar ini?"
+            description="Gunakan untuk berkas palsu, tidak hadir OKB tanpa dijadwalkan ulang, atau mengundurkan diri. Kursinya akan dibebaskan untuk pendaftar lain. Tulis alasannya di catatan admin."
+            confirmLabel="Ya, batalkan pendaftar"
+            confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
+            pending={pending}
+            formAction={formAction}
+          />
+        </div>
+      )}
+    </CollapsibleCard>
   );
 }
 
@@ -593,15 +588,18 @@ function ConfirmDialog({ participantId, intent, trigger, triggerClassName, title
   );
 }
 
-function statusHint(status: string, previousStatus: string | null) {
+/** One short line under the title: where the Pendaftar stands and the next step for the admin. */
+function statusHint(status: string, previousStatus: string | null, nomorVa: string | null, diumumkanPada: string | null) {
   switch (status) {
-    case 'Menunggu Unggahan': return 'Berkas belum selesai diunggah orang tua.';
-    case 'Menunggu Verifikasi': return 'Verifikasi keempat berkas agar OKB dapat dijadwalkan.';
+    case 'Menunggu Unggahan': return 'Menunggu orang tua mengunggah berkas.';
+    case 'Menunggu Verifikasi': return 'Verifikasi keempat berkas untuk menjadwalkan OKB.';
     case 'Terverifikasi': return 'Berkas lengkap. Tetapkan jadwal OKB.';
-    case 'Terjadwal OKB': return 'Tandai hadir setelah OKB, jadwalkan ulang bila berhalangan, atau hapus jadwalnya.';
-    case 'Sudah OKB': return 'Catat Keputusan Penerimaan yang ditetapkan Panitia.';
-    case 'Diterima': return 'Pendaftar diterima oleh Panitia.';
-    case 'Ditolak': return 'Pendaftar tidak lolos OKB.';
+    case 'Terjadwal OKB': return 'Tandai hadir saat OKB berlangsung.';
+    case 'Sudah OKB': return 'Catat Keputusan Penerimaan dari Panitia.';
+    case 'Diterima':
+      if (diumumkanPada) return 'Diterima dan sudah diumumkan ke orang tua.';
+      return nomorVa ? 'Diterima. Siap diumumkan ke orang tua.' : 'Diterima. Isi Nomor VA sebelum diumumkan.';
+    case 'Ditolak': return diumumkanPada ? 'Ditolak dan sudah diumumkan ke orang tua.' : 'Ditolak. Siap diumumkan ke orang tua.';
     case 'Dibatalkan': return `Dibatalkan dari status ${previousStatus ?? 'sebelumnya'}.`;
     default: return `Status saat ini: ${status}.`;
   }

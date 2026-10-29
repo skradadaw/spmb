@@ -73,6 +73,10 @@ Salah satu dari empat dokumen wajib Pendaftar: Akta Kelahiran, Kartu Keluarga, P
 Setiap Berkas berstatus belum diperiksa atau terverifikasi. Admin dapat membatalkan verifikasi; Status Pendaftar tidak ikut mundur. Berkas yang bermasalah dicatat di catatan admin lalu diganti dengan Berkas Pengganti.
 _Avoid_: dokumen, file (di teks untuk pengguna)
 
+**Metode Pembayaran OKB** (*OKB Payment Method*):
+Cara orang tua membayar OKB, Cash atau Transfer, yang dicatat admin setelah melihat Bukti Pembayaran OKB. Memilih metodenya sekaligus memverifikasi Bukti Pembayaran OKB, yang tetap Berkas wajib apa pun metodenya.
+_Avoid_: jenis bayar, cara bayar
+
 **Afiliasi Direktorat 2** (*Directorate 2 Affiliation*):
 Hubungan keluarga Pendaftar (orang tua bekerja atau saudara kandung bersekolah) dengan salah satu unit Direktorat 2 Al-Muhajirin. Menjadi dasar potongan uang bangunan bagi Pendaftar yang Diterima; potongannya diproses di luar sistem.
 

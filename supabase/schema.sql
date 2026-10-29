@@ -253,6 +253,13 @@ ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS berkas_belum_tersedia SMAL
   + (NULLIF(btrim(dokumen_bukti_pembayaran), '') IS NULL)::INTEGER)::SMALLINT
 ) STORED;
 
+-- Metode Pembayaran OKB: dicatat admin dari Bukti Pembayaran; kosong sampai admin memilih.
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS metode_pembayaran_okb TEXT;
+ALTER TABLE public.pendaftar DROP CONSTRAINT IF EXISTS pendaftar_metode_pembayaran_okb_check;
+ALTER TABLE public.pendaftar
+  ADD CONSTRAINT pendaftar_metode_pembayaran_okb_check
+  CHECK (metode_pembayaran_okb IS NULL OR metode_pembayaran_okb IN ('cash', 'transfer'));
+
 -- Mengganti NISN menghapus penanda NISN Tidak Sesuai, kecuali penandanya ikut diubah dalam update yang sama.
 CREATE OR REPLACE FUNCTION public.clear_nisn_flag_on_change()
 RETURNS TRIGGER

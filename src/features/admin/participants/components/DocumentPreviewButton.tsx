@@ -5,9 +5,11 @@ import dynamic from 'next/dynamic';
 import { Dialog } from '@base-ui/react/dialog';
 import { Check, ChevronLeft, ChevronRight, Download, Eye, FileText, ImageIcon, Loader2, Minus, Plus, RotateCcw, RotateCw, Undo2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ADMIN_DONE_BUTTON, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON } from '@/features/admin/components/adminStyles';
+import { ADMIN_ACTIONS, ADMIN_CHOICE_BUTTON, ADMIN_DANGER_BUTTON, ADMIN_DONE_BUTTON, ADMIN_PAYMENT_DONE, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON } from '@/features/admin/components/adminStyles';
 import type { RegistrationDocumentId } from '@/features/registration/contracts';
 import { saveDocumentReviewAction } from '../actions/saveDocumentReviewAction';
+import { savePaymentMethodAction } from '../actions/savePaymentMethodAction';
+import { PAYMENT_METHODS, type PaymentMethod } from '../contracts';
 import { useDocumentBytes } from './useDocumentBytes';
 import { ReplaceDocumentButton } from './ReplaceDocumentButton';
 
@@ -19,6 +21,8 @@ export type ViewerDocument = {
   verified: boolean;
   /** When an admin replaced the file; null for the registration upload. */
   replacedAt: string | null;
+  /** Metode Pembayaran OKB; given only for the Bukti Pembayaran, which is verified by choosing it. */
+  paymentMethod?: PaymentMethod | null;
 };
 
 type ViewState = { scale: number; x: number; y: number; rotation: number };
@@ -107,6 +111,7 @@ function DocumentViewer({ participantId, documents, initialIndex }: { participan
   const safeIndex = Math.min(index, documents.length - 1);
   const document = documents[safeIndex];
   const isImage = previewType(document.href) === 'image';
+  const isPayment = document.paymentMethod !== undefined;
   const bytes = useDocumentBytes(document.href);
 
   const goTo = useCallback((next: number) => {
@@ -128,20 +133,17 @@ function DocumentViewer({ participantId, documents, initialIndex }: { participan
     setView(current => ({ scale: 1, x: 0, y: 0, rotation: current.rotation + direction * 90 }));
   }
 
-  function review(status: 'verified' | 'unverified') {
-    const formData = new FormData();
-    formData.set('participantId', participantId);
-    formData.set('documentId', document.id);
-    formData.set('status', status);
+  /** Saves a review, then moves on to the next unverified Berkas once this one is verified. */
+  function submit(save: () => Promise<void>, verifies: boolean, failure: string) {
     setReviewError(null);
     startTransition(async () => {
       try {
-        await saveDocumentReviewAction(formData);
+        await save();
       } catch {
-        setReviewError(status === 'verified' ? 'Verifikasi gagal disimpan. Coba lagi.' : 'Verifikasi gagal dibatalkan. Coba lagi.');
+        setReviewError(failure);
         return;
       }
-      if (status === 'unverified') {
+      if (!verifies) {
         setNotice(null);
         return;
       }
@@ -150,6 +152,22 @@ function DocumentViewer({ participantId, documents, initialIndex }: { participan
       if (next === -1) setNotice('Semua berkas sudah diverifikasi.');
       else goTo(next);
     });
+  }
+
+  function review(status: 'verified' | 'unverified') {
+    const formData = new FormData();
+    formData.set('participantId', participantId);
+    formData.set('documentId', document.id);
+    formData.set('status', status);
+    submit(() => saveDocumentReviewAction(formData), status === 'verified', status === 'verified' ? 'Verifikasi gagal disimpan. Coba lagi.' : 'Verifikasi gagal dibatalkan. Coba lagi.');
+  }
+
+  function choosePayment(method: PaymentMethod) {
+    const formData = new FormData();
+    formData.set('participantId', participantId);
+    formData.set('method', method);
+    formData.set('verify', String(!document.verified));
+    submit(() => savePaymentMethodAction(formData), true, 'Metode pembayaran gagal disimpan. Coba lagi.');
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -249,12 +267,12 @@ function DocumentViewer({ participantId, documents, initialIndex }: { participan
             href={downloadHref(document.href)}
             download={`${document.title}.${extension(document.href)}`}
             aria-label={`Unduh berkas ${document.title}`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className={`${ADMIN_SECONDARY_BUTTON} inline-flex items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`}
           >
-            <Download aria-hidden="true" className="size-4 text-slate-600" />
+            <Download aria-hidden="true" className="size-3.5" />
             <span className="hidden sm:inline">Unduh</span>
           </a>
-          <Dialog.Close aria-label="Tutup berkas" className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><X aria-hidden="true" className="size-4" /></Dialog.Close>
+          <Dialog.Close aria-label="Tutup berkas" className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><X aria-hidden="true" className="size-4" /></Dialog.Close>
         </div>
       </header>
 
@@ -287,7 +305,7 @@ function DocumentViewer({ participantId, documents, initialIndex }: { participan
           <div role="alert" className="mx-4 max-w-sm rounded-xl border border-rose-400/20 bg-slate-950/80 p-5 text-center text-sm text-slate-200">
             <p className="font-semibold text-white">Berkas gagal dimuat</p>
             <p className="mt-1 text-xs leading-5 text-slate-400">Periksa koneksi internet, lalu coba lagi.</p>
-            <button type="button" onClick={bytes.retry} className="mt-4 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-slate-100">Coba lagi</button>
+            <button type="button" onClick={bytes.retry} className={`${ADMIN_SECONDARY_BUTTON} mt-4`}>Coba lagi</button>
           </div>
         )}
         {bytes.state === 'ready' && isImage && bytes.objectUrl && (
@@ -335,15 +353,26 @@ function DocumentViewer({ participantId, documents, initialIndex }: { participan
           {notice && <span role="status" className="font-semibold text-emerald-700">{notice}</span>}
           {reviewError && <span role="alert" className="font-semibold text-rose-700">{reviewError}</span>}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className={ADMIN_ACTIONS}>
           <ReplaceDocumentButton participantId={participantId} documentId={document.id} title={document.title} hasFile inline />
-          {document.verified ? (
+          {document.verified && (isPayment ? document.paymentMethod : true) ? (
             <>
-              <span className={`${ADMIN_DONE_BUTTON} inline-flex items-center`}><Check aria-hidden="true" className="size-3.5" />Terverifikasi</span>
-              <Button type="button" disabled={pending} onClick={() => review('unverified')} aria-label={`Batalkan verifikasi ${document.title}`} className={ADMIN_SECONDARY_BUTTON}>
+              <Button type="button" disabled={pending} onClick={() => review('unverified')} aria-label={`Batalkan verifikasi ${document.title}`} className={ADMIN_DANGER_BUTTON}>
                 {pending ? <Loader2 aria-hidden="true" className="size-3.5 animate-spin" /> : <Undo2 aria-hidden="true" className="size-3.5" />}Batalkan verifikasi
               </Button>
+              <span data-payment-method={document.paymentMethod ?? undefined} className={`${isPayment && document.paymentMethod ? ADMIN_PAYMENT_DONE[document.paymentMethod] : ADMIN_DONE_BUTTON} inline-flex items-center`}>
+                <Check aria-hidden="true" className="size-3.5" />{isPayment ? PAYMENT_METHODS.find(option => option.value === document.paymentMethod)?.label : 'Terverifikasi'}
+              </span>
             </>
+          ) : isPayment ? (
+            <div role="group" aria-label={`Metode pembayaran ${document.title}`} className="flex items-center gap-2">
+              {pending && <Loader2 aria-hidden="true" className="size-3.5 animate-spin text-slate-500" />}
+              {PAYMENT_METHODS.map(option => (
+                <Button key={option.value} type="button" disabled={pending} onClick={() => choosePayment(option.value)} className={ADMIN_CHOICE_BUTTON}>
+                  {option.label}
+                </Button>
+              ))}
+            </div>
           ) : (
             <Button type="button" disabled={pending} onClick={() => review('verified')} aria-label={`Verifikasi ${document.title}`} className={ADMIN_PRIMARY_BUTTON}>
               {pending ? <Loader2 aria-hidden="true" className="size-3.5 animate-spin" /> : <Check aria-hidden="true" className="size-3.5" />}Verifikasi

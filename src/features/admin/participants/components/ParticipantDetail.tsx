@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, Check, ClipboardCheck, Flag } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, Flag } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { saveParticipantAdminNoteAction } from '../actions/saveParticipantAdminNoteAction';
 import { setNisnFlagAction } from '../actions/setNisnFlagAction';
@@ -6,6 +6,7 @@ import type { ViewerDocument } from './DocumentPreviewButton';
 import { DocumentReviewCard } from './DocumentReviewCard';
 import { DocumentPrefetch } from './DocumentPrefetch';
 import { StickyAside } from './StickyAside';
+import { CollapsibleCard } from './CollapsibleCard';
 import { documentReplacedAt, documentVersion } from '../documentVersion';
 import { ParticipantStatusPanel } from './ParticipantStatusPanel';
 import { ParticipantStatusBadge } from './ParticipantStatus';
@@ -42,6 +43,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', 
     href: `/admin/pendaftar/${participant.id}/dokumen/${document.id}?contentType=${encodeURIComponent(getDocumentContentType(document.path!))}&v=${documentVersion(document.path!)}`,
     verified: participant.documentReviews[document.id]?.status === 'verified',
     replacedAt: documentReplacedAt(document.path!),
+    ...(document.id === 'buktiPembayaran' ? { paymentMethod: participant.paymentMethod } : {}),
   }));
   const childName = participant.identity.namaLengkap ? formatParticipantFieldValue('identity', 'namaLengkap', participant.identity.namaLengkap) : 'ananda';
   const greeting = `Assalamu'alaikum Bapak/Ibu, kami dari panitia SPMB ingin menghubungi terkait pendaftaran ${childName}${participant.registration.nomorPendaftaran ? ` (${participant.registration.nomorPendaftaran})` : ''}.`;
@@ -114,62 +116,56 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', 
           </CardContent>
         </Card>
         <StickyAside className="grid min-w-0 gap-4">
-          <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
-            <CardHeader className="border-b border-slate-200 bg-slate-50/80 p-4 pb-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <CardTitle className="text-base font-semibold tracking-tight text-slate-950">Dokumen terunggah</CardTitle>
-                  <p className="mt-1 text-xs leading-4 text-slate-600">{reviewedCount} dari {participant.documents.length} berkas terverifikasi</p>
+          <CollapsibleCard
+            title="Berkas"
+            hint={`${reviewedCount} dari ${participant.documents.length} berkas terverifikasi`}
+            contentClassName="space-y-3 p-3 sm:p-4"
+          >
+            <DocumentPrefetch hrefs={viewerDocuments.map(document => document.href)} />
+            <div data-testid="document-grid" data-density="compact" className="grid gap-2 md:grid-cols-2">
+              {participant.documents.map(document => {
+                const review = participant.documentReviews[document.id];
+                const status = !document.path ? 'missing' : review?.status ?? 'pending';
+                const replacedAt = document.path ? documentReplacedAt(document.path) : null;
+                // A second line only when the file did not simply come from the registration.
+                const sourceLabel = !document.path ? 'Belum diunggah' : replacedAt ? `Diganti admin, ${shortDate(replacedAt)}` : null;
+                return (
+                  <DocumentReviewCard
+                    key={document.id}
+                    participantId={participant.id}
+                    document={document}
+                    status={status}
+                    sourceLabel={sourceLabel}
+                    viewerDocuments={viewerDocuments}
+                    viewerIndex={viewerDocuments.findIndex(item => item.id === document.id)}
+                    paymentMethod={document.id === 'buktiPembayaran' ? participant.paymentMethod : undefined}
+                  />
+                );
+              })}
+            </div>
+            <form action={saveParticipantAdminNoteAction} className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+              <input type="hidden" name="participantId" value={participant.id} />
+              <Label htmlFor="participant-admin-note" className={ADMIN_SECTION_TITLE}>Catatan admin</Label>
+              <Textarea id="participant-admin-note" name="adminNote" maxLength={1000} defaultValue={participant.adminNote ?? ''} rows={2} placeholder="Catatan internal, mis. berkas yang perlu diminta ulang." className="min-h-14 resize-y bg-white text-xs md:text-xs" />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {contacts.map(contact => (
+                    <a
+                      key={contact.label}
+                      href={contact.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Hubungi ${contact.label.replace('WA ', '')} lewat WhatsApp Web`}
+                      className={`${ADMIN_SECONDARY_BUTTON} inline-flex items-center`}
+                    >
+                      <WhatsAppIcon className="size-3.5 text-[#25D366]" />{contact.label}
+                    </a>
+                  ))}
                 </div>
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-800"><ClipboardCheck aria-hidden="true" className="size-4" /></span>
+                <Button type="submit" className={ADMIN_PRIMARY_BUTTON}>Simpan catatan</Button>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3 p-3 sm:p-4">
-              <DocumentPrefetch hrefs={viewerDocuments.map(document => document.href)} />
-              <div data-testid="document-grid" data-density="compact" className="grid gap-2 md:grid-cols-2">
-                {participant.documents.map(document => {
-                  const review = participant.documentReviews[document.id];
-                  const status = !document.path ? 'missing' : review?.status ?? 'pending';
-                  const replacedAt = document.path ? documentReplacedAt(document.path) : null;
-                  // Same second line on every card: where the file came from, not a status the buttons already show.
-                  const sourceLabel = !document.path ? 'Belum diunggah' : replacedAt ? `Diganti admin, ${shortDate(replacedAt)}` : 'Dari pendaftaran';
-                  return (
-                    <DocumentReviewCard
-                      key={document.id}
-                      participantId={participant.id}
-                      document={document}
-                      status={status}
-                      sourceLabel={sourceLabel}
-                      viewerDocuments={viewerDocuments}
-                      viewerIndex={viewerDocuments.findIndex(item => item.id === document.id)}
-                    />
-                  );
-                })}
-              </div>
-              <form action={saveParticipantAdminNoteAction} className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-                <input type="hidden" name="participantId" value={participant.id} />
-                <Label htmlFor="participant-admin-note" className={ADMIN_SECTION_TITLE}>Catatan admin</Label>
-                <Textarea id="participant-admin-note" name="adminNote" maxLength={1000} defaultValue={participant.adminNote ?? ''} rows={2} placeholder="Catatan internal, mis. berkas yang perlu diminta ulang." className="min-h-14 resize-y bg-white text-xs md:text-xs" />
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {contacts.map(contact => (
-                      <a
-                        key={contact.label}
-                        href={contact.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Hubungi ${contact.label.replace('WA ', '')} lewat WhatsApp Web`}
-                        className={`${ADMIN_SECONDARY_BUTTON} inline-flex items-center`}
-                      >
-                        <WhatsAppIcon className="size-3.5 text-[#25D366]" />{contact.label}
-                      </a>
-                    ))}
-                  </div>
-                  <Button type="submit" className={ADMIN_PRIMARY_BUTTON}>Simpan catatan</Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+            </form>
+          </CollapsibleCard>
           <ParticipantStatusPanel
             participantId={participant.id}
             status={participant.status}

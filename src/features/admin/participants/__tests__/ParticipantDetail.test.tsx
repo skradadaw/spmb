@@ -27,6 +27,7 @@ const participant: ParticipantDetailData = {
   adminNote: null,
   nisnMismatch: false,
   nomorVa: null,
+  paymentMethod: null,
   diumumkanPada: null,
   documents: [
     { id: 'aktaKelahiran', title: 'Akta Kelahiran', path: 'registrations/123e4567-e89b-12d3-a456-426614174000/aktaKelahiran.pdf' },
@@ -56,7 +57,7 @@ describe('ParticipantDetail', () => {
     render(<ParticipantDetail participant={participant} />);
     const identityHeading = screen.getByRole('heading', { name: 'Identitas anak' });
     const schoolHeading = screen.getByRole('heading', { name: 'Sekolah dan prestasi' });
-    const documentsHeading = screen.getByRole('heading', { name: 'Dokumen terunggah' });
+    const documentsHeading = screen.getByRole('heading', { name: 'Berkas' });
     const detailsCard = identityHeading.closest('[data-detail-group]')?.parentElement?.parentElement;
     const schoolCard = schoolHeading.closest('[data-detail-group]')?.parentElement?.parentElement;
     const documentsCard = documentsHeading.parentElement?.parentElement?.parentElement?.parentElement;
@@ -109,17 +110,14 @@ describe('ParticipantDetail', () => {
     expect(within(documentGrid).queryByText('Pratinjau PDF')).toBeNull();
     expect(screen.getAllByRole('button', { name: /^Lihat berkas / })).toHaveLength(3);
     expect(screen.getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' })).toBeDefined();
-    expect(screen.getAllByRole('button', { name: /^(Verifikasi|Terverifikasi) / })).toHaveLength(4);
-    expect(screen.getAllByRole('button', { name: /^Terverifikasi / })).toHaveLength(1);
+    // Only unverified Berkas get a Verifikasi button (Bukti Pembayaran uses Cash / Transfer); a verified one shows a plain label.
+    expect(screen.getAllByRole('button', { name: /^Verifikasi / })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: /^Terverifikasi / })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Tindak lanjut / })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).getAttribute('aria-pressed')).toBe('true');
-    // The verified state lives on the button; no separate badge repeats it.
-    expect(screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).closest('article')?.querySelector('span.inline-flex')).toBeNull();
-    const aktaActions = screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).closest('form');
-    expect(aktaActions).not.toBeNull();
-    expect(within(aktaActions as HTMLFormElement).getByRole('button', { name: 'Lihat pratinjau PDF Akta Kelahiran' })).toBeDefined();
-    expect(Array.from((aktaActions as HTMLFormElement).querySelectorAll('button')).map(button => button.getAttribute('aria-label'))).toEqual([
-      'Terverifikasi Akta Kelahiran',
+    const akta = screen.getByRole('heading', { name: 'Akta Kelahiran' }).closest('article') as HTMLElement;
+    expect(within(akta).getByText('Terverifikasi').closest('button')).toBeNull();
+    const aktaActions = akta.querySelector('form') as HTMLFormElement;
+    expect(Array.from(aktaActions.querySelectorAll('button')).map(button => button.getAttribute('aria-label'))).toEqual([
       'Lihat pratinjau PDF Akta Kelahiran',
     ]);
     expect(screen.getAllByLabelText('Catatan admin')).toHaveLength(1);
@@ -161,9 +159,10 @@ describe('ParticipantDetail', () => {
     expect(verified?.querySelector('[data-document-index]')?.className).toContain('bg-emerald-600');
     expect(verified?.querySelector('[data-document-index]')?.textContent).toBe('');
     expect(pending?.querySelector('[data-document-index]')?.className).toContain('border-slate-300');
-    // No status badge on any card; the second line is always where the file came from.
-    expect(pending?.querySelector('[data-document-source]')?.textContent).toBe('Dari pendaftaran');
-    expect(verified?.querySelector('[data-document-source]')?.textContent).toBe('Dari pendaftaran');
+    // No status badge on any card; a file straight from the registration needs no second line.
+    expect(pending?.querySelector('[data-document-source]')).toBeNull();
+    expect(verified?.querySelector('[data-document-source]')).toBeNull();
+    expect(pending?.textContent).not.toContain('Dari pendaftaran');
     expect(pending?.textContent).not.toContain('Belum diperiksa');
     expect(pending?.className).toContain('h-full');
     expect(pending?.querySelector('form')?.className).toContain('mt-auto');
@@ -171,14 +170,14 @@ describe('ParticipantDetail', () => {
 
   it('keeps both document actions inside the card with room for the verify label', () => {
     render(<ParticipantDetail participant={participant} />);
-    const actions = screen.getByRole('button', { name: 'Terverifikasi Akta Kelahiran' }).closest('form');
+    const actions = screen.getByRole('heading', { name: 'Akta Kelahiran' }).closest('article')?.querySelector('form');
     expect(actions?.className).toContain('grid-cols-[minmax(0,1fr)_auto]');
     expect(actions?.parentElement?.tagName).toBe('ARTICLE');
   });
 
   it('offers only a cancel action while documents still await verification', () => {
     render(<ParticipantDetail participant={participant} />);
-    expect(screen.getByText('Verifikasi keempat berkas agar OKB dapat dijadwalkan.')).toBeDefined();
+    expect(screen.getByText('Verifikasi keempat berkas untuk menjadwalkan OKB.')).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Simpan jadwal' })).toBeNull();
     // Cancelling asks for confirmation in a dialog first.
     expect(screen.queryByRole('button', { name: /ya, batalkan pendaftar/i })).toBeNull();
@@ -409,10 +408,29 @@ describe('ParticipantDetail', () => {
     expect(screen.getByRole('button', { name: 'Unggah berkas Pas Foto Anak' })).toBeDefined();
   });
 
+  it('verifies Bukti Pembayaran by Cash or Transfer, and only that card', () => {
+    render(<ParticipantDetail participant={participant} />);
+    const payment = screen.getByRole('heading', { name: 'Bukti Pembayaran OKB' }).closest('article') as HTMLElement;
+    expect(within(payment).getByRole('button', { name: 'Cash' })).toBeDefined();
+    expect(within(payment).getByRole('button', { name: 'Transfer' })).toBeDefined();
+    expect(within(payment).queryByRole('button', { name: /^Verifikasi / })).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'Cash' })).toHaveLength(1);
+  });
+
+  it('tells the next step after a decision under the Status OKB title', () => {
+    const accepted = { ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' } };
+    const { rerender } = render(<ParticipantDetail participant={accepted} />);
+    expect(screen.getByText('Diterima. Isi Nomor VA sebelum diumumkan.')).toBeDefined();
+    rerender(<ParticipantDetail participant={{ ...accepted, nomorVa: '7456012627300120' }} />);
+    expect(screen.getByText('Diterima. Siap diumumkan ke orang tua.')).toBeDefined();
+    rerender(<ParticipantDetail participant={{ ...accepted, nomorVa: '7456012627300120', diumumkanPada: '2027-02-09T01:00:00Z' }} />);
+    expect(screen.getByText('Diterima dan sudah diumumkan ke orang tua.')).toBeDefined();
+  });
+
   it('places the documents card above the status panel', () => {
     render(<ParticipantDetail participant={participant} />);
-    const documents = screen.getByRole('heading', { name: 'Dokumen terunggah' });
-    const status = screen.getByText('Status & OKB');
+    const documents = screen.getByRole('heading', { name: 'Berkas' });
+    const status = screen.getByRole('heading', { name: 'Status OKB' });
     expect(documents.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

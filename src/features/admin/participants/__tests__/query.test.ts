@@ -3,7 +3,7 @@ import { parseParticipantListQuery, participantListHref, escapeSearch, hasActive
 
 describe('participant query', () => {
   it('normalizes invalid pages and allowlists filters', () => {
-    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, waveFilter: null, announcementFilter: null, page: 1, pageSize: 20 });
+    expect(parseParticipantListQuery(new URLSearchParams('page=-2&kelas=invalid&jenis=invalid'))).toEqual({ search: '', classFilter: null, statusFilter: null, attentionFilter: null, okbMissed: false, waveFilter: null, announcementFilter: null, paymentFilter: null, page: 1, pageSize: 20 });
     expect(parseParticipantListQuery(new URLSearchParams('page=2.5')).page).toBe(1);
   });
   it('allowlists the Perlu Perhatian filter and keeps it in links', () => {
@@ -18,6 +18,14 @@ describe('participant query', () => {
     expect(participantListHref(query)).toBe('/admin/pendaftar?status=Diterima&pengumuman=belum');
     expect(hasActiveFilters(parseParticipantListQuery(new URLSearchParams('pengumuman=sudah')))).toBe(true);
     expect(parseParticipantListQuery(new URLSearchParams('pengumuman=kemarin')).announcementFilter).toBeNull();
+  });
+
+  it('allowlists the Pembayaran filter, keeps it in links and counts it as active', () => {
+    const query = parseParticipantListQuery(new URLSearchParams('bayar=cash'));
+    expect(query.paymentFilter).toBe('cash');
+    expect(participantListHref(query)).toBe('/admin/pendaftar?bayar=cash');
+    expect(hasActiveFilters(query)).toBe(true);
+    expect(parseParticipantListQuery(new URLSearchParams('bayar=kartu')).paymentFilter).toBeNull();
   });
 
   it('allowlists the Gelombang OKB filter and keeps it in links', () => {

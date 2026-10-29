@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AnnouncementStep } from '@/features/admin/announcement/components/AnnouncementStep';
 import { TemplateCard } from '@/features/admin/announcement/components/TemplateCard';
 import { VaImportCard } from '@/features/admin/announcement/components/VaImportCard';
 import { WaveAnnouncementCard } from '@/features/admin/announcement/components/WaveAnnouncementCard';
@@ -32,17 +33,35 @@ export default async function AnnouncementPage() {
         Siapkan Surat Penerimaan dan Nomor VA, lalu umumkan Hasil OKB agar orang tua dapat melihatnya di halaman Cek Hasil OKB.
       </p>
     </section>
-    <div className="mt-6 max-w-4xl space-y-6">
-      <section aria-labelledby="umumkan-gelombang" className="space-y-3">
-        <h2 id="umumkan-gelombang" className="text-sm font-bold">Umumkan per Gelombang OKB</h2>
+    <div className="mt-6 space-y-5">
+      <AnnouncementStep
+        id="langkah-umumkan"
+        title="Umumkan per Gelombang OKB"
+        description="Pendaftar Diterima dan Ditolak diumumkan sekaligus per gelombang. Pendaftar yang belum diputuskan dilewati."
+      >
         {waves
           ? <div className="grid gap-3 md:grid-cols-3">{waves.map(summary => <WaveAnnouncementCard key={summary.wave} summary={summary} />)}</div>
           : <LoadError title="Ringkasan Gelombang OKB belum dapat dimuat" />}
-      </section>
-      <VaImportCard />
-      {template
-        ? <TemplateCard active={template.active ? { uploadedAt: template.active.uploadedAt } : null} />
-        : <LoadError title="Template belum dapat dimuat" />}
+      </AnnouncementStep>
+      <AnnouncementStep
+        id="langkah-template"
+        title="Template Surat Penerimaan"
+        description="PDF 2 halaman: pengumuman dengan nama anak dan Nomor VA dikosongkan, lalu Surat Pernyataan. Sistem mengisi nama, Nomor VA, serta tempat dan tanggal lahir anak."
+      >
+        {template
+          ? <TemplateCard active={template.active ? { uploadedAt: template.active.uploadedAt } : null} />
+          : <LoadError title="Template belum dapat dimuat" />}
+      </AnnouncementStep>
+      <AnnouncementStep
+        id="langkah-va"
+        title="Impor Nomor VA"
+        description={<>
+          File Excel (.xlsx) atau CSV berkolom <span className="font-semibold">Nomor Pendaftaran</span> dan <span className="font-semibold">Nomor VA</span>.
+          Di Excel, format kolom Nomor VA sebagai Teks agar 16 digitnya utuh.
+        </>}
+      >
+        <VaImportCard />
+      </AnnouncementStep>
     </div>
   </>;
 }

@@ -146,6 +146,13 @@ describe('participants repository', () => {
     expect(announced.q.not).toHaveBeenCalledWith('diumumkan_pada', 'is', 'null');
   });
 
+  it('filters by the recorded Metode Pembayaran OKB', async () => {
+    const { q, repo } = fixture();
+    q.range.mockResolvedValueOnce({ data: [], count: 0, error: null });
+    await repo.list(parseParticipantListQuery(new URLSearchParams('bayar=transfer')));
+    expect(q.eq).toHaveBeenCalledWith('metode_pembayaran_okb', 'transfer');
+  });
+
   it('marks a Pendaftar Diterima without Nomor VA in the list and reads the Nomor VA on the detail', async () => {
     const { q, repo } = fixture();
     q.range.mockResolvedValueOnce({ data: [
@@ -174,7 +181,7 @@ describe('participants repository', () => {
       { id: 'aktaKelahiran', title: 'Akta Kelahiran', path: 'registrations/a/aktaKelahiran.pdf' },
       { id: 'kartuKeluarga', title: 'Kartu Keluarga', path: 'registrations/a/kartuKeluarga.jpg' },
       { id: 'pasFoto', title: 'Pas Foto Anak', path: 'registrations/a/pasFoto.png' },
-      { id: 'buktiPembayaran', title: 'Bukti Pembayaran OKB', path: 'registrations/a/buktiPembayaran.webp' },
+      { id: 'buktiPembayaran', title: 'Bukti Pembayaran', path: 'registrations/a/buktiPembayaran.webp' },
     ]);
     expect(JSON.stringify(result)).not.toContain('secret');
     expect(result?.identity.nik).toBeNull();

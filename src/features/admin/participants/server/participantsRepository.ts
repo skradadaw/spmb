@@ -1,7 +1,7 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ParticipantAttention, ParticipantDetail, ParticipantDocumentReviews, ParticipantExportRecord, ParticipantListItem, ParticipantListQuery, ParticipantListResult } from '../contracts';
-import { ATTENTION_EXCLUDED_STATUSES, PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contracts';
+import { ATTENTION_EXCLUDED_STATUSES, adminDocumentTitle, isPaymentMethod, PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contracts';
 import { PARTICIPANT_FIELDS, type ParticipantFieldGroupName } from '../fields';
 import { escapeSearch } from '../query';
 import { fromPendaftarRow } from '../editing';
@@ -56,6 +56,7 @@ function applyFilters(request: Query, query: ParticipantListQuery) {
   if (query.waveFilter) request = request.eq('status', 'Terjadwal OKB').eq('jadwal_okb_gelombang', String(query.waveFilter));
   if (query.announcementFilter === 'belum') request = request.in('status', ['Diterima', 'Ditolak']).is('diumumkan_pada', null);
   if (query.announcementFilter === 'sudah') request = request.not('diumumkan_pada', 'is', 'null');
+  if (query.paymentFilter) request = request.eq('metode_pembayaran_okb', query.paymentFilter);
   if (query.attentionFilter) {
     request = request.not('status', 'in', EXCLUDED_STATUS_LIST);
     if (query.attentionFilter === 'nisn') request = request.eq('nisn_tidak_sesuai', true);
@@ -168,8 +169,8 @@ export function createParticipantsRepository(supabase: SupabaseClient) {
         identity: group('identity'), registration: group('registration'), school: group('school'), affiliation: group('affiliation'),
         referral: group('referral'), okb: group('okb'), decision: group('decision'), formValues: fromPendaftarRow(row), previousStatus: text(row.status_sebelum_dibatalkan),
         address: group('address'), father: group('father'), mother: group('mother'),
-        documents: DOCUMENT_DEFINITIONS.map(doc => ({ id: doc.id, title: doc.title, path: text(row[doc.dbColumn]) })), documentReviews, adminNote: text(row.catatan_admin), nisnMismatch: row.nisn_tidak_sesuai === true,
-        nomorVa: text(row.nomor_va), diumumkanPada: text(row.diumumkan_pada),
+        documents: DOCUMENT_DEFINITIONS.map(doc => ({ id: doc.id, title: adminDocumentTitle(doc), path: text(row[doc.dbColumn]) })), documentReviews, adminNote: text(row.catatan_admin), nisnMismatch: row.nisn_tidak_sesuai === true,
+        nomorVa: text(row.nomor_va), paymentMethod: isPaymentMethod(row.metode_pembayaran_okb) ? row.metode_pembayaran_okb : null, diumumkanPada: text(row.diumumkan_pada),
       };
     },
   };

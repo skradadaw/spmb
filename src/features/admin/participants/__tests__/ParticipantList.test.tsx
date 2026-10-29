@@ -37,20 +37,38 @@ describe('Data Pendaftar UI', () => {
     expect(screen.queryByText(/Gelombang 1|Gelombang 3/)).toBeNull();
   });
 
-  it('filters by Gelombang OKB and clears it with Reset', () => {
+  const openMore = () => fireEvent.click(screen.getByRole('button', { name: /Filter lainnya/ }));
+
+  it('groups Gelombang, Pengumuman, Pembayaran and Perlu perhatian under Filter lainnya', () => {
+    router.replace.mockClear();
+    render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams())} statuses={['Terjadwal OKB']} />);
+    expect(screen.queryByRole('group', { name: 'Gelombang' })).toBeNull();
+    openMore();
+    for (const heading of ['Jadwal OKB', 'Hasil OKB', 'Pembayaran OKB', 'Perhatian']) expect(screen.getByRole('heading', { name: heading })).toBeDefined();
+    fireEvent.click(within(screen.getByRole('group', { name: 'Pembayaran' })).getByRole('button', { name: 'Transfer' }));
+    expect(router.replace).toHaveBeenLastCalledWith('/admin/pendaftar?bayar=transfer', { scroll: false });
+  });
+
+  it('filters by Gelombang OKB, shows it as a removable chip and counts it on Filter lainnya', () => {
     render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('gelombang=3'))} statuses={['Terjadwal OKB']} />);
-    expect(screen.getByLabelText('Gelombang').textContent).toContain('Gelombang 3');
+    expect(screen.getByRole('button', { name: /Filter lainnya/ }).textContent).toContain('1');
+    fireEvent.click(screen.getByRole('button', { name: 'Hapus filter Gelombang 3' }));
+    expect(router.replace).toHaveBeenLastCalledWith('/admin/pendaftar', { scroll: false });
+    openMore();
+    expect(within(screen.getByRole('group', { name: 'Gelombang' })).getByRole('button', { name: 'Gelombang 3' }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
   });
 
   it('filters by whether the result is announced, as linked from the dashboard', () => {
     render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('pengumuman=belum'))} statuses={['Diterima']} />);
-    expect(screen.getByLabelText('Pengumuman').textContent).toContain('Belum diumumkan');
-    expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
+    expect(screen.getByRole('button', { name: 'Hapus filter Belum diumumkan' })).toBeDefined();
+    openMore();
+    expect(within(screen.getByRole('group', { name: 'Pengumuman' })).getByRole('button', { name: 'Belum diumumkan' }).getAttribute('aria-pressed')).toBe('true');
   });
 
   it('offers Perlu Perhatian as one checkbox and keeps the NISN link from the dashboard as a removable chip', () => {
     render(<ParticipantFilters query={parseParticipantListQuery(new URLSearchParams('perhatian=nisn'))} statuses={['Diterima']} />);
+    openMore();
     expect((screen.getByRole('checkbox', { name: 'Perlu perhatian' }) as HTMLInputElement).checked).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Hapus filter NISN tidak sesuai' }));
     expect(router.replace).toHaveBeenLastCalledWith('/admin/pendaftar?perhatian=semua', { scroll: false });
@@ -105,10 +123,10 @@ describe('Data Pendaftar UI', () => {
     expect(screen.queryByRole('table')).toBeNull();
     expect(screen.getByRole('link', { name: /Reset/ }).getAttribute('href')).toBe('/admin/pendaftar');
   });
-  it('keeps only search, Status, Kelas, Gelombang, Pengumuman and Perlu perhatian, applied without a submit button', () => {
+  it('keeps only search, Status and Kelas in view, applied without a submit button', () => {
     render(<ParticipantFilters query={query} statuses={['Menunggu Unggahan', 'Menunggu Verifikasi']} />);
     expect(screen.getByRole('searchbox', { name: 'Cari nama / nomor' }).getAttribute('maxlength')).toBe('100');
-    expect(screen.getAllByRole('combobox')).toHaveLength(4);
+    expect(screen.getAllByRole('combobox')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: /Terapkan/ })).toBeNull();
     // Ekspor pindah ke header halaman, di luar card filter.
     expect(screen.queryByText(/Ekspor/)).toBeNull();
