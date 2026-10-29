@@ -9,6 +9,12 @@ export const ADMIN_DANGER_BUTTON = `${ADMIN_ACTION_BUTTON} border border-rose-20
 export const ADMIN_DANGER_SOLID_BUTTON = `${ADMIN_ACTION_BUTTON} border border-transparent bg-rose-700 text-white hover:bg-rose-800 hover:text-white`;
 /** A finished state (e.g. "Terverifikasi"), not a call to action. */
 export const ADMIN_DONE_BUTTON = `${ADMIN_ACTION_BUTTON} border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100`;
+/**
+ * A row of actions: always right-aligned, the primary (forward) step last.
+ * Colour follows function: primary moves the Pendaftar forward, secondary is neutral
+ * (edit, cancel, download), danger reverses or removes something and confirms with danger solid.
+ */
+export const ADMIN_ACTIONS = 'flex flex-wrap items-center justify-end gap-2';
 export const ADMIN_SECTION_TITLE = 'text-xs font-semibold leading-4 text-slate-950';
 export const ADMIN_LABEL = 'text-xs font-medium text-slate-700';
 export const ADMIN_FIELD = 'h-9 rounded-lg text-sm';

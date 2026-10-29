@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
-import { ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
+import { ADMIN_ACTIONS, ADMIN_DANGER_BUTTON, ADMIN_DANGER_SOLID_BUTTON, ADMIN_PRIMARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
 import { announceParticipantAction } from '../actions/announceActions';
 import type { AnnounceState } from '../announceResult';
 
@@ -41,30 +41,32 @@ export function AnnouncementControl({ participantId, status, diumumkanPada }: { 
           ? `Orang tua dapat melihat hasil ${status}${status === 'Diterima' ? ' beserta Nomor VA' : ''} di halaman Cek Hasil OKB.`
           : 'Orang tua belum dapat melihat keputusan ini sampai diumumkan.'}
       </p>
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger render={<Button type="button" className={announced ? ADMIN_SECONDARY_BUTTON : ADMIN_PRIMARY_BUTTON} />}>
-          {announced ? <><Undo2 aria-hidden="true" className="size-3.5" />Tarik pengumuman</> : <><Megaphone aria-hidden="true" className="size-3.5" />Umumkan</>}
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{announced ? 'Tarik Pengumuman Hasil OKB?' : `Umumkan hasil ${status}?`}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {announced
-                ? 'Orang tua kembali melihat "Hasil OKB belum diumumkan". Apa yang sudah terlanjur dilihat atau diunduh tidak dapat ditarik.'
-                : `Orang tua akan langsung melihat hasil ${status}${status === 'Diterima' ? ', Nomor VA, dan Surat Penerimaan' : ''} di halaman Cek Hasil OKB.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <form action={formAction} onSubmit={() => setOpen(false)}>
-            <input type="hidden" name="participantId" value={participantId} />
-            <AlertDialogFooter>
-              <AlertDialogCancel>Kembali</AlertDialogCancel>
-              <Button type="submit" name="intent" value={announced ? 'withdraw' : 'announce'} disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
-                {announced ? 'Ya, tarik pengumuman' : 'Ya, umumkan'}
-              </Button>
-            </AlertDialogFooter>
-          </form>
-        </AlertDialogContent>
-      </AlertDialog>
+      <div className={ADMIN_ACTIONS}>
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogTrigger render={<Button type="button" className={announced ? ADMIN_DANGER_BUTTON : ADMIN_PRIMARY_BUTTON} />}>
+            {announced ? <><Undo2 aria-hidden="true" className="size-3.5" />Tarik pengumuman</> : <><Megaphone aria-hidden="true" className="size-3.5" />Umumkan</>}
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{announced ? 'Tarik Pengumuman Hasil OKB?' : `Umumkan hasil ${status}?`}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {announced
+                  ? 'Orang tua kembali melihat "Hasil OKB belum diumumkan". Apa yang sudah terlanjur dilihat atau diunduh tidak dapat ditarik.'
+                  : `Orang tua akan langsung melihat hasil ${status}${status === 'Diterima' ? ', Nomor VA, dan Surat Penerimaan' : ''} di halaman Cek Hasil OKB.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <form action={formAction} onSubmit={() => setOpen(false)}>
+              <input type="hidden" name="participantId" value={participantId} />
+              <AlertDialogFooter>
+                <AlertDialogCancel>Kembali</AlertDialogCancel>
+                <Button type="submit" name="intent" value={announced ? 'withdraw' : 'announce'} disabled={pending} className={announced ? ADMIN_DANGER_SOLID_BUTTON : ADMIN_PRIMARY_BUTTON}>
+                  {announced ? 'Ya, tarik pengumuman' : 'Ya, umumkan'}
+                </Button>
+              </AlertDialogFooter>
+            </form>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
       {state.message && (
         <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>
           {state.message}

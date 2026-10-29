@@ -10,7 +10,7 @@ import { CANCELLABLE_STATUSES } from '../contracts';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-export type ParticipantStatusIntent = 'schedule' | 'unschedule' | 'attend' | 'unattend' | 'decide' | 'cancel' | 'restore';
+export type ParticipantStatusIntent = 'schedule' | 'unschedule' | 'attend' | 'unattend' | 'decide' | 'undecide' | 'cancel' | 'restore';
 export type UpdateParticipantStatusState = { status: 'idle' | 'success' | 'error'; message: string };
 
 const ok = (message: string): UpdateParticipantStatusState => ({ status: 'success', message });
@@ -102,6 +102,31 @@ export async function updateParticipantStatusAction(
         : data === 'full'
           ? fail('Kuota Pilihan Kelas pendaftar ini sudah penuh. Geser kuota di menu Kuota Kelas terlebih dahulu.')
           : fail(STALE);
+    } else if (intent === 'undecide') {
+      // Kembalikan ke Sudah OKB: only before the announcement, so parents never see a result vanish.
+      // The seat stays counted (Sudah OKB holds it too); the placement and Nomor VA belong to Diterima only.
+      const { data, error } = await supabase
+        .from('pendaftar')
+        .update({ status: 'Sudah OKB', kelas_penempatan: null, nomor_va: null })
+        .eq('id', participantId)
+        .eq('status', 'Diterima')
+        .is('diumumkan_pada', null)
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      if (data) {
+        result = ok('Keputusan dibatalkan. Pendaftar kembali Sudah OKB.');
+      } else {
+        const { data: current, error: readError } = await supabase
+          .from('pendaftar')
+          .select('status, diumumkan_pada')
+          .eq('id', participantId)
+          .maybeSingle();
+        if (readError) throw readError;
+        result = current?.status === 'Diterima' && current.diumumkan_pada
+          ? fail('Hasil sudah diumumkan. Tarik pengumuman terlebih dahulu, lalu kembalikan ke Sudah OKB.')
+          : fail(STALE);
+      }
     } else if (intent === 'cancel') {
       const { data: current, error: readError } = await supabase
         .from('pendaftar')
@@ -139,7 +164,7 @@ export async function updateParticipantStatusAction(
   if (result.status === 'success') {
     revalidatePath(`/admin/pendaftar/${participantId}`);
     revalidatePath('/admin/pendaftar');
-    if (intent === 'decide' || intent === 'cancel' || intent === 'restore') {
+    if (intent === 'decide' || intent === 'undecide' || intent === 'cancel' || intent === 'restore') {
       revalidatePath('/pendaftaran');
       revalidatePath('/');
     }

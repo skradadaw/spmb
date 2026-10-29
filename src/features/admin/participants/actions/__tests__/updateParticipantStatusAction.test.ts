@@ -19,6 +19,7 @@ vi.mock('@/features/registration/server/supabaseAdmin', () => ({
       const writeChain = {
         eq: (column: string, value: unknown) => { mocks.filters.push([`eq:${column}`, value]); return writeChain; },
         in: (column: string, value: unknown) => { mocks.filters.push([`in:${column}`, value]); return writeChain; },
+        is: (column: string, value: unknown) => { mocks.filters.push([`is:${column}`, value]); return writeChain; },
         select: () => ({ maybeSingle: mocks.writeMaybeSingle }),
       };
       return {
@@ -121,6 +122,33 @@ describe('updateParticipantStatusAction', () => {
     const result = await updateParticipantStatusAction(idle, form('unattend'));
     expect(result).toEqual({ status: 'error', message: 'Status pendaftar sudah berubah. Muat ulang halaman lalu coba lagi.' });
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('returns an unannounced acceptance to Sudah OKB, clearing the placement and Nomor VA', async () => {
+    const result = await updateParticipantStatusAction(idle, form('undecide'));
+
+    expect(result).toEqual({ status: 'success', message: 'Keputusan dibatalkan. Pendaftar kembali Sudah OKB.' });
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Sudah OKB', kelas_penempatan: null, nomor_va: null });
+    expect(mocks.filters).toContainEqual(['eq:status', 'Diterima']);
+    expect(mocks.filters).toContainEqual(['is:diumumkan_pada', null]);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/pendaftaran');
+  });
+
+  it('asks to withdraw the announcement before returning an announced acceptance to Sudah OKB', async () => {
+    mocks.writeMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mocks.readMaybeSingle.mockResolvedValue({ data: { status: 'Diterima', diumumkan_pada: '2027-02-09T01:00:00Z' }, error: null });
+
+    const result = await updateParticipantStatusAction(idle, form('undecide'));
+    expect(result).toEqual({ status: 'error', message: 'Hasil sudah diumumkan. Tarik pengumuman terlebih dahulu, lalu kembalikan ke Sudah OKB.' });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('does not return an applicant to Sudah OKB once no longer Diterima', async () => {
+    mocks.writeMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mocks.readMaybeSingle.mockResolvedValue({ data: { status: 'Ditolak', diumumkan_pada: null }, error: null });
+
+    const result = await updateParticipantStatusAction(idle, form('undecide'));
+    expect(result).toEqual({ status: 'error', message: 'Status pendaftar sudah berubah. Muat ulang halaman lalu coba lagi.' });
   });
 
   it('cancels an accepted applicant and remembers the previous status', async () => {

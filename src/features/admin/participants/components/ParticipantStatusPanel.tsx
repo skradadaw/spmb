@@ -3,7 +3,7 @@
 import { useActionState, useState, type ReactNode } from 'react';
 import { format, parse, isValid } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { CalendarCheck, CalendarClock, CalendarDays, CalendarX2, Check, ChevronDown, Download, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
+import { CalendarCheck, CalendarClock, CalendarDays, CalendarX2, Check, ChevronDown, Download, Pencil, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { FormSelect } from '@/features/admin/components/FormSelect';
-import { ADMIN_DANGER_BUTTON, ADMIN_DANGER_SOLID_BUTTON, ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
+import { ADMIN_ACTIONS, ADMIN_DANGER_BUTTON, ADMIN_DANGER_SOLID_BUTTON, ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON, ADMIN_SECTION_TITLE } from '@/features/admin/components/adminStyles';
 import { OKB_WAVES, okbWaveLabel } from '@/features/admin/okbWave';
 import { CLASS_OPTIONS } from '@/features/registration/classCapacity';
 import { CANCELLABLE_STATUSES } from '../contracts';
@@ -66,10 +66,17 @@ function currentStep(status: string) {
 export function ParticipantStatusPanel({ participantId, status, previousStatus, jadwalTanggal, jadwalGelombang, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
   const [state, formAction, pending] = useActionState(updateParticipantStatusAction, initialState);
   const [rescheduling, setRescheduling] = useState(false);
+  const [editingDecision, setEditingDecision] = useState(false);
+  // Close the decision editor once a save succeeds (adjusting state on a new action result).
+  const [seenState, setSeenState] = useState(state);
+  if (state !== seenState) {
+    setSeenState(state);
+    if (state.status === 'success') setEditingDecision(false);
+  }
   const cancelled = status === 'Dibatalkan';
   const canCancel = (CANCELLABLE_STATUSES as readonly string[]).includes(status);
   const hasSchedule = Boolean(jadwalTanggal || jadwalGelombang);
-  const canDecide = status === 'Sudah OKB' || status === 'Diterima' || status === 'Ditolak';
+  const decided = status === 'Diterima' || status === 'Ditolak';
 
   return (
     <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
@@ -102,30 +109,30 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
         )}
 
         {status === 'Terjadwal OKB' && (
-          <div className="flex flex-wrap gap-2">
+          <div className={ADMIN_ACTIONS}>
+            <ConfirmDialog
+              participantId={participantId}
+              intent="unschedule"
+              trigger={<><CalendarX2 aria-hidden="true" className="size-3.5" />Hapus jadwal</>}
+              triggerClassName={ADMIN_DANGER_BUTTON}
+              title="Hapus Jadwal OKB?"
+              description="Tanggal dan Gelombang OKB dikosongkan, lalu pendaftar kembali Terverifikasi dan perlu dijadwalkan lagi. Kursinya tetap terpakai."
+              confirmLabel="Ya, hapus jadwal"
+              confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
+              pending={pending}
+              formAction={formAction}
+            />
+            {!rescheduling && (
+              <Button type="button" onClick={() => setRescheduling(true)} className={ADMIN_SECONDARY_BUTTON}>
+                <CalendarClock aria-hidden="true" className="size-3.5" />Jadwalkan ulang
+              </Button>
+            )}
             <form action={formAction}>
               <input type="hidden" name="participantId" value={participantId} />
               <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
                 <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
               </Button>
             </form>
-            {!rescheduling && (
-              <Button type="button" onClick={() => setRescheduling(true)} className={ADMIN_SECONDARY_BUTTON}>
-                <CalendarClock aria-hidden="true" className="size-3.5" />Jadwalkan ulang
-              </Button>
-            )}
-            <ConfirmDialog
-              participantId={participantId}
-              intent="unschedule"
-              trigger={<><CalendarX2 aria-hidden="true" className="size-3.5" />Hapus jadwal</>}
-              triggerClassName={ADMIN_SECONDARY_BUTTON}
-              title="Hapus Jadwal OKB?"
-              description="Tanggal dan Gelombang OKB dikosongkan, lalu pendaftar kembali Terverifikasi dan perlu dijadwalkan lagi. Kursinya tetap terpakai."
-              confirmLabel="Ya, hapus jadwal"
-              confirmClassName={ADMIN_PRIMARY_BUTTON}
-              pending={pending}
-              formAction={formAction}
-            />
           </div>
         )}
 
@@ -142,40 +149,24 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
         )}
 
         {status === 'Sudah OKB' && (
-          <ConfirmDialog
-            participantId={participantId}
-            intent="unattend"
-            trigger={<><UserX aria-hidden="true" className="size-3.5" />Batalkan kehadiran</>}
-            triggerClassName={ADMIN_SECONDARY_BUTTON}
-            title="Batalkan kehadiran OKB?"
-            description="Gunakan bila kehadiran tercatat karena salah scan. Pendaftar kembali Terjadwal OKB dengan tanggal dan Gelombang yang sama."
-            confirmLabel="Ya, batalkan kehadiran"
-            confirmClassName={ADMIN_PRIMARY_BUTTON}
-            pending={pending}
-            formAction={formAction}
-          />
+          <div className={ADMIN_ACTIONS}>
+            <ConfirmDialog
+              participantId={participantId}
+              intent="unattend"
+              trigger={<><UserX aria-hidden="true" className="size-3.5" />Batalkan kehadiran</>}
+              triggerClassName={ADMIN_DANGER_BUTTON}
+              title="Batalkan kehadiran OKB?"
+              description="Gunakan bila kehadiran tercatat karena salah scan. Pendaftar kembali Terjadwal OKB dengan tanggal dan Gelombang yang sama."
+              confirmLabel="Ya, batalkan kehadiran"
+              confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
+              pending={pending}
+              formAction={formAction}
+            />
+          </div>
         )}
 
-        {status === 'Diterima' && kelasPenempatan && (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900">
-            Kelas Penempatan: <span className="font-semibold">{kelasPenempatan}</span>
-            {pilihanKelas && pilihanKelas !== kelasPenempatan && <span className="text-emerald-900/70"> (Pilihan Kelas: {pilihanKelas})</span>}
-          </p>
-        )}
-
-        {status === 'Diterima' && <NomorVaForm participantId={participantId} nomorVa={nomorVa} locked={Boolean(diumumkanPada)} />}
-
-        {status === 'Diterima' && nomorVa && (
-          <a href={`/admin/pendaftar/${participantId}/surat-penerimaan`} download className={cn(ADMIN_SECONDARY_BUTTON, 'inline-flex items-center gap-1.5')}>
-            <Download aria-hidden="true" className="size-3.5" />Unduh Surat Penerimaan
-          </a>
-        )}
-
-        {(status === 'Diterima' || status === 'Ditolak') && (
-          <AnnouncementControl participantId={participantId} status={status} diumumkanPada={diumumkanPada} />
-        )}
-
-        {canDecide && (
+        {/* Keputusan, lalu Nomor VA, lalu Pengumuman: urutan kerja admin dari atas ke bawah. */}
+        {(status === 'Sudah OKB' || (decided && editingDecision)) && (
           <DecisionForm
             participantId={participantId}
             status={status}
@@ -184,13 +175,35 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
             announced={Boolean(diumumkanPada)}
             pending={pending}
             formAction={formAction}
+            onCancel={decided ? () => setEditingDecision(false) : undefined}
           />
         )}
 
+        {decided && !editingDecision && (
+          <DecisionSummary
+            participantId={participantId}
+            status={status}
+            pilihanKelas={pilihanKelas}
+            kelasPenempatan={kelasPenempatan}
+            announced={Boolean(diumumkanPada)}
+            pending={pending}
+            formAction={formAction}
+            onEdit={() => setEditingDecision(true)}
+          />
+        )}
+
+        {status === 'Diterima' && (
+          <NomorVaForm participantId={participantId} nomorVa={nomorVa} locked={Boolean(diumumkanPada)} />
+        )}
+
+        {decided && (
+          <AnnouncementControl participantId={participantId} status={status} diumumkanPada={diumumkanPada} />
+        )}
+
         {cancelled && (
-          <form action={formAction}>
+          <form action={formAction} className={ADMIN_ACTIONS}>
             <input type="hidden" name="participantId" value={participantId} />
-            <Button type="submit" name="intent" value="restore" disabled={pending} className={ADMIN_SECONDARY_BUTTON}>
+            <Button type="submit" name="intent" value="restore" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
               <RotateCcw aria-hidden="true" className="size-3.5" />Pulihkan ke {previousStatus ?? 'Menunggu Verifikasi'}
             </Button>
           </form>
@@ -203,7 +216,7 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
         )}
 
         {canCancel && (
-          <div className="border-t border-slate-200 pt-3">
+          <div className={cn(ADMIN_ACTIONS, 'border-t border-slate-200 pt-3')}>
             <ConfirmDialog
               participantId={participantId}
               intent="cancel"
@@ -280,11 +293,11 @@ function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, pe
           />
         </div>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className={cn(ADMIN_ACTIONS, 'border-t border-slate-100 pt-3')}>
+        {onCancel && <Button type="button" onClick={onCancel} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>}
         <Button type="submit" name="intent" value="schedule" disabled={pending || !tanggal || !gelombang} className={ADMIN_PRIMARY_BUTTON}>
           <CalendarCheck aria-hidden="true" className="size-3.5" />Simpan jadwal
         </Button>
-        {onCancel && <Button type="button" onClick={onCancel} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>}
       </div>
     </form>
   );
@@ -342,7 +355,72 @@ function DateField({ id, name, value, placeholder, onChange }: {
   );
 }
 
-function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, announced, pending, formAction }: {
+/** The two outcomes as option cards; the chosen one takes its outcome's colour. */
+const DECISION_OPTIONS = [
+  { value: 'Diterima', icon: UserCheck, selectedClass: 'border-emerald-300 bg-emerald-50 text-emerald-800', iconClass: 'text-emerald-600', radioClass: '' },
+  { value: 'Ditolak', icon: UserX, selectedClass: 'border-rose-300 bg-rose-50 text-rose-800', iconClass: 'text-rose-600', radioClass: 'data-checked:border-rose-600 data-checked:bg-rose-600' },
+] as const;
+
+/** The recorded decision at a glance, with its two corrections: change it, or (before announcing) undo it. */
+function DecisionSummary({ participantId, status, pilihanKelas, kelasPenempatan, announced, pending, formAction, onEdit }: {
+  participantId: string;
+  status: string;
+  pilihanKelas: string | null;
+  kelasPenempatan: string | null;
+  announced: boolean;
+  pending: boolean;
+  formAction: FormAction;
+  onEdit: () => void;
+}) {
+  const accepted = status === 'Diterima';
+  const Icon = accepted ? UserCheck : UserX;
+  return (
+    <section aria-label="Keputusan Penerimaan" className="space-y-3 rounded-xl border border-slate-200 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className={ADMIN_SECTION_TITLE}>Keputusan Penerimaan</h3>
+        <span className={cn(
+          'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset',
+          accepted ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-rose-50 text-rose-800 ring-rose-200',
+        )}>
+          <Icon aria-hidden="true" className="size-3.5" />{status}
+        </span>
+      </div>
+      {accepted && (
+        <dl className="grid grid-cols-2 divide-x divide-slate-100 overflow-hidden rounded-lg border border-slate-200">
+          <div className="px-3 py-2">
+            <dt className="text-[11px] font-medium text-slate-500">Kelas Penempatan</dt>
+            <dd className="mt-0.5 text-sm font-semibold text-slate-950">{kelasPenempatan ?? 'Belum diisi'}</dd>
+          </div>
+          <div className="px-3 py-2">
+            <dt className="text-[11px] font-medium text-slate-500">Pilihan Kelas</dt>
+            <dd className="mt-0.5 text-sm font-medium text-slate-700">{pilihanKelas ?? '-'}</dd>
+          </div>
+        </dl>
+      )}
+      <div className={ADMIN_ACTIONS}>
+        {accepted && !announced && (
+          <ConfirmDialog
+            participantId={participantId}
+            intent="undecide"
+            trigger={<><RotateCcw aria-hidden="true" className="size-3.5" />Kembalikan ke Sudah OKB</>}
+            triggerClassName={ADMIN_DANGER_BUTTON}
+            title="Kembalikan ke Sudah OKB?"
+            description="Gunakan bila keputusan Diterima tercatat terlalu dini. Kelas Penempatan dan Nomor VA dikosongkan, lalu Keputusan Penerimaan dapat dicatat ulang."
+            confirmLabel="Ya, kembalikan"
+            confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
+            pending={pending}
+            formAction={formAction}
+          />
+        )}
+        <Button type="button" onClick={onEdit} className={ADMIN_SECONDARY_BUTTON}>
+          <Pencil aria-hidden="true" className="size-3.5" />Ubah keputusan
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, announced, pending, formAction, onCancel }: {
   participantId: string;
   status: string;
   pilihanKelas: string | null;
@@ -351,6 +429,8 @@ function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, an
   announced: boolean;
   pending: boolean;
   formAction: FormAction;
+  /** Set while correcting a recorded decision: closes the form without saving. */
+  onCancel?: () => void;
 }) {
   const [keputusan, setKeputusan] = useState(status === 'Diterima' || status === 'Ditolak' ? status : '');
   const [kelas, setKelas] = useState(kelasPenempatan ?? (CLASS_OPTIONS as readonly string[]).find((option) => option === pilihanKelas) ?? '');
@@ -358,15 +438,22 @@ function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, an
   const formId = `decision-${participantId}`;
 
   return (
-    <form id={formId} action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
+    <form id={formId} action={formAction} className="space-y-4 rounded-xl border border-slate-200 p-3">
       <input type="hidden" name="participantId" value={participantId} />
       <input type="hidden" name="keputusan" value={keputusan} />
       <h3 className={ADMIN_SECTION_TITLE}>{status === 'Sudah OKB' ? 'Keputusan Penerimaan' : 'Ubah Keputusan Penerimaan'}</h3>
-      <RadioGroup value={keputusan} onValueChange={(value) => setKeputusan(String(value))} aria-label="Keputusan" className="flex flex-wrap gap-5">
-        {(['Diterima', 'Ditolak'] as const).map((option) => (
-          <Label key={option} className="cursor-pointer gap-2 text-sm font-normal text-slate-800">
-            <RadioGroupItem value={option} />
-            {option}
+      <RadioGroup value={keputusan} onValueChange={(value) => setKeputusan(String(value))} aria-label="Keputusan" className="grid grid-cols-2 gap-2">
+        {DECISION_OPTIONS.map(({ value, icon: Icon, selectedClass, iconClass, radioClass }) => (
+          <Label
+            key={value}
+            className={cn(
+              'h-10 cursor-pointer gap-2 rounded-lg border px-3 text-sm font-medium transition-colors',
+              keputusan === value ? selectedClass : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+            )}
+          >
+            <RadioGroupItem value={value} className={radioClass} />
+            {value}
+            <Icon aria-hidden="true" className={cn('ml-auto size-4', keputusan === value ? iconClass : 'text-slate-300')} />
           </Label>
         ))}
       </RadioGroup>
@@ -377,35 +464,51 @@ function DecisionForm({ participantId, status, pilihanKelas, kelasPenempatan, an
           name="kelasPenempatan"
           value={kelas}
           placeholder="Pilih kelas"
-          options={CLASS_OPTIONS.map((option) => ({ value: option, label: option === pilihanKelas ? `${option} (Pilihan Kelas)` : option }))}
+          options={CLASS_OPTIONS.map((option) => ({ value: option, label: option, hint: option === pilihanKelas ? '(Pilihan Kelas)' : undefined }))}
           onChange={setKelas}
           className={ADMIN_FIELD}
         />
       </div>
-      {announced ? (
-        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <AlertDialogTrigger render={<Button type="button" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON} />}>Simpan keputusan</AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Ubah keputusan yang sudah diumumkan?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Hasil pendaftar ini sudah diumumkan. Orang tua akan langsung melihat keputusan dan Kelas Penempatan yang baru di halaman Cek Hasil OKB.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Kembali</AlertDialogCancel>
-              <Button type="submit" form={formId} name="intent" value="decide" disabled={pending} onClick={() => setConfirmOpen(false)} className={ADMIN_PRIMARY_BUTTON}>Ya, simpan keputusan</Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      ) : (
-        <Button type="submit" name="intent" value="decide" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON}>Simpan keputusan</Button>
-      )}
+      <div className={cn(ADMIN_ACTIONS, 'border-t border-slate-100 pt-3')}>
+        {onCancel && <Button type="button" onClick={onCancel} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>}
+        {announced ? (
+          <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <AlertDialogTrigger render={<Button type="button" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON} />}>
+              <Check aria-hidden="true" className="size-3.5" />Simpan keputusan
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Ubah keputusan yang sudah diumumkan?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Hasil pendaftar ini sudah diumumkan. Orang tua akan langsung melihat keputusan dan Kelas Penempatan yang baru di halaman Cek Hasil OKB.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Kembali</AlertDialogCancel>
+                <Button type="submit" form={formId} name="intent" value="decide" disabled={pending} onClick={() => setConfirmOpen(false)} className={ADMIN_PRIMARY_BUTTON}>Ya, simpan keputusan</Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        ) : (
+          <Button type="submit" name="intent" value="decide" disabled={pending || !keputusan} className={ADMIN_PRIMARY_BUTTON}>
+            <Check aria-hidden="true" className="size-3.5" />Simpan keputusan
+          </Button>
+        )}
+      </div>
     </form>
   );
 }
 
 const initialNomorVaState: SaveNomorVaState = { status: 'idle', message: '' };
+
+/** The Surat Penerimaan needs the Nomor VA, so it is offered beside it, even before announcing. */
+function LetterDownloadLink({ participantId }: { participantId: string }) {
+  return (
+    <a href={`/admin/pendaftar/${participantId}/surat-penerimaan`} download className={cn(ADMIN_SECONDARY_BUTTON, 'inline-flex items-center gap-1.5')}>
+      <Download aria-hidden="true" className="size-3.5" />Unduh Surat Penerimaan
+    </a>
+  );
+}
 
 /** Nomor VA dari bank untuk Pendaftar Diterima; spasi dan tanda hubung dibuang saat disimpan. */
 function NomorVaForm({ participantId, nomorVa, locked }: { participantId: string; nomorVa: string | null; locked: boolean }) {
@@ -413,10 +516,13 @@ function NomorVaForm({ participantId, nomorVa, locked }: { participantId: string
   // Setelah diumumkan, orang tua mungkin sudah memakai Nomor VA ini; mengubahnya perlu menarik pengumuman dulu.
   if (locked) {
     return (
-      <div className="space-y-1 rounded-xl border border-slate-200 p-3">
+      <div className="space-y-2 rounded-xl border border-slate-200 p-3">
         <p className={ADMIN_SECTION_TITLE}>Nomor VA</p>
-        <p data-nomor-va className="font-mono text-sm font-semibold tabular-nums text-slate-950">{nomorVa ?? 'Belum diisi'}</p>
-        <p className="text-[11px] leading-4 text-slate-500">Terkunci karena hasil sudah diumumkan. Tarik pengumuman untuk mengubahnya.</p>
+        <div className="space-y-1">
+          <p data-nomor-va className="font-mono text-sm font-semibold tabular-nums text-slate-950">{nomorVa ?? 'Belum diisi'}</p>
+          <p className="text-[11px] leading-4 text-slate-500">Terkunci karena hasil sudah diumumkan. Tarik pengumuman untuk mengubahnya.</p>
+        </div>
+        {nomorVa && <div className={ADMIN_ACTIONS}><LetterDownloadLink participantId={participantId} /></div>}
       </div>
     );
   }
@@ -438,9 +544,11 @@ function NomorVaForm({ participantId, nomorVa, locked }: { participantId: string
         placeholder={`${NOMOR_VA_LENGTH} digit dari bank`}
         className={cn(ADMIN_FIELD, 'font-mono tabular-nums')}
       />
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>Simpan Nomor VA</Button>
-        {nomorVa && <Button type="submit" name="clear" value="1" disabled={pending} className={ADMIN_SECONDARY_BUTTON}>Kosongkan</Button>}
+      <div className={ADMIN_ACTIONS}>
+        {/* Simpan comes first in the DOM so Enter saves rather than clears; order-last keeps it rightmost. */}
+        <Button type="submit" disabled={pending} className={cn(ADMIN_PRIMARY_BUTTON, 'order-last')}>Simpan Nomor VA</Button>
+        {nomorVa && <Button type="submit" name="clear" value="1" disabled={pending} className={ADMIN_DANGER_BUTTON}>Kosongkan</Button>}
+        {nomorVa && <LetterDownloadLink participantId={participantId} />}
       </div>
       {state.message && (
         <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>

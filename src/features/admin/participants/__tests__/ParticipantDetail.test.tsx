@@ -260,7 +260,8 @@ describe('ParticipantDetail', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Sudah OKB', registration: { jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Tahfizh' } }} />);
     expect(screen.getByText('Keputusan Penerimaan')).toBeDefined();
     expect((document.querySelector('input[name="kelasPenempatan"]') as HTMLInputElement).value).toBe('Tahfizh');
-    expect(screen.getByLabelText('Kelas Penempatan (wajib jika Diterima)').textContent).toContain('Tahfizh (Pilihan Kelas)');
+    // The "(Pilihan Kelas)" note belongs to the option list only, never to the chosen value in the field.
+    expect(screen.getByLabelText('Kelas Penempatan (wajib jika Diterima)').textContent).toBe('Tahfizh');
     expect(screen.getByRole('button', { name: 'Simpan keputusan' })).toBeDefined();
   });
 
@@ -271,8 +272,15 @@ describe('ParticipantDetail', () => {
       registration: { jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Tahfizh' },
       decision: { kelasPenempatan: 'Reguler' },
     }} />);
-    expect(screen.getByText('(Pilihan Kelas: Tahfizh)', { exact: false })).toBeDefined();
+    const summary = screen.getByRole('region', { name: 'Keputusan Penerimaan' });
+    expect(within(summary).getByText('Kelas Penempatan').nextElementSibling?.textContent).toBe('Reguler');
+    expect(within(summary).getByText('Pilihan Kelas').nextElementSibling?.textContent).toBe('Tahfizh');
+    // The decision form stays closed until the admin chooses to change the decision.
+    expect(screen.queryByText('Ubah Keputusan Penerimaan')).toBeNull();
+    fireEvent.click(within(summary).getByRole('button', { name: 'Ubah keputusan' }));
     expect(screen.getByText('Ubah Keputusan Penerimaan')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Batal' }));
+    expect(screen.queryByText('Ubah Keputusan Penerimaan')).toBeNull();
   });
 
   it('asks for the Nomor VA only once the Pendaftar is Diterima', () => {
@@ -322,10 +330,12 @@ describe('ParticipantDetail', () => {
   it('asks for confirmation before changing a decision parents can already see', () => {
     const decided = { ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' }, nomorVa: '7456012627300120' };
     const { unmount } = render(<ParticipantDetail participant={decided} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ubah keputusan' }));
     expect((screen.getByRole('button', { name: 'Simpan keputusan' }) as HTMLButtonElement).type).toBe('submit');
     unmount();
 
     render(<ParticipantDetail participant={{ ...decided, diumumkanPada: '2027-02-09T01:00:00Z' }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ubah keputusan' }));
     const save = screen.getByRole('button', { name: 'Simpan keputusan' }) as HTMLButtonElement;
     expect(save.type).toBe('button');
     fireEvent.click(save);
@@ -348,11 +358,20 @@ describe('ParticipantDetail', () => {
     expect(text).toContain('OB-2027-001');
   });
 
+  it('offers returning an unannounced acceptance to Sudah OKB behind a confirmation', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' } }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Kembalikan ke Sudah OKB' }));
+    expect(screen.getByText('Kembalikan ke Sudah OKB?')).toBeDefined();
+    expect((screen.getByRole('button', { name: 'Ya, kembalikan' }) as HTMLButtonElement).value).toBe('undecide');
+  });
+
   it('locks the Nomor VA and offers withdrawing once the result is announced', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Diterima', decision: { kelasPenempatan: 'Reguler' }, nomorVa: '7456012627300120', diumumkanPada: '2027-02-09T01:00:00Z' }} />);
     expect(screen.queryByLabelText('Nomor VA')).toBeNull();
     expect(document.querySelector('[data-nomor-va]')?.textContent).toBe('7456012627300120');
     expect(screen.getByText(/Terkunci karena hasil sudah diumumkan/)).toBeDefined();
+    // Parents already see the result, so it cannot be undone until the announcement is withdrawn.
+    expect(screen.queryByRole('button', { name: 'Kembalikan ke Sudah OKB' })).toBeNull();
     const section = document.querySelector('[data-announcement]') as HTMLElement;
     expect(within(section).getByText(/^Diumumkan 9 Feb 2027/)).toBeDefined();
     fireEvent.click(within(section).getByRole('button', { name: 'Tarik pengumuman' }));

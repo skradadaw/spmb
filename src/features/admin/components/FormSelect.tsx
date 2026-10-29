@@ -3,7 +3,8 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
-export type FormSelectOption = { value: string; label: string };
+/** hint: a note shown beside the option in the list only, never in the closed field. */
+export type FormSelectOption = { value: string; label: string; hint?: string };
 
 // Radix Select reserves the empty string, so "no value" options travel under this placeholder value.
 const EMPTY = '__empty__';
@@ -23,7 +24,7 @@ export function FormSelect({ id, name, value, options, placeholder = 'Pilih', in
   className?: string;
 }) {
   const known = options.some((option) => option.value === value);
-  const items = value && !known ? [{ value, label: value }, ...options] : options;
+  const items: readonly FormSelectOption[] = value && !known ? [{ value, label: value }, ...options] : options;
   return (
     <>
       <input type="hidden" name={name} value={value} />
@@ -33,7 +34,7 @@ export function FormSelect({ id, name, value, options, placeholder = 'Pilih', in
         </SelectTrigger>
         <SelectContent>
           {items.map((option) => (
-            <SelectItem key={option.value || EMPTY} value={option.value || EMPTY}>{option.label}</SelectItem>
+            <SelectItem key={option.value || EMPTY} value={option.value || EMPTY} hint={option.hint}>{option.label}</SelectItem>
           ))}
         </SelectContent>
       </Select>
