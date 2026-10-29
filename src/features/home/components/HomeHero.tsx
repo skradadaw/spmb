@@ -4,18 +4,20 @@ import {
   ArrowRight,
   BookOpen,
   CalendarDays,
-  CircleArrowRight,
   ClipboardCheck,
   GraduationCap,
-  LockKeyhole,
   Sparkles,
+  UserRound,
   WalletCards,
 } from 'lucide-react';
 import { navigationItems, registrationInfo } from '@/features/home/data';
-import { ButtonLink } from '@/components/ui/button-link';
 import MobileNavigation from './MobileNavigation';
 import SectionWave from './SectionWave';
 import { actionClass } from './actionStyles';
+
+/** Header buttons: quiet, flat and at the nav links' height and weight, so the bar reads as one row. */
+const HEADER_ACTION =
+  'tap-press inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-public-green motion-reduce:transition-none';
 
 export function HomeHeader() {
   return (
@@ -60,18 +62,26 @@ export function HomeHeader() {
         </nav>
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          <ButtonLink
-            variant="ghost"
+          <Link
             href="/login"
             aria-label="Login Panitia"
-            className="h-11 min-w-11 gap-2 rounded-none border-transparent bg-transparent px-2.5 font-semibold whitespace-nowrap text-slate-600 shadow-none hover:border-transparent hover:bg-transparent hover:text-slate-950 focus-visible:border-transparent focus-visible:ring-slate-400/25 sm:ml-1 sm:border-l sm:border-l-slate-200 sm:pl-5 sm:pr-3"
+            title="Login Panitia"
+            className={`${HEADER_ACTION} text-slate-700 ring-1 ring-inset ring-public-deep/15 hover:bg-public-tint hover:text-public-deep active:bg-public-tint`}
           >
-            <LockKeyhole aria-hidden="true" className="size-4 text-slate-600" strokeWidth={2.2} />
-            <span className="hidden sm:inline">Login Panitia</span>
-          </ButtonLink>
-          <Link href="/pendaftaran" aria-label="Daftar Sekarang" className={actionClass('primary', 'sm')}>
-            <CircleArrowRight aria-hidden="true" className="text-amber-100" strokeWidth={2.4} />
+            <UserRound aria-hidden="true" className="size-4" strokeWidth={2.4} />
+            Login
+          </Link>
+          <Link
+            href="/pendaftaran"
+            aria-label="Daftar Sekarang"
+            className={`group ${HEADER_ACTION} bg-public-green text-white shadow-sm shadow-public-green/20 hover:bg-public-green-hover active:bg-public-green-hover`}
+          >
             Daftar Sekarang
+            <ArrowRight
+              aria-hidden="true"
+              className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+              strokeWidth={2.4}
+            />
           </Link>
         </div>
 
@@ -230,10 +240,10 @@ export default function HomeHero({ usedSeats }: { usedSeats: number | null }) {
               Mulai Pendaftaran <ArrowRight aria-hidden="true" />
             </Link>
             <a
-              href="#jadwal"
+              href="/hasil-okb"
               className={actionClass('outlineOnDeep')}
             >
-              Lihat jadwal penting
+              Cek Hasil OKB
             </a>
           </div>
 

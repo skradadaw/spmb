@@ -79,22 +79,17 @@ describe('Open Booking landing page', () => {
     );
     expect(within(main).getByRole('heading', { level: 1 })).toBeDefined();
     expect(screen.getAllByRole('link', { name: /mulai pendaftaran/i })).toHaveLength(2);
-    const loginLink = screen.getByRole('link', { name: 'Login Panitia' });
-    expect(loginLink.getAttribute('href')).toBe('/login');
-    expect(loginLink.getAttribute('data-slot')).toBe('button');
-    expect(loginLink.closest('button')).toBeNull();
-
     const header = screen.getByRole('banner');
     expect(header.className).toContain('bg-white/90');
-    expect(within(header).getByRole('link', { name: 'Login Panitia' }).className).toContain(
-      'border-l',
-    );
+    // Login Panitia sits beside Daftar Sekarang, labelled just "Login".
+    const loginLink = within(header).getByRole('link', { name: 'Login Panitia' });
+    expect(loginLink.getAttribute('href')).toBe('/login');
+    expect(loginLink.textContent).toBe('Login');
+    expect(loginLink.closest('button')).toBeNull();
+
     const headerRegistrationLink = within(header).getByRole('link', { name: 'Daftar Sekarang' });
-    expect(headerRegistrationLink.className).toContain('rounded-xl');
+    expect(headerRegistrationLink.className).toContain('rounded-lg');
     expect(headerRegistrationLink.className).toContain('bg-public-green');
-    expect(within(header).getByRole('link', { name: 'Login Panitia' }).className).toContain(
-      'sm:border-l-slate-200',
-    );
   });
 
   it('opens and closes the accessible mobile navigation', () => {
