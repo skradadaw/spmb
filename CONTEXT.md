@@ -63,8 +63,8 @@ Dokumen PDF yang diterima orang tua saat pendaftaran berhasil, memuat Nomor Pend
 _Avoid_: kartu peserta, tiket
 
 **Name Tag** (*Name Tag*):
-Kartu berkalung yang dicetak admin sebelum hari OKB dan dikalungkan kepada Pendaftar saat datang OKB, memuat nama anak, Ruang OKB, dan tiga kotak ceklis untuk menandai Tes OKB yang sudah diikuti. Ceklisnya hanya ada di kartu dan tidak dicatat di sistem.
-_Avoid_: kartu peserta, ID card
+Kartu berkalung yang dicetak admin sebelum hari OKB dan dikalungkan kepada Pendaftar saat datang OKB, memuat nama anak, Ruang OKB, dan tiga kotak yang ditempeli stiker bintang oleh panitia untuk menandai Tes OKB yang sudah diikuti. Tandanya hanya ada di kartu dan tidak dicatat di sistem. Judul yang tercetak di kartunya adalah "Kartu Peserta", tetapi di sistem dan teks lain tetap disebut Name Tag.
+_Avoid_: kartu peserta, ID card (selain sebagai judul cetak di kartu)
 
 **Jenis Pendaftaran** (*Registration Type*):
 Pembeda antara **Siswa Baru** (masuk kelas 1, dihitung dalam Kuota) dan **Pindahan** (pindah dari sekolah lain ke kelas yang lebih tinggi, tidak dihitung dalam Kuota dan tidak dibatasi jumlahnya oleh sistem).

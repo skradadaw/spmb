@@ -24,9 +24,9 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
 - Pendaftar tanpa Ruang OKB tidak dapat dicetak, dan admin melihat jumlahnya sebelum mengunduh.
 
 **Isi kartu**
-- Kartu portrait berisi logo dan nama sekolah, nama anak dalam satu baris, Ruang OKB, serta tiga kotak ceklis berlabel Literasi, Numerasi, dan Tahsin.
+- Kartu portrait berjudul "Kartu Peserta" berisi logo dan nama sekolah, Tahun Pelajaran, Ruang OKB, nama anak dalam satu baris, tiga kotak stiker berlabel Literasi, Numerasi, dan Tahsin, serta alamat sekolah.
 - Nama yang tidak muat disingkat dari akhir mengikuti pola EYD, misalnya `Muhammad Abdurrahman A.R.`.
-- Ceklis ditandai di kertas dan tidak dicatat di sistem.
+- Panitia menempelkan stiker bintang di kotak, dan tandanya tidak dicatat di sistem.
 
 ## User Stories
 
@@ -71,7 +71,7 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
 
 32. Sebagai penguji, saya ingin melihat nama anak dalam huruf besar, agar bisa memanggilnya dari jarak dekat.
 33. Sebagai panitia, saya ingin melihat Ruang OKB di kartu, agar bisa mengarahkan anak ke ruangan yang benar.
-34. Sebagai penguji, saya ingin tiga kotak yang cukup besar untuk ditandai dengan pulpen, agar tes yang sudah diikuti mudah terlihat.
+34. Sebagai penguji, saya ingin tiga kotak kecil yang pas untuk stiker bintang, agar tes yang sudah diikuti mudah terlihat.
 35. Sebagai penguji, saya ingin setiap kotak berlabel Literasi, Numerasi, atau Tahsin, agar tidak salah menandai tes.
 36. Sebagai panitia, saya ingin nama selalu satu baris, agar semua kartu rapi dan seragam.
 37. Sebagai panitia, saya ingin nama panjang disingkat dari akhir, agar bagian awal nama tetap terbaca.
@@ -143,10 +143,11 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
 
 - Gambar berupa PNG portrait dengan proporsi 8,5 × 11 cm dan resolusi 300 dpi, sekitar 1004 × 1299 piksel.
 - Ada ruang kosong di tepi, agar isi kartu tidak terpotong saat ukuran disesuaikan di Word.
-- Urutan isi dari atas ke bawah: logo dan nama sekolah, nama anak, Ruang OKB, lalu tiga kotak ceklis.
-- Warnanya mengikuti hijau sekolah seperti Bukti Pendaftaran.
+- Urutan isi dari atas ke bawah: logo kecil dan nama sekolah, judul "KARTU PESERTA", "OBSERVASI KESIAPAN BELAJAR (OKB)", Tahun Pelajaran, logo bulat besar, Ruang OKB, nama anak, tiga kotak stiker, lalu alamat sekolah.
+- Tahun Pelajaran dan alamat diambil dari informasi pendaftaran yang sudah ada, bukan ditulis tetap di kartu.
+- Tampilannya bertema hutan untuk anak: pohon, burung, pakis, serta singa, panda, dan rusa yang mengintip dari balik kotak stiker, dengan huruf bulat bawaan sistem. Kotak stiker berukuran sekitar 1,3 cm dan tetap polos, agar kotak kosong tidak terlihat sudah terisi.
 - Kotak hanya berlabel Literasi, Numerasi, dan Tahsin, tanpa kolom paraf atau nilai.
-- Kartu tidak memuat Nomor Pendaftaran, Gelombang OKB, tanggal, foto, QR, Pilihan Kelas, atau Tahun Pelajaran.
+- Kartu tidak memuat Nomor Pendaftaran, Gelombang OKB, tanggal, foto anak, QR, Pilihan Kelas, atau asal sekolah.
 - Tidak ada lembar A4 atau garis potong. Penataan cetak dilakukan admin di Word.
 
 ### Aturan menyingkat nama
@@ -180,6 +181,7 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
 ### Istilah
 
 - Teks untuk pengguna dan kode baru mengikuti `CONTEXT.md`: **Name Tag**, **Tes OKB**, dan **Ruang OKB**.
+- "Kartu Peserta" hanya dipakai sebagai judul yang tercetak di kartu.
 
 ## Testing Decisions
 
@@ -239,5 +241,5 @@ Tes yang baik memeriksa perilaku yang terlihat dari luar, bukan cara kode bekerj
 - Ukuran B1 sampai B4 tidak baku antarsumber. Proporsi 8,5 × 11 cm adalah patokan untuk B3. Kalau holder yang dibeli berbeda, proporsi gambar mudah diubah.
 - PNG dari canvas mungkin tidak menyimpan informasi dpi, jadi Word bisa menampilkannya dengan ukuran awal yang tidak sesuai. Ini dapat diterima karena admin memang mengatur ukurannya di Word.
 - Bila Jadwal OKB berubah setelah kartu dicetak, kartu lama masih bisa dipakai selama ruangannya sama, karena kartu tidak memuat jadwal. Admin tetap perlu mengisi ulang Ruang OKB di sistem.
-- Kartu pengganti tidak menyalin ceklis lama, jadi penguji perlu menandainya lagi.
+- Kartu pengganti tidak menyalin stiker lama, jadi panitia perlu menempelkannya lagi.
 - Dua anak bernama sama punya kartu yang sama bila berada di ruangan yang sama. Risiko ini diterima dan ditangani langsung oleh panitia.
