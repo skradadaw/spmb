@@ -168,6 +168,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', 
           </CollapsibleCard>
           <ParticipantStatusPanel
             participantId={participant.id}
+            namaLengkap={participant.identity.namaLengkap ?? ''}
             status={participant.status}
             previousStatus={participant.previousStatus}
             jadwalTanggal={participant.okb.jadwalTanggal ?? null}

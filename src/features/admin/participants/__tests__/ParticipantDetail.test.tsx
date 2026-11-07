@@ -230,6 +230,22 @@ describe('ParticipantDetail', () => {
     expect(screen.getByText('Ruang A')).toBeDefined();
   });
 
+  it.each(['Terjadwal OKB', 'Sudah OKB'])('offers Cetak Name Tag while %s', (status) => {
+    render(<ParticipantDetail participant={{ ...participant, status, okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: 'Ruang A' } }} />);
+    expect((screen.getByRole('button', { name: 'Cetak Name Tag' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('asks for the Ruang OKB before Cetak Name Tag', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB', okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: null } }} />);
+    expect((screen.getByRole('button', { name: 'Cetak Name Tag' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText('Isi Ruang OKB terlebih dahulu untuk mencetak Name Tag.')).toBeDefined();
+  });
+
+  it.each(['Menunggu Verifikasi', 'Terverifikasi', 'Diterima', 'Ditolak', 'Dibatalkan'])('does not offer Cetak Name Tag while %s', (status) => {
+    render(<ParticipantDetail participant={{ ...participant, status, okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: 'Ruang A' } }} />);
+    expect(screen.queryByRole('button', { name: 'Cetak Name Tag' })).toBeNull();
+  });
+
   it('shows no Ruang OKB at all before the applicant is scheduled', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Terverifikasi' }} />);
     expect(screen.queryByText('Ruang OKB')).toBeNull();

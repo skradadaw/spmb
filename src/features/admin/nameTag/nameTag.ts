@@ -1,5 +1,7 @@
 /** Aturan Name Tag tanpa akses database maupun canvas. */
 
+import { formatProperName } from '@/lib/properName';
+
 /** Agar nama ruangan muat di kartu dan nama file. */
 export const RUANG_OKB_MAX_LENGTH = 30;
 
@@ -13,4 +15,61 @@ export function normalizeRuangOkb(value: string) {
 
 export function isValidRuangOkb(value: string) {
   return value.length <= RUANG_OKB_MAX_LENGTH;
+}
+
+/** Formatter nama menulis partikel kecil (`al-Fatih`); di kartu kata berhubung selalu berawal huruf kapital. */
+function formatNameTagName(value: string) {
+  return formatProperName(value)
+    .split(' ')
+    .map(word => (word.includes('-') ? word.charAt(0).toLocaleUpperCase('id-ID') + word.slice(1) : word))
+    .join(' ');
+}
+
+function initialOf(word: string) {
+  const letter = word.match(/[\p{L}\p{N}]/u)?.[0];
+  return letter ? `${letter.toLocaleUpperCase('id-ID')}.` : word;
+}
+
+/** Inisial yang berurutan ditulis tanpa spasi. */
+function joinNameParts(parts: { text: string; initial: boolean }[]) {
+  return parts.reduce((name, part, index) => {
+    if (index === 0) return part.text;
+    return name + (part.initial && parts[index - 1].initial ? '' : ' ') + part.text;
+  }, '');
+}
+
+/**
+ * Nama satu baris untuk kartu: kata disingkat dari akhir dan berhenti begitu muat.
+ * `measure` memberi lebar teks dalam satuan yang sama dengan `maxWidth`.
+ */
+export function abbreviateName(fullName: string, maxWidth: number, measure: (text: string) => number) {
+  const tidied = formatNameTagName(fullName);
+  if (measure(tidied) <= maxWidth) return tidied;
+
+  const parts = tidied.split(' ').map(text => ({ text, initial: false }));
+  for (let index = parts.length - 1; index >= 0; index--) {
+    if (parts[index].text === 'bin' || parts[index].text === 'binti') continue;
+    parts[index] = { text: initialOf(parts[index].text), initial: true };
+    if (measure(joinNameParts(parts)) <= maxWidth) break;
+  }
+  return joinNameParts(parts);
+}
+
+export type NameTagPrintState = 'ready' | 'needs-ruang' | 'unavailable';
+
+/** Cetak satuan: hanya Terjadwal OKB dan Sudah OKB, dan kartu tidak dibuat tanpa ruangan. */
+export function nameTagPrintState(status: string, ruangOkb: string | null): NameTagPrintState {
+  if (!(RUANG_OKB_STATUSES as readonly string[]).includes(status)) return 'unavailable';
+  return normalizeRuangOkb(ruangOkb ?? '') ? 'ready' : 'needs-ruang';
+}
+
+function safeFileNamePart(value: string) {
+  return value.replace(/[\\/:*?"<>|\p{Cc}]/gu, ' ');
+}
+
+/** `<Ruang OKB> - <nama lengkap>.png`, memakai nama yang tidak disingkat. */
+export function nameTagFileName(ruangOkb: string, fullName: string) {
+  const ruang = normalizeRuangOkb(safeFileNamePart(ruangOkb));
+  const name = formatNameTagName(safeFileNamePart(fullName)).slice(0, 80).trim();
+  return `${[ruang, name].filter(Boolean).join(' - ') || 'Name Tag'}.png`;
 }

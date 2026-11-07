@@ -8,8 +8,8 @@ Keputusan yang sudah disepakati ada di spec, bagian Tata letak kartu, Aturan men
 
 **Status:** ready-for-agent
 
-- [ ] Modul Name Tag murni menyingkat nama dari akhir sesuai seluruh contoh di spec, dengan fungsi pengukur lebar teks yang diberikan pemanggil.
-- [ ] `bin`, `binti`, kata berhubung, dan nama pendek ditangani sesuai spec; data tersimpan tidak berubah.
-- [ ] Modul menentukan apakah Pendaftar dapat dicetak satuan, dan membuat nama file yang aman dari Ruang OKB dan nama lengkap.
-- [ ] Penggambar menghasilkan PNG 1004 × 1299 piksel dengan isi dan urutan sesuai spec, tanpa data yang dikecualikan spec.
-- [ ] Detail Pendaftar menampilkan tombol cetak hanya untuk Terjadwal OKB dan Sudah OKB, meminta Ruang OKB diisi bila kosong, dan menampilkan pesan bila gambar gagal dibuat.
+- [x] Modul Name Tag murni menyingkat nama dari akhir sesuai seluruh contoh di spec, dengan fungsi pengukur lebar teks yang diberikan pemanggil.
+- [x] `bin`, `binti`, kata berhubung, dan nama pendek ditangani sesuai spec; data tersimpan tidak berubah.
+- [x] Modul menentukan apakah Pendaftar dapat dicetak satuan, dan membuat nama file yang aman dari Ruang OKB dan nama lengkap.
+- [x] Penggambar menghasilkan PNG 1004 × 1299 piksel dengan isi dan urutan sesuai spec, tanpa data yang dikecualikan spec.
+- [x] Detail Pendaftar menampilkan tombol cetak hanya untuk Terjadwal OKB dan Sudah OKB, meminta Ruang OKB diisi bila kosong, dan menampilkan pesan bila gambar gagal dibuat.

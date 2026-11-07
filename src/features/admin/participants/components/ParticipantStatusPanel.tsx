@@ -32,6 +32,7 @@ import { updateParticipantStatusAction, type ParticipantStatusIntent, type Updat
 import { saveNomorVaAction, type SaveNomorVaState } from '../actions/saveNomorVaAction';
 import { NOMOR_VA_LENGTH } from '../nomorVa';
 import { AnnouncementControl } from '@/features/admin/announcement/components/AnnouncementControl';
+import { PrintNameTagButton } from '@/features/admin/nameTag/components/PrintNameTagButton';
 import { RuangOkbForm } from '@/features/admin/nameTag/components/RuangOkbForm';
 import { RUANG_OKB_STATUSES } from '@/features/admin/nameTag/nameTag';
 
@@ -40,6 +41,7 @@ type FormAction = (formData: FormData) => void;
 
 type Props = {
   participantId: string;
+  namaLengkap: string;
   status: string;
   previousStatus: string | null;
   jadwalTanggal: string | null;
@@ -66,7 +68,7 @@ function currentStep(status: string) {
   }
 }
 
-export function ParticipantStatusPanel({ participantId, status, previousStatus, jadwalTanggal, jadwalGelombang, ruangOkb, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
+export function ParticipantStatusPanel({ participantId, namaLengkap, status, previousStatus, jadwalTanggal, jadwalGelombang, ruangOkb, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
   const [state, formAction, pending] = useActionState(updateParticipantStatusAction, initialState);
   const [rescheduling, setRescheduling] = useState(false);
   const [editingDecision, setEditingDecision] = useState(false);
@@ -108,7 +110,10 @@ export function ParticipantStatusPanel({ participantId, status, previousStatus, 
       )}
 
       {(RUANG_OKB_STATUSES as readonly string[]).includes(status) ? (
-        <RuangOkbForm participantId={participantId} ruangOkb={ruangOkb} />
+        <>
+          <RuangOkbForm participantId={participantId} ruangOkb={ruangOkb} />
+          <PrintNameTagButton status={status} namaLengkap={namaLengkap} ruangOkb={ruangOkb} />
+        </>
       ) : ruangOkb && (
         <div className="space-y-1 rounded-xl border border-slate-200 p-3">
           <p className={ADMIN_SECTION_TITLE}>Ruang OKB</p>
