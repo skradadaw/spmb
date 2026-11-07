@@ -115,6 +115,7 @@ describe('updateParticipantStatusAction', () => {
     expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB' });
     expect(mocks.filters).toContainEqual(['eq:status', 'Sudah OKB']);
     expect(mocks.revalidatePath).toHaveBeenCalledWith(`/admin/pendaftar/${participantId}`);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb');
   });
 
   it('does not undo attendance once the applicant is no longer Sudah OKB', async () => {

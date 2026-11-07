@@ -53,7 +53,7 @@ function applyFilters(request: Query, query: ParticipantListQuery) {
   if (query.statusFilter) request = request.eq('status', query.statusFilter);
   // Tidak Hadir OKB: tanggal Jadwal OKB sudah lewat tanpa Scan Kehadiran.
   if (query.okbMissed) request = request.eq('status', 'Terjadwal OKB').lt('jadwal_okb_tanggal', jakartaToday());
-  if (query.waveFilter) request = request.eq('status', 'Terjadwal OKB').eq('jadwal_okb_gelombang', String(query.waveFilter));
+  if (query.waveFilter) request = request.in('status', ['Terjadwal OKB', 'Sudah OKB']).eq('jadwal_okb_gelombang', String(query.waveFilter));
   if (query.announcementFilter === 'belum') request = request.in('status', ['Diterima', 'Ditolak']).is('diumumkan_pada', null);
   if (query.announcementFilter === 'sudah') request = request.not('diumumkan_pada', 'is', 'null');
   if (query.paymentFilter) request = request.eq('metode_pembayaran_okb', query.paymentFilter);

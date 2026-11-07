@@ -108,14 +108,14 @@ Pengumuman tetap menjadi menu sendiri. Aksi untuk satu Pendaftar tetap di Detail
 - Pendaftar yang sudah Diterima, Ditolak, atau Dibatalkan tidak dihitung, walaupun tanggal Jadwal OKB-nya masih tersimpan. Karena itu, total hari itu bisa turun bila keputusan dimasukkan pada hari yang sama. Ini dapat diterima karena Keputusan Penerimaan biasanya dibuat setelah hari OKB.
 - Pendaftar dengan Gelombang OKB yang tidak valid dilewati, sama seperti pada repository Name Tag.
 - Tanggal diurutkan dari yang terdekat, lalu Gelombang OKB dari yang terkecil.
-- Tanggal selain hari ini menampilkan jumlah terjadwal saja. Tanggal hari ini menampilkan jumlah hadir dari totalnya.
+- Tanggal selain hari ini menampilkan jumlah Terjadwal OKB saja, sehingga Pendaftar yang ditandai hadir lebih awal dari Detail Pendaftar tidak ikut dihitung. Tanggal hari ini menampilkan jumlah hadir dari totalnya.
 - Tombol Scan Kehadiran hanya muncul pada tanggal hari ini.
 - Tautan Tidak Hadir OKB memakai filter yang sudah ada di Data Pendaftar dan hanya muncul bila jumlahnya lebih dari nol.
 
 ### Tautan dari tab Jadwal
 
 - **Name Tag:** membuka tanggal dan Gelombang OKB yang tepat. Tautan hanya muncul bila Gelombang itu masih punya Pendaftar Terjadwal OKB, karena halaman Name Tag hanya memuat status itu dan akan membuka kelompok lain bila kelompok yang diminta tidak ada.
-- **Data Pendaftar:** memakai filter Gelombang OKB saja. Data Pendaftar belum punya filter tanggal, jadi daftarnya dapat memuat Pendaftar dari tanggal lain dalam Gelombang yang sama. Filter status tidak dipakai agar Pendaftar Sudah OKB tetap terlihat.
+- **Data Pendaftar:** memakai filter Gelombang OKB saja. Filter ini diperluas agar mencakup Pendaftar Terjadwal OKB dan Sudah OKB, sehingga Pendaftar yang sudah hadir tetap terlihat. Perluasan ini juga berlaku saat admin memakai filter Gelombang OKB langsung di Data Pendaftar. Data Pendaftar belum punya filter tanggal, jadi daftarnya dapat memuat Pendaftar dari tanggal lain dalam Gelombang yang sama.
 
 ### Pengalihan alamat
 

@@ -63,7 +63,7 @@ describe('fetchOkbSchedule', () => {
 
     const { days } = await fetchOkbSchedule(client);
 
-    expect(days).toEqual([{ tanggal: '2026-11-20', total: 1, hadir: 1, gelombang: [{ gelombang: 2, total: 1, hadir: 1, terjadwal: 0 }] }]);
+    expect(days).toEqual([{ tanggal: '2026-11-20', total: 1, hadir: 1, terjadwal: 0, waves: [{ gelombang: 2, total: 1, hadir: 1, terjadwal: 0 }] }]);
   });
 
   it('fails when reading the rows fails, so the page does not show an empty schedule', async () => {

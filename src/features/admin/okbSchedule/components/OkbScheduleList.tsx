@@ -7,10 +7,10 @@ import { okbWaveLabel } from '@/features/admin/okbWave';
 import { cn } from '@/lib/utils';
 import type { OkbScheduleDay } from '../okbSchedule';
 
-const LINK = 'text-xs font-semibold text-emerald-700 hover:underline';
+const LINK_CLASS = 'text-xs font-semibold text-emerald-700 hover:underline';
 
-function countLabel({ total, hadir }: { total: number; hadir: number }, isToday: boolean) {
-  return isToday ? `${hadir} hadir dari ${total}` : `${total} terjadwal`;
+function countLabel({ total, hadir, terjadwal }: { total: number; hadir: number; terjadwal: number }, isToday: boolean) {
+  return isToday ? `${hadir} hadir dari ${total}` : `${terjadwal} terjadwal`;
 }
 
 /** Tanggal OKB hari ini dan seterusnya; hanya hari ini yang menampilkan kehadiran, karena Scan Kehadiran hanya berlaku pada tanggalnya. */
@@ -41,7 +41,7 @@ export function OkbScheduleList({ days, today }: { days: OkbScheduleDay[]; today
               {isToday && <ButtonLink href="/admin/okb/scan" size="sm"><ScanLine aria-hidden="true" />Scan Kehadiran</ButtonLink>}
             </div>
             <ul aria-label="Gelombang OKB" className="mt-3 divide-y divide-slate-200/70 border-t border-slate-200/70">
-              {day.gelombang.map(wave => {
+              {day.waves.map(wave => {
                 const waveName = okbWaveLabel(wave.gelombang);
                 return (
                   <li key={wave.gelombang} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5 text-sm">
@@ -49,8 +49,8 @@ export function OkbScheduleList({ days, today }: { days: OkbScheduleDay[]; today
                     <span className="tabular-nums text-slate-600">{countLabel(wave, isToday)}</span>
                     <span className="ml-auto flex items-center gap-3">
                       {/* Halaman Name Tag hanya memuat Terjadwal OKB; tanpa mereka, tautan akan membuka kelompok lain. */}
-                      {wave.terjadwal > 0 && <Link href={nameTagHref(day.tanggal, wave.gelombang)} aria-label={`Name Tag ${waveName}`} className={LINK}>Name Tag</Link>}
-                      <Link href={`/admin/pendaftar?gelombang=${wave.gelombang}`} aria-label={`Data Pendaftar ${waveName}`} className={LINK}>Data Pendaftar</Link>
+                      {wave.terjadwal > 0 && <Link href={nameTagHref(day.tanggal, wave.gelombang)} aria-label={`Name Tag ${waveName}`} className={LINK_CLASS}>Name Tag</Link>}
+                      <Link href={`/admin/pendaftar?gelombang=${wave.gelombang}`} aria-label={`Data Pendaftar ${waveName}`} className={LINK_CLASS}>Data Pendaftar</Link>
                     </span>
                   </li>
                 );

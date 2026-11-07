@@ -20,7 +20,8 @@ describe('buildOkbSchedule', () => {
       tanggal: '2026-11-20',
       total: 4,
       hadir: 2,
-      gelombang: [
+      terjadwal: 2,
+      waves: [
         { gelombang: 1, total: 3, hadir: 1, terjadwal: 2 },
         { gelombang: 2, total: 1, hadir: 1, terjadwal: 0 },
       ],
@@ -30,7 +31,7 @@ describe('buildOkbSchedule', () => {
   it('keeps a date whose Pendaftar have all attended', () => {
     const [day] = buildOkbSchedule([row('2026-11-20', 1, 'Sudah OKB')]);
 
-    expect(day).toMatchObject({ tanggal: '2026-11-20', total: 1, hadir: 1 });
+    expect(day).toMatchObject({ tanggal: '2026-11-20', total: 1, hadir: 1, terjadwal: 0 });
   });
 
   it('orders dates from the nearest, then Gelombang from the smallest', () => {
@@ -41,6 +42,6 @@ describe('buildOkbSchedule', () => {
     ]);
 
     expect(days.map(day => day.tanggal)).toEqual(['2026-11-20', '2026-12-01']);
-    expect(days[0].gelombang.map(item => item.gelombang)).toEqual([1, 3]);
+    expect(days[0].waves.map(wave => wave.gelombang)).toEqual([1, 3]);
   });
 });

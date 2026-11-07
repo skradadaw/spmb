@@ -21,12 +21,13 @@ const view = {
       tanggal: '2026-11-20',
       total: 30,
       hadir: 12,
-      gelombang: [
+      terjadwal: 18,
+      waves: [
         { gelombang: 1, total: 20, hadir: 12, terjadwal: 8 },
         { gelombang: 2, total: 10, hadir: 0, terjadwal: 10 },
       ],
     },
-    { tanggal: '2026-11-25', total: 6, hadir: 0, gelombang: [{ gelombang: 3, total: 6, hadir: 0, terjadwal: 6 }] },
+    { tanggal: '2026-11-25', total: 6, hadir: 0, terjadwal: 6, waves: [{ gelombang: 3, total: 6, hadir: 0, terjadwal: 6 }] },
   ],
 };
 const day = (name: string) => screen.getByRole('listitem', { name });
@@ -65,6 +66,16 @@ describe('OkbSchedulePage', () => {
     expect(other.queryByText(/hadir/)).toBeNull();
   });
 
+  it('leaves a Pendaftar marked present early out of the count of another date', async () => {
+    mocks.fetchSchedule.mockResolvedValue({
+      ...view,
+      days: [{ tanggal: '2026-11-25', total: 3, hadir: 1, terjadwal: 2, waves: [{ gelombang: 3, total: 3, hadir: 1, terjadwal: 2 }] }],
+    });
+    render(await OkbSchedulePage());
+
+    expect(within(day('Rabu, 25 November 2026')).getAllByText('2 terjadwal')).toHaveLength(2);
+  });
+
   it('offers Scan Kehadiran on today only', async () => {
     render(await OkbSchedulePage());
 
@@ -90,7 +101,7 @@ describe('OkbSchedulePage', () => {
   it('hides the Name Tag link of a Gelombang whose Pendaftar have all attended', async () => {
     mocks.fetchSchedule.mockResolvedValue({
       ...view,
-      days: [{ tanggal: '2026-11-20', total: 2, hadir: 2, gelombang: [{ gelombang: 1, total: 2, hadir: 2, terjadwal: 0 }] }],
+      days: [{ tanggal: '2026-11-20', total: 2, hadir: 2, terjadwal: 0, waves: [{ gelombang: 1, total: 2, hadir: 2, terjadwal: 0 }] }],
     });
     render(await OkbSchedulePage());
 
