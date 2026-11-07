@@ -15,6 +15,12 @@ Batas 112 kursi Siswa Baru, setara empat rombongan kelas, yang dibagi per Piliha
 Tes yang diikuti Pendaftar (Siswa Baru maupun Pindahan) setelah Berkasnya terverifikasi; hasilnya menjadi dasar Keputusan Penerimaan oleh Panitia.
 _Avoid_: tes masuk, seleksi
 
+**Tes OKB** (*OKB Test*):
+Salah satu dari tiga bagian OKB yang diikuti setiap Pendaftar: Literasi, Numerasi, dan Tahsin.
+
+**Ruang OKB** (*OKB Room*):
+Ruangan tempat seorang Pendaftar mengikuti ketiga Tes OKB. Pendaftar dalam satu Gelombang OKB pada tanggal yang sama dapat terbagi ke beberapa Ruang OKB. Ditetapkan admin dan di dalam sistem hanya terlihat oleh admin; dikosongkan ketika Jadwal OKB Pendaftar diubah atau dihapus.
+
 **Jadwal OKB** (*OKB Schedule*):
 Tanggal dan Gelombang OKB yang ditetapkan admin langsung pada seorang Pendaftar. Pendaftar yang tidak hadir dapat dijadwalkan ulang.
 
@@ -56,6 +62,10 @@ _Avoid_: surat kelulusan, SK lulus
 Dokumen PDF yang diterima orang tua saat pendaftaran berhasil, memuat Nomor Pendaftaran, QR berisi Nomor Pendaftaran, nama anak, Jenis Pendaftaran, Pilihan Kelas, dan Kelas Tujuan (Pindahan). Ditunjukkan saat datang OKB; tidak memuat Jadwal OKB. Bila hilang, admin mengunduhkannya kembali.
 _Avoid_: kartu peserta, tiket
 
+**Name Tag** (*Name Tag*):
+Kartu berkalung yang dicetak admin sebelum hari OKB dan dikalungkan kepada Pendaftar saat datang OKB, memuat nama anak, Ruang OKB, dan tiga kotak ceklis untuk menandai Tes OKB yang sudah diikuti. Ceklisnya hanya ada di kartu dan tidak dicatat di sistem.
+_Avoid_: kartu peserta, ID card
+
 **Jenis Pendaftaran** (*Registration Type*):
 Pembeda antara **Siswa Baru** (masuk kelas 1, dihitung dalam Kuota) dan **Pindahan** (pindah dari sekolah lain ke kelas yang lebih tinggi, tidak dihitung dalam Kuota dan tidak dibatasi jumlahnya oleh sistem).
 
@@ -92,7 +102,7 @@ Urutan normal: **Menunggu Unggahan** → **Menunggu Verifikasi** → **Terverifi
 
 **Terjadwal OKB**: Pendaftar sudah memiliki Jadwal OKB.
 
-**Sudah OKB**: Pendaftar tercatat hadir mengikuti OKB dan menunggu Keputusan Penerimaan.
+**Sudah OKB**: Pendaftar tercatat hadir mengikuti OKB dan menunggu Keputusan Penerimaan. Status ini berlaku sejak Scan Kehadiran dan tidak menunjukkan apakah ketiga Tes OKB sudah selesai.
 
 **Diterima** / **Ditolak**: hasil Keputusan Penerimaan oleh Panitia. Ditolak selalu berarti tidak lolos OKB.
 _Avoid_: lulus, tidak lulus
