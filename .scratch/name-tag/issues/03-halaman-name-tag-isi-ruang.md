@@ -8,9 +8,9 @@ Keputusan yang sudah disepakati ada di spec, bagian Aturan Ruang OKB dan Pemilih
 
 **Status:** ready-for-agent
 
-- [ ] Menu samping admin dan penentuan menu aktif menyertakan Name Tag; halaman hanya untuk admin.
-- [ ] Pilihan tanggal dan Gelombang mencakup Jadwal OKB hari ini dan setelahnya.
-- [ ] Daftar hanya memuat Pendaftar Terjadwal OKB pada kelompok terpilih, urut nama, dan yang belum punya Ruang OKB mudah dikenali.
-- [ ] Admin dapat mencentang sebagian atau semua Pendaftar, mengisi satu nama ruangan, dan mengosongkannya.
-- [ ] Saran ruangan berasal dari Pendaftar Terjadwal OKB dengan tanggal hari ini atau setelahnya; nama baru tetap bisa diketik.
-- [ ] Bila status sebagian Pendaftar sudah berubah, admin melihat pesan dan daftar dimuat ulang.
+- [x] Menu samping admin dan penentuan menu aktif menyertakan Name Tag; halaman hanya untuk admin.
+- [x] Pilihan tanggal dan Gelombang mencakup Jadwal OKB hari ini dan setelahnya.
+- [x] Daftar hanya memuat Pendaftar Terjadwal OKB pada kelompok terpilih, urut nama, dan yang belum punya Ruang OKB mudah dikenali.
+- [x] Admin dapat mencentang sebagian atau semua Pendaftar, mengisi satu nama ruangan, dan mengosongkannya.
+- [x] Saran ruangan berasal dari Pendaftar Terjadwal OKB dengan tanggal hari ini atau setelahnya; nama baru tetap bisa diketik.
+- [x] Bila status sebagian Pendaftar sudah berubah, admin melihat pesan dan daftar dimuat ulang.
