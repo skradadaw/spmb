@@ -65,6 +65,14 @@ describe('OkbSchedulePage', () => {
     expect(other.queryByText(/hadir/)).toBeNull();
   });
 
+  it('offers Scan Kehadiran on today only', async () => {
+    render(await OkbSchedulePage());
+
+    const scan = within(day('Jumat, 20 November 2026')).getByRole('link', { name: /Scan Kehadiran/ });
+    expect(scan.getAttribute('href')).toBe('/admin/okb/scan');
+    expect(within(day('Rabu, 25 November 2026')).queryByRole('link', { name: /Scan Kehadiran/ })).toBeNull();
+  });
+
   it('links each Gelombang to Data Pendaftar filtered by that Gelombang', async () => {
     render(await OkbSchedulePage());
 

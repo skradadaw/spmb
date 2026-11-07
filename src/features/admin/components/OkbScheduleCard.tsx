@@ -19,7 +19,7 @@ export function OkbScheduleCard({ schedule, today }: Pick<AdminDashboardSummary,
     <Card className="rounded-2xl border-slate-200/80 shadow-[0_8px_28px_-22px_rgba(15,23,42,0.3)]">
       <CardHeader className="flex-row items-center justify-between space-y-0 p-5 pb-3 sm:p-6 sm:pb-4">
         <CardTitle className="text-base font-bold tracking-[-0.02em]">Jadwal OKB terdekat</CardTitle>
-        {hasToday && <ButtonLink href="/admin/scan" size="sm"><ScanLine aria-hidden="true" />Scan Kehadiran</ButtonLink>}
+        {hasToday && <ButtonLink href="/admin/okb/scan" size="sm"><ScanLine aria-hidden="true" />Scan Kehadiran</ButtonLink>}
       </CardHeader>
       <CardContent className="p-5 pt-1 sm:p-6 sm:pt-1">
         {schedule.length === 0 ? (

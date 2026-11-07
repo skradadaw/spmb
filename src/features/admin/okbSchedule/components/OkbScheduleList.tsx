@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, ScanLine } from 'lucide-react';
+import { ButtonLink } from '@/components/ui/button-link';
 import { nameTagHref } from '@/features/admin/nameTag/nameTagGroups';
 import { formatOkbDate } from '@/features/admin/okbDate';
 import { okbWaveLabel } from '@/features/admin/okbWave';
@@ -37,6 +38,7 @@ export function OkbScheduleList({ days, today }: { days: OkbScheduleDay[]; today
                 </h2>
                 <p className="mt-0.5 text-sm tabular-nums text-slate-600">{countLabel(day, isToday)}</p>
               </div>
+              {isToday && <ButtonLink href="/admin/okb/scan" size="sm"><ScanLine aria-hidden="true" />Scan Kehadiran</ButtonLink>}
             </div>
             <ul aria-label="Gelombang OKB" className="mt-3 divide-y divide-slate-200/70 border-t border-slate-200/70">
               {day.gelombang.map(wave => {

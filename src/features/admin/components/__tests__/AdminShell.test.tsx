@@ -69,11 +69,13 @@ describe('AdminShell navigation', () => {
     expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
   });
 
-  it('keeps Name Tag out of the menu, as a tab of OKB', () => {
+  it('keeps Name Tag and Scan Kehadiran out of the menu, as tabs of OKB', () => {
     window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell><h1>Konten admin</h1></AdminShell>);
+    const sidebar = within(screen.getByTestId('admin-sidebar'));
 
-    expect(within(screen.getByTestId('admin-sidebar')).queryByRole('link', { name: 'Name Tag' })).toBeNull();
+    expect(sidebar.queryByRole('link', { name: 'Name Tag' })).toBeNull();
+    expect(sidebar.queryByRole('link', { name: 'Scan Kehadiran' })).toBeNull();
   });
 
   it.each(['/admin/okb', '/admin/okb/name-tag', '/admin/okb/scan'])('marks OKB active in the menu on %s', (pathname) => {
@@ -84,6 +86,17 @@ describe('AdminShell navigation', () => {
     const link = within(screen.getByTestId('admin-sidebar')).getByRole('link', { name: 'OKB' });
     expect(link.getAttribute('href')).toBe('/admin/okb');
     expect(link.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('offers one OKB item in the mobile menu, marked active on its tabs', () => {
+    mocks.pathname.mockReturnValue('/admin/okb/scan');
+    render(<AdminShell><h1>Konten admin</h1></AdminShell>);
+    fireEvent.click(screen.getByRole('button', { name: 'Buka menu admin' }));
+    const menu = within(screen.getByRole('navigation', { name: 'Navigasi admin mobile' }));
+
+    expect(menu.getByRole('link', { name: 'OKB' }).getAttribute('aria-current')).toBe('page');
+    expect(menu.queryByRole('link', { name: 'Name Tag' })).toBeNull();
+    expect(menu.queryByRole('link', { name: 'Scan Kehadiran' })).toBeNull();
   });
 
   it('keeps logout inside the account menu', () => {

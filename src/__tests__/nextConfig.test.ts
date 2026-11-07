@@ -7,4 +7,10 @@ describe('next.config redirects', () => {
 
     expect(redirects).toContainEqual({ source: '/admin/name-tag', destination: '/admin/okb/name-tag', permanent: false });
   });
+
+  it('sends the old Scan Kehadiran address to its OKB tab, temporarily', async () => {
+    const redirects = await nextConfig.redirects!();
+
+    expect(redirects).toContainEqual({ source: '/admin/scan', destination: '/admin/okb/scan', permanent: false });
+  });
 });
