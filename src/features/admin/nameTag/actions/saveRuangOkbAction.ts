@@ -13,10 +13,10 @@ export type SaveRuangOkbResult = { status: 'idle' | 'success' | 'error'; message
 const fail = (message: string, updated = 0): SaveRuangOkbResult => ({ status: 'error', message, updated });
 
 /** Mengisi, mengubah, atau mengosongkan (nama kosong) Ruang OKB satu atau banyak Pendaftar. */
-export async function saveRuangOkbAction(participantIds: string[], rawRuang: string): Promise<SaveRuangOkbResult> {
+export async function saveRuangOkbAction(applicantIds: string[], rawRuang: string): Promise<SaveRuangOkbResult> {
   if (!await getAdminSession()) return fail('Sesi admin tidak valid. Silakan masuk kembali.');
 
-  const ids = [...new Set(participantIds)];
+  const ids = [...new Set(applicantIds)];
   if (ids.length === 0) return fail('Pilih Pendaftar terlebih dahulu.');
   if (!ids.every(id => UUID_PATTERN.test(id))) return fail('Data pendaftar tidak valid.');
 

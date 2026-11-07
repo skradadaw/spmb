@@ -98,7 +98,7 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
   - menentukan siapa yang dapat dicetak pada cetak sekaligus dan cetak satuan;
   - menghitung Pendaftar tanpa Ruang OKB;
   - membuat nama file yang aman dan unik.
-- **Penggambar kartu (baru).** Modul browser tipis yang menggambar satu kartu ke canvas dan menghasilkan PNG. Modul ini menerima nama yang sudah disingkat, Ruang OKB, dan logo.
+- **Penggambar kartu (baru).** Modul browser tipis yang menggambar satu kartu ke canvas dan menghasilkan PNG. Modul ini menerima nama lengkap, Ruang OKB, dan logo. Nama disingkat di dalam modul ini, agar pengukuran dan penggambaran memakai huruf yang sama.
 - **Pembuat ZIP (baru).** Modul browser yang mengumpulkan PNG menjadi satu ZIP. Proyek ini belum punya pustaka ZIP, jadi perlu satu dependensi ringan yang berjalan di browser.
 - **Server action Ruang OKB (baru).** Satu action menyimpan atau mengosongkan Ruang OKB untuk satu atau banyak Pendaftar.
 - **Halaman admin Name Tag (baru).** Berisi pemilihan tanggal dan Gelombang, daftar Pendaftar, pengisian ruangan, dan unduhan ZIP. Halaman ini ditambahkan ke navigasi admin.
@@ -152,6 +152,7 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
 ### Aturan menyingkat nama
 
 - Nama dirapikan dulu dengan formatter nama yang sudah ada, tanpa mengubah data tersimpan.
+- Di kartu, kata berhubung selalu berawal huruf kapital. Formatter bersama menghasilkan `al-Fatih`, sedangkan kartu menulis `Al-Fatih`.
 - Ukuran huruf tetap. Nama selalu satu baris.
 - Bila nama tidak muat, kata disingkat satu per satu dari kata terakhir ke kata pertama, dan berhenti begitu muat:
   1. `Muhammad Abdurrahman Al-Fatih Ramadhan`

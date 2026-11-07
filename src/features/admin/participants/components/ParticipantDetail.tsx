@@ -33,7 +33,7 @@ function getDocumentContentType(path: string) {
 }
 
 /** siteOrigin: alamat situs publik untuk tautan Cek Hasil OKB di pesan WhatsApp. */
-export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', siteOrigin }: { participant: ParticipantDetailData; backHref?: string; siteOrigin?: string }) {
+export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', siteOrigin, ruangOkbSuggestions = [] }: { participant: ParticipantDetailData; backHref?: string; siteOrigin?: string; ruangOkbSuggestions?: string[] }) {
   const uploadedDocuments = participant.documents.filter(document => document.path);
   const reviewedCount = uploadedDocuments.filter(document => participant.documentReviews[document.id]).length;
   // The version in the URL changes when a Berkas Pengganti is uploaded, so the browser may cache each file.
@@ -174,6 +174,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', 
             jadwalTanggal={participant.okb.jadwalTanggal ?? null}
             jadwalGelombang={participant.okb.jadwalGelombang ?? null}
             ruangOkb={participant.okb.ruangOkb ?? null}
+            ruangOkbSuggestions={ruangOkbSuggestions}
             pilihanKelas={participant.registration.pilihanKelas ?? null}
             kelasPenempatan={participant.decision.kelasPenempatan ?? null}
             nomorVa={participant.nomorVa}

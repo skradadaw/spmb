@@ -1,12 +1,17 @@
 /** Aturan Name Tag tanpa akses database maupun canvas. */
 
 import { formatProperName } from '@/lib/properName';
+import type { NameTagSelection } from './nameTagGroups';
 
 /** Agar nama ruangan muat di kartu dan nama file. */
 export const RUANG_OKB_MAX_LENGTH = 30;
 
 /** Hanya Pendaftar berstatus ini yang Ruang OKB-nya dapat diubah. */
 export const RUANG_OKB_STATUSES = ['Terjadwal OKB', 'Sudah OKB'] as const;
+
+export function allowsRuangOkb(status: string) {
+  return (RUANG_OKB_STATUSES as readonly string[]).includes(status);
+}
 
 /** Spasi di tepi dibuang dan spasi berurutan dijadikan satu; hasil kosong berarti mengosongkan Ruang OKB. */
 export function normalizeRuangOkb(value: string) {
@@ -24,6 +29,9 @@ function formatNameTagName(value: string) {
     .map(word => (word.includes('-') ? word.charAt(0).toLocaleUpperCase('id-ID') + word.slice(1) : word))
     .join(' ');
 }
+
+/** Inisial yang sudah diketik, seperti `A.` atau `A.R.`. */
+const TYPED_INITIALS = /^(?:[\p{L}\p{N}]\.)+$/u;
 
 function initialOf(word: string) {
   const letter = word.match(/[\p{L}\p{N}]/u)?.[0];
@@ -46,20 +54,22 @@ export function abbreviateName(fullName: string, maxWidth: number, measure: (tex
   const tidied = formatNameTagName(fullName);
   if (measure(tidied) <= maxWidth) return tidied;
 
-  const parts = tidied.split(' ').map(text => ({ text, initial: false }));
-  for (let index = parts.length - 1; index >= 0; index--) {
-    if (parts[index].text === 'bin' || parts[index].text === 'binti') continue;
-    parts[index] = { text: initialOf(parts[index].text), initial: true };
-    if (measure(joinNameParts(parts)) <= maxWidth) break;
+  const parts = tidied.split(' ').map(text => ({ text, initial: TYPED_INITIALS.test(text) }));
+  let name = joinNameParts(parts);
+  for (let index = parts.length - 1; index >= 0 && measure(name) > maxWidth; index--) {
+    const { text, initial } = parts[index];
+    if (initial || text === 'bin' || text === 'binti') continue;
+    parts[index] = { text: initialOf(text), initial: true };
+    name = joinNameParts(parts);
   }
-  return joinNameParts(parts);
+  return name;
 }
 
 export type NameTagPrintState = 'ready' | 'needs-ruang' | 'unavailable';
 
 /** Cetak satuan: hanya Terjadwal OKB dan Sudah OKB, dan kartu tidak dibuat tanpa ruangan. */
 export function nameTagPrintState(status: string, ruangOkb: string | null): NameTagPrintState {
-  if (!(RUANG_OKB_STATUSES as readonly string[]).includes(status)) return 'unavailable';
+  if (!allowsRuangOkb(status)) return 'unavailable';
   return normalizeRuangOkb(ruangOkb ?? '') ? 'ready' : 'needs-ruang';
 }
 
@@ -98,6 +108,6 @@ export function planNameTagZip(members: { namaLengkap: string; ruangOkb: string 
   return { cards, withoutRuangCount: members.length - cards.length };
 }
 
-export function nameTagZipFileName({ tanggal, gelombang }: { tanggal: string; gelombang: number }) {
+export function nameTagZipFileName({ tanggal, gelombang }: NameTagSelection) {
   return `Name Tag ${tanggal} Gelombang ${gelombang}.zip`;
 }

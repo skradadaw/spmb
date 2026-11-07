@@ -21,8 +21,6 @@ const NAME_FONT = `bold 58px ${FONT_FAMILY}`;
 const COLOR = {
   deep: '#064e1b',
   green: '#007a10',
-  tint: '#eaf6e8',
-  line: '#c4e3c8',
   ink: '#0f172a',
   muted: '#475569',
   amber: '#fbbf24',

@@ -3,13 +3,9 @@ import { CalendarDays, ScanLine } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { nameTagHref } from '@/features/admin/nameTag/nameTagGroups';
+import { formatOkbDate as formatDate } from '@/features/admin/okbDate';
 import { cn } from '@/lib/utils';
 import type { AdminDashboardSummary } from '../contracts';
-
-function formatDate(date: string, options: Intl.DateTimeFormatOptions) {
-  // Jadwal OKB is a calendar date; noon UTC keeps it on the same day in Asia/Jakarta.
-  return new Intl.DateTimeFormat('id-ID', { ...options, timeZone: 'Asia/Jakarta' }).format(new Date(`${date}T12:00:00Z`));
-}
 
 /** With one Gelombang the day total already says how many; with several, each chip carries its own count. */
 function waveLabel(wave: { label: string; count: number }, single: boolean) {

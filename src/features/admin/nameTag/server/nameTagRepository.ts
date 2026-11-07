@@ -1,11 +1,10 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { parseOkbWave } from '@/features/admin/okbWave';
+import { jakartaToday } from '@/features/admin/participants/server/participantsRepository';
 import type { NameTagRow } from '../nameTagGroups';
 
 type Row = { id: string; nama_lengkap: string | null; ruang_okb: string | null; jadwal_okb_tanggal: string; jadwal_okb_gelombang: number | null };
-
-const jakartaToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
 
 /** Pendaftar Terjadwal OKB dengan tanggal hari ini atau setelahnya, sama seperti kartu Jadwal OKB terdekat. */
 export async function fetchNameTagRows(supabase: SupabaseClient): Promise<NameTagRow[]> {

@@ -48,8 +48,20 @@ describe('abbreviateName', () => {
   });
 
   it('writes a word already typed as an initial without doubling its dot', () => {
-    expect(abbreviateName('M. Fatih Ramadhan', 10, byLength)).toBe('M. F.R.');
     expect(abbreviateName('M. Fatih Ramadhan', 6, byLength)).toBe('M.F.R.');
+  });
+
+  it('joins a typed initial to the initial after it without a space', () => {
+    expect(abbreviateName('Muhammad A. Ramadhan', 19, byLength)).toBe('Muhammad A.R.');
+    expect(abbreviateName('M. Fatih Ramadhan', 10, byLength)).toBe('M.F.R.');
+  });
+
+  it('stops as soon as joining typed initials makes the name fit', () => {
+    expect(abbreviateName('A. B. Fatih', 10, byLength)).toBe('A.B. Fatih');
+  });
+
+  it('keeps a typed run of initials whole', () => {
+    expect(abbreviateName('Muhammad A.R. Fatih', 3, byLength)).toBe('M.A.R.F.');
   });
 
   it('measures with the function it is given', () => {

@@ -34,7 +34,7 @@ import { NOMOR_VA_LENGTH } from '../nomorVa';
 import { AnnouncementControl } from '@/features/admin/announcement/components/AnnouncementControl';
 import { PrintNameTagButton } from '@/features/admin/nameTag/components/PrintNameTagButton';
 import { RuangOkbForm } from '@/features/admin/nameTag/components/RuangOkbForm';
-import { RUANG_OKB_STATUSES } from '@/features/admin/nameTag/nameTag';
+import { allowsRuangOkb } from '@/features/admin/nameTag/nameTag';
 
 const initialState: UpdateParticipantStatusState = { status: 'idle', message: '' };
 type FormAction = (formData: FormData) => void;
@@ -48,6 +48,7 @@ type Props = {
   /** Gelombang OKB name, e.g. "Gelombang 1". */
   jadwalGelombang: string | null;
   ruangOkb: string | null;
+  ruangOkbSuggestions: string[];
   pilihanKelas: string | null;
   kelasPenempatan: string | null;
   nomorVa: string | null;
@@ -68,7 +69,7 @@ function currentStep(status: string) {
   }
 }
 
-export function ParticipantStatusPanel({ participantId, namaLengkap, status, previousStatus, jadwalTanggal, jadwalGelombang, ruangOkb, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
+export function ParticipantStatusPanel({ participantId, namaLengkap, status, previousStatus, jadwalTanggal, jadwalGelombang, ruangOkb, ruangOkbSuggestions, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
   const [state, formAction, pending] = useActionState(updateParticipantStatusAction, initialState);
   const [rescheduling, setRescheduling] = useState(false);
   const [editingDecision, setEditingDecision] = useState(false);
@@ -109,9 +110,9 @@ export function ParticipantStatusPanel({ participantId, namaLengkap, status, pre
         </section>
       )}
 
-      {(RUANG_OKB_STATUSES as readonly string[]).includes(status) ? (
+      {allowsRuangOkb(status) ? (
         <>
-          <RuangOkbForm participantId={participantId} ruangOkb={ruangOkb} />
+          <RuangOkbForm applicantId={participantId} ruangOkb={ruangOkb} suggestions={ruangOkbSuggestions} />
           <PrintNameTagButton status={status} namaLengkap={namaLengkap} ruangOkb={ruangOkb} />
         </>
       ) : ruangOkb && (

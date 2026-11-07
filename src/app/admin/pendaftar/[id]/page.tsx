@@ -1,4 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { allowsRuangOkb } from '@/features/admin/nameTag/nameTag';
+import { ruangOkbSuggestions } from '@/features/admin/nameTag/nameTagGroups';
+import { fetchNameTagRows } from '@/features/admin/nameTag/server/nameTagRepository';
 import { ParticipantDetail } from '@/features/admin/participants/components/ParticipantDetail';
 import { createParticipantsRepository } from '@/features/admin/participants/server/participantsRepository';
 import { getAdminSession } from '@/features/auth/session';
@@ -47,5 +50,10 @@ export default async function ParticipantPage({ params, searchParams }: Props) {
   const protocol = requestHeaders.get('x-forwarded-proto') ?? (host?.startsWith('localhost') ? 'http' : 'https');
   const siteOrigin = host ? `${protocol}://${host}` : undefined;
 
-  return <ParticipantDetail participant={participant} backHref={backHref} siteOrigin={siteOrigin} />;
+  // Saran hanya pelengkap: bila gagal dimuat, Ruang OKB tetap bisa diketik.
+  const suggestions = allowsRuangOkb(participant.status)
+    ? await fetchNameTagRows(getSupabaseAdmin()).then(ruangOkbSuggestions).catch((): string[] => [])
+    : [];
+
+  return <ParticipantDetail participant={participant} backHref={backHref} siteOrigin={siteOrigin} ruangOkbSuggestions={suggestions} />;
 }

@@ -1,38 +1,36 @@
 'use client';
 
-import { useActionState, useId, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ADMIN_ACTIONS, ADMIN_DANGER_BUTTON, ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON } from '@/features/admin/components/adminStyles';
+import { ADMIN_ACTIONS, ADMIN_DANGER_BUTTON, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON } from '@/features/admin/components/adminStyles';
 import { formatParticipantFieldValue } from '@/features/admin/participants/presentation';
 import { cn } from '@/lib/utils';
 import { saveRuangOkbAction, type SaveRuangOkbResult } from '../actions/saveRuangOkbAction';
-import { normalizeRuangOkb, RUANG_OKB_MAX_LENGTH } from '../nameTag';
+import { normalizeRuangOkb } from '../nameTag';
 import type { NameTagPendaftar } from '../nameTagGroups';
+import { initialRuangOkbResult, RuangOkbInput, RuangOkbResultMessage } from './RuangOkbField';
 
-const initialState: SaveRuangOkbResult = { status: 'idle', message: '', updated: 0 };
 const displayName = (member: NameTagPendaftar) => formatParticipantFieldValue('identity', 'namaLengkap', member.namaLengkap);
 
 /** Daftar Pendaftar satu kelompok; yang dicentang diberi satu Ruang OKB sekaligus. */
 export function RuangOkbBulkForm({ members, suggestions }: { members: NameTagPendaftar[]; suggestions: string[] }) {
   const [checkedIds, setCheckedIds] = useState<ReadonlySet<string>>(new Set());
-  const [room, setRoom] = useState('');
-  const suggestionsId = useId();
+  const [ruang, setRuang] = useState('');
 
   // Dihitung dari daftar terbaru, agar Pendaftar yang hilang setelah dimuat ulang tidak ikut terkirim.
-  const selected = members.filter(member => checkedIds.has(member.id));
-  const allSelected = selected.length === members.length;
+  const checkedMembers = members.filter(member => checkedIds.has(member.id));
+  const allChecked = checkedMembers.length === members.length;
 
   const [state, formAction, pending] = useActionState(async (_previous: SaveRuangOkbResult, formData: FormData) => {
-    const result = await saveRuangOkbAction(selected.map(member => member.id), formData.get('clear') === '1' ? '' : room);
+    const result = await saveRuangOkbAction(checkedMembers.map(member => member.id), formData.get('clear') === '1' ? '' : ruang);
     // Saat sebagian gagal, pilihan dan nama tetap ada agar admin bisa memeriksanya.
     if (result.status === 'success') {
       setCheckedIds(new Set());
-      setRoom('');
+      setRuang('');
     }
     return result;
-  }, initialState);
+  }, initialRuangOkbResult);
 
   function toggle(id: string, checked: boolean) {
     const next = new Set(checkedIds);
@@ -45,18 +43,13 @@ export function RuangOkbBulkForm({ members, suggestions }: { members: NameTagPen
     <div className="space-y-4">
       <form action={formAction} className="space-y-2 rounded-xl border border-slate-200 p-3">
         <Label htmlFor="ruang-okb-sekaligus" className={ADMIN_LABEL}>Nama ruangan</Label>
-        <Input id="ruang-okb-sekaligus" name="ruangOkb" list={suggestionsId} autoComplete="off" maxLength={RUANG_OKB_MAX_LENGTH} value={room} onChange={event => setRoom(event.target.value)} placeholder="Mis. Ruang A" className={ADMIN_FIELD} />
-        <datalist id={suggestionsId}>{suggestions.map(suggestion => <option key={suggestion} value={suggestion} />)}</datalist>
+        <RuangOkbInput id="ruang-okb-sekaligus" value={ruang} onChange={event => setRuang(event.target.value)} suggestions={suggestions} />
         <div className={ADMIN_ACTIONS}>
           {/* Simpan comes first in the DOM so Enter saves rather than clears; order-last keeps it rightmost. */}
-          <Button type="submit" disabled={pending || selected.length === 0 || !normalizeRuangOkb(room)} className={cn(ADMIN_PRIMARY_BUTTON, 'order-last')}>Simpan ruangan</Button>
-          <Button type="submit" name="clear" value="1" disabled={pending || !selected.some(member => member.ruangOkb)} className={ADMIN_DANGER_BUTTON}>Kosongkan</Button>
+          <Button type="submit" disabled={pending || checkedMembers.length === 0 || !normalizeRuangOkb(ruang)} className={cn(ADMIN_PRIMARY_BUTTON, 'order-last')}>Simpan ruangan</Button>
+          <Button type="submit" name="clear" value="1" disabled={pending || !checkedMembers.some(member => member.ruangOkb)} className={ADMIN_DANGER_BUTTON}>Kosongkan</Button>
         </div>
-        {state.message && (
-          <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>
-            {state.message}
-          </p>
-        )}
+        <RuangOkbResultMessage result={state} />
       </form>
 
       <div className="flex items-center justify-between gap-2 px-3">
@@ -64,15 +57,15 @@ export function RuangOkbBulkForm({ members, suggestions }: { members: NameTagPen
           <input
             type="checkbox"
             aria-label="Pilih semua Pendaftar"
-            ref={input => { if (input) input.indeterminate = selected.length > 0 && !allSelected; }}
-            checked={allSelected}
+            ref={input => { if (input) input.indeterminate = checkedMembers.length > 0 && !allChecked; }}
+            checked={allChecked}
             disabled={pending}
             onChange={event => setCheckedIds(new Set(event.target.checked ? members.map(member => member.id) : []))}
             className="size-4 accent-[var(--admin-sidebar)]"
           />
           Pilih semua
         </label>
-        <p className="text-xs text-[var(--admin-muted)]">{selected.length} dipilih</p>
+        <p className="text-xs text-[var(--admin-muted)]">{checkedMembers.length} dipilih</p>
       </div>
 
       <ul aria-label="Daftar Pendaftar" className="divide-y divide-slate-100 rounded-xl border border-slate-200">

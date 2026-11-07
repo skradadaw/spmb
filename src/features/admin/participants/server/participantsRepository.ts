@@ -33,7 +33,7 @@ const failure = () => new Error('Data pendaftar tidak dapat dimuat.');
 /** Pencarian yang diawali "OB-" dicocokkan ke Nomor Pendaftaran, selain itu ke nama. */
 const searchColumn = (search: string) => /^OB-/i.test(search.trim()) ? 'nomor_pendaftaran' : 'nama_lengkap';
 
-const jakartaToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+export const jakartaToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
 const count = (value: unknown) => Math.max(0, Number(value) || 0);
 const EXCLUDED_STATUS_LIST = `(${ATTENTION_EXCLUDED_STATUSES.map(status => `"${status}"`).join(',')})`;
 

@@ -21,6 +21,7 @@ function clientWith(data: unknown, error: unknown = null) {
   const query = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn().mockResolvedValue({ data, error }),
     range: vi.fn().mockResolvedValue({ data: [], error: null }),
   };
@@ -48,6 +49,56 @@ describe('ParticipantPage', () => {
     expect(screen.getByRole('heading', { name: 'Alya' })).toBeDefined();
     expect(screen.getByRole('link', { name: /Kembali ke Data Pendaftar/ }).getAttribute('href')).toBe('/admin/pendaftar?q=Alya&kelas=Reguler&status=Status+Lama');
     expect(client.query.select.mock.calls[0][0]).not.toContain('submission_secret_hash');
+  });
+
+  describe('Ruang OKB suggestions', () => {
+    const scheduled = { id, nama_lengkap: 'Alya', status: 'Terjadwal OKB', ruang_okb: null };
+    const suggestionOptions = () => {
+      const list = document.getElementById(screen.getByLabelText('Ruang OKB').getAttribute('list') ?? '');
+      return [...(list?.querySelectorAll('option') ?? [])].map(option => option.value);
+    };
+    const openPage = () => ParticipantPage({ params: Promise.resolve({ id }), searchParams: Promise.resolve({}) });
+    /** The detail also reads through `range`; only the query filtered by date is the suggestion query. */
+    const clientWithSuggestionRows = (result: { data: unknown; error: unknown }) => {
+      const client = clientWith(scheduled);
+      client.query.range.mockImplementation(async () => client.query.gte.mock.calls.length ? result : { data: [], error: null });
+      mocks.getSupabaseAdmin.mockReturnValue(client);
+      return client;
+    };
+
+    it('loads them for the form, from upcoming Terjadwal OKB only', async () => {
+      const client = clientWithSuggestionRows({
+        data: [
+          { id: 'b', nama_lengkap: 'Bilal', ruang_okb: 'Ruang B', jadwal_okb_tanggal: '2099-01-01', jadwal_okb_gelombang: 1 },
+          { id: 'c', nama_lengkap: 'Citra', ruang_okb: 'Ruang A', jadwal_okb_tanggal: '2099-01-02', jadwal_okb_gelombang: 2 },
+        ],
+        error: null,
+      });
+
+      render(await openPage());
+
+      expect(suggestionOptions()).toEqual(['Ruang A', 'Ruang B']);
+      expect(client.query.eq).toHaveBeenCalledWith('status', 'Terjadwal OKB');
+      expect(client.query.gte).toHaveBeenCalledWith('jadwal_okb_tanggal', expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
+    });
+
+    it('still opens the detail, without suggestions, when they cannot be loaded', async () => {
+      clientWithSuggestionRows({ data: null, error: new Error('private database error') });
+
+      render(await openPage());
+
+      expect(screen.getByRole('heading', { name: 'Alya' })).toBeDefined();
+      expect(suggestionOptions()).toEqual([]);
+    });
+
+    it('does not read them when the Ruang OKB cannot be changed', async () => {
+      const client = clientWith({ id, nama_lengkap: 'Alya', status: 'Menunggu Unggahan' });
+      mocks.getSupabaseAdmin.mockReturnValue(client);
+
+      await openPage();
+
+      expect(client.query.gte).not.toHaveBeenCalled();
+    });
   });
 
   it('returns not found for malformed IDs and missing participants', async () => {
