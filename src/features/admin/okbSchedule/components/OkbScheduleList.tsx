@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { CalendarDays } from 'lucide-react';
+import { nameTagHref } from '@/features/admin/nameTag/nameTagGroups';
 import { formatOkbDate } from '@/features/admin/okbDate';
 import { okbWaveLabel } from '@/features/admin/okbWave';
 import { cn } from '@/lib/utils';
@@ -45,6 +46,8 @@ export function OkbScheduleList({ days, today }: { days: OkbScheduleDay[]; today
                     <span className="font-medium text-slate-900">{waveName}</span>
                     <span className="tabular-nums text-slate-600">{countLabel(wave, isToday)}</span>
                     <span className="ml-auto flex items-center gap-3">
+                      {/* Halaman Name Tag hanya memuat Terjadwal OKB; tanpa mereka, tautan akan membuka kelompok lain. */}
+                      {wave.terjadwal > 0 && <Link href={nameTagHref(day.tanggal, wave.gelombang)} aria-label={`Name Tag ${waveName}`} className={LINK}>Name Tag</Link>}
                       <Link href={`/admin/pendaftar?gelombang=${wave.gelombang}`} aria-label={`Data Pendaftar ${waveName}`} className={LINK}>Data Pendaftar</Link>
                     </span>
                   </li>

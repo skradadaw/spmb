@@ -58,7 +58,7 @@ describe('NameTagPage', () => {
     openSelect('Tanggal OKB');
     fireEvent.click(await screen.findByRole('option', { name: /25 November 2026/ }));
 
-    expect(mocks.replace).toHaveBeenCalledWith('/admin/name-tag?tanggal=2026-11-25', { scroll: false });
+    expect(mocks.replace).toHaveBeenCalledWith('/admin/okb/name-tag?tanggal=2026-11-25', { scroll: false });
   });
 
   it('offers only the Gelombang that have Pendaftar on the chosen date', async () => {
@@ -72,7 +72,7 @@ describe('NameTagPage', () => {
     expect(options[0].textContent).toContain('1 pendaftar');
     expect(options[1].textContent).toContain('Gelombang 2');
     fireEvent.click(options[1]);
-    expect(mocks.replace).toHaveBeenCalledWith('/admin/name-tag?tanggal=2026-11-20&gelombang=2', { scroll: false });
+    expect(mocks.replace).toHaveBeenCalledWith('/admin/okb/name-tag?tanggal=2026-11-20&gelombang=2', { scroll: false });
   });
 
   it('counts the cards of the selected group only, and offers the ZIP when there are some', async () => {

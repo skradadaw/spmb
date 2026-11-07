@@ -16,4 +16,14 @@ describe('OkbTabs', () => {
     expect(link.getAttribute('href')).toBe('/admin/okb');
     expect(link.getAttribute('aria-current')).toBe('page');
   });
+
+  it('marks only Name Tag active on its address', () => {
+    mocks.pathname.mockReturnValue('/admin/okb/name-tag');
+    render(<OkbTabs />);
+
+    const link = screen.getByRole('link', { name: 'Name Tag' });
+    expect(link.getAttribute('href')).toBe('/admin/okb/name-tag');
+    expect(link.getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('link', { name: 'Jadwal' }).getAttribute('aria-current')).toBeNull();
+  });
 });

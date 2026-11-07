@@ -63,8 +63,8 @@ describe('AdminDashboard', () => {
 
   it('links each upcoming OKB day to its Name Tag page', () => {
     render(<AdminDashboard summary={summary} />);
-    expect(screen.getByRole('link', { name: 'Name Tag 18 Oktober 2026' }).getAttribute('href')).toBe('/admin/name-tag?tanggal=2026-10-18');
-    expect(screen.getByRole('link', { name: 'Name Tag 25 Oktober 2026' }).getAttribute('href')).toBe('/admin/name-tag?tanggal=2026-10-25');
+    expect(screen.getByRole('link', { name: 'Name Tag 18 Oktober 2026' }).getAttribute('href')).toBe('/admin/okb/name-tag?tanggal=2026-10-18');
+    expect(screen.getByRole('link', { name: 'Name Tag 25 Oktober 2026' }).getAttribute('href')).toBe('/admin/okb/name-tag?tanggal=2026-10-25');
   });
 
   it('opens the Jadwal tab to see the full schedule', () => {

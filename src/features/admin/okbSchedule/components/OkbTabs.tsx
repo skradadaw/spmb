@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 
 const OKB_TABS = [
   { href: '/admin/okb', label: 'Jadwal' },
+  { href: '/admin/okb/name-tag', label: 'Name Tag' },
 ] as const;
 
 /** Setiap tab adalah alamat tersendiri, agar dapat dibuka langsung dan tetap terbuka saat dimuat ulang. */

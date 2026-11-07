@@ -66,7 +66,7 @@ describe('ruangOkbSuggestions', () => {
 
 describe('nameTagHref', () => {
   it('links to a date, with or without a Gelombang', () => {
-    expect(nameTagHref('2026-11-20')).toBe('/admin/name-tag?tanggal=2026-11-20');
-    expect(nameTagHref('2026-11-20', 2)).toBe('/admin/name-tag?tanggal=2026-11-20&gelombang=2');
+    expect(nameTagHref('2026-11-20')).toBe('/admin/okb/name-tag?tanggal=2026-11-20');
+    expect(nameTagHref('2026-11-20', 2)).toBe('/admin/okb/name-tag?tanggal=2026-11-20&gelombang=2');
   });
 });

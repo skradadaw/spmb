@@ -72,6 +72,24 @@ describe('OkbSchedulePage', () => {
     expect(link.getAttribute('href')).toBe('/admin/pendaftar?gelombang=3');
   });
 
+  it('links each Gelombang with Pendaftar still scheduled to its Name Tag group', async () => {
+    render(await OkbSchedulePage());
+
+    const link = within(day('Rabu, 25 November 2026')).getByRole('link', { name: 'Name Tag Gelombang 3' });
+    expect(link.getAttribute('href')).toBe('/admin/okb/name-tag?tanggal=2026-11-25&gelombang=3');
+  });
+
+  it('hides the Name Tag link of a Gelombang whose Pendaftar have all attended', async () => {
+    mocks.fetchSchedule.mockResolvedValue({
+      ...view,
+      days: [{ tanggal: '2026-11-20', total: 2, hadir: 2, gelombang: [{ gelombang: 1, total: 2, hadir: 2, terjadwal: 0 }] }],
+    });
+    render(await OkbSchedulePage());
+
+    expect(screen.queryByRole('link', { name: 'Name Tag Gelombang 1' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Data Pendaftar Gelombang 1' })).toBeDefined();
+  });
+
   it('links to Tidak Hadir OKB with its count only when there are any', async () => {
     mocks.fetchSchedule.mockResolvedValue({ ...view, missed: 4 });
     render(await OkbSchedulePage());

@@ -45,7 +45,7 @@ describe('saveRuangOkbAction', () => {
     expect(mocks.update).toHaveBeenCalledWith({ ruang_okb: 'Ruang A' });
     expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pendaftar');
     expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pendaftar/[id]', 'page');
-    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/name-tag');
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb/name-tag');
   });
 
   it('saves one room for many applicants at once, counting each applicant once', async () => {

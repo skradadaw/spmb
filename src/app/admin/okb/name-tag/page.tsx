@@ -21,14 +21,10 @@ export default async function NameTagPage({ searchParams }: Props) {
   const view = rows && buildNameTagView(rows, { tanggal, gelombang });
 
   return <>
-    <section className="flex flex-col gap-2">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
-      <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Name Tag</h1>
-      <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
-        Pilih tanggal dan Gelombang OKB, lalu centang Pendaftar untuk mengisi Ruang OKB mereka sekaligus. Name Tag diunduh untuk semua Pendaftar yang sudah punya Ruang OKB.
-      </p>
-    </section>
-    <div className="mt-6">
+    <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
+      Pilih tanggal dan Gelombang OKB, lalu centang Pendaftar untuk mengisi Ruang OKB mereka sekaligus. Name Tag diunduh untuk semua Pendaftar yang sudah punya Ruang OKB.
+    </p>
+    <div className="mt-4">
       {!view && <Alert variant="destructive"><AlertTitle>Data Name Tag belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau coba lagi nanti.</AlertDescription></Alert>}
       {view && !view.selected && (
         <div className="flex min-h-32 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-[var(--admin-border)] bg-[var(--admin-surface)] px-4 text-center">

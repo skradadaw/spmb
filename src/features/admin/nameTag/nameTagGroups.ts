@@ -56,5 +56,5 @@ export function buildNameTagView(rows: NameTagRow[], params: { tanggal?: unknown
 export function nameTagHref(tanggal: string, gelombang?: OkbWave) {
   const params = new URLSearchParams({ tanggal });
   if (gelombang) params.set('gelombang', String(gelombang));
-  return `/admin/name-tag?${params}`;
+  return `/admin/okb/name-tag?${params}`;
 }

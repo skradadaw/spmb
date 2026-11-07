@@ -69,14 +69,11 @@ describe('AdminShell navigation', () => {
     expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
   });
 
-  it('marks Name Tag active in the menu on its page', () => {
-    mocks.pathname.mockReturnValue('/admin/name-tag');
+  it('keeps Name Tag out of the menu, as a tab of OKB', () => {
     window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell><h1>Konten admin</h1></AdminShell>);
 
-    const link = within(screen.getByTestId('admin-sidebar')).getByRole('link', { name: 'Name Tag' });
-    expect(link.getAttribute('href')).toBe('/admin/name-tag');
-    expect(link.getAttribute('aria-current')).toBe('page');
+    expect(within(screen.getByTestId('admin-sidebar')).queryByRole('link', { name: 'Name Tag' })).toBeNull();
   });
 
   it.each(['/admin/okb', '/admin/okb/name-tag', '/admin/okb/scan'])('marks OKB active in the menu on %s', (pathname) => {
