@@ -24,7 +24,7 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
 - Pendaftar tanpa Ruang OKB tidak dapat dicetak, dan admin melihat jumlahnya sebelum mengunduh.
 
 **Isi kartu**
-- Kartu portrait berjudul "Kartu Peserta" berisi logo dan nama sekolah, Tahun Pelajaran, Ruang OKB, nama anak dalam satu baris, tiga kotak stiker berlabel Literasi, Numerasi, dan Tahsin, serta alamat sekolah.
+- Kartu portrait berjudul "Kartu Peserta" berisi logo sekolah, Tahun Pelajaran, Ruang OKB, nama anak dalam satu baris, tiga kotak stiker berlabel Literasi, Numerasi, dan Tahsin, serta alamat sekolah.
 - Nama yang tidak muat disingkat dari akhir mengikuti pola EYD, misalnya `Muhammad Abdurrahman A.R.`.
 - Panitia menempelkan stiker bintang di kotak, dan tandanya tidak dicatat di sistem.
 
@@ -98,7 +98,7 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
   - menentukan siapa yang dapat dicetak pada cetak sekaligus dan cetak satuan;
   - menghitung Pendaftar tanpa Ruang OKB;
   - membuat nama file yang aman dan unik.
-- **Penggambar kartu (baru).** Modul browser tipis yang menggambar satu kartu ke canvas dan menghasilkan PNG. Modul ini menerima nama lengkap, Ruang OKB, dan logo. Nama disingkat di dalam modul ini, agar pengukuran dan penggambaran memakai huruf yang sama.
+- **Penggambar kartu (baru).** Modul browser tipis yang menggambar satu kartu ke canvas dan menghasilkan PNG. Modul ini menerima nama lengkap, Ruang OKB, dan gambar desain kartu. Nama disingkat di dalam modul ini, agar pengukuran dan penggambaran memakai huruf yang sama.
 - **Pembuat ZIP (baru).** Modul browser yang mengumpulkan PNG menjadi satu ZIP. Proyek ini belum punya pustaka ZIP, jadi perlu satu dependensi ringan yang berjalan di browser.
 - **Server action Ruang OKB (baru).** Satu action menyimpan atau mengosongkan Ruang OKB untuk satu atau banyak Pendaftar.
 - **Halaman admin Name Tag (baru).** Berisi pemilihan tanggal dan Gelombang, daftar Pendaftar, pengisian ruangan, dan unduhan ZIP. Halaman ini ditambahkan ke navigasi admin.
@@ -142,10 +142,13 @@ Sistem juga belum mencatat ruangan. Jadwal OKB hanya menyimpan tanggal dan Gelom
 ### Tata letak kartu
 
 - Gambar berupa PNG portrait dengan proporsi 8,5 × 11 cm dan resolusi 300 dpi, sekitar 1004 × 1299 piksel.
-- Ada ruang kosong di tepi, agar isi kartu tidak terpotong saat ukuran disesuaikan di Word.
-- Urutan isi dari atas ke bawah: logo kecil dan nama sekolah, judul "KARTU PESERTA", "OBSERVASI KESIAPAN BELAJAR (OKB)", Tahun Pelajaran, logo bulat besar, Ruang OKB, nama anak, tiga kotak stiker, lalu alamat sekolah.
-- Tahun Pelajaran dan alamat diambil dari informasi pendaftaran yang sudah ada, bukan ditulis tetap di kartu.
-- Tampilannya bertema hutan untuk anak: pohon, burung, pakis, serta singa, panda, dan rusa yang mengintip dari balik kotak stiker, dengan huruf bulat bawaan sistem. Kotak stiker berukuran sekitar 1,3 cm dan tetap polos, agar kotak kosong tidak terlihat sudah terisi.
+- Desain kartu adalah satu gambar dari sekolah yang memenuhi seluruh kartu sampai ke tepi. Sistem hanya menulis nama Ruang OKB dan nama anak di atasnya.
+- Urutan isi dari atas ke bawah: judul "KARTU PESERTA", "OBSERVASI KESIAPAN BELAJAR (OKB)", Tahun Pelajaran, logo bulat besar tanpa panel di belakangnya, nama Ruang OKB tanpa tulisan "Ruang OKB", nama anak, tiga kotak stiker, lalu alamat sekolah.
+- Label nama tidak menutupi atau menempel pada hewan dan kotak stiker.
+- Judul, Tahun Pelajaran, logo, label Tes OKB, dan alamat sudah menyatu di gambar desain, jadi perubahannya memerlukan gambar baru. Tahun Pelajaran di gambar saat ini adalah 2027-2028.
+- Bila gambar desain gagal dimuat, kartu tidak dibuat dan admin melihat pesan gagal.
+- Nama Ruang OKB yang panjang diperkecil sampai muat di papannya, dengan batas ukuran yang masih terbaca.
+- Tampilannya bertema hutan untuk anak: pohon, burung, serta singa, panda, dan rusa yang mengintip dari balik kotak stiker. Kotak stiker berukuran sekitar 1,3 cm dan tetap polos, agar kotak kosong tidak terlihat sudah terisi.
 - Kotak hanya berlabel Literasi, Numerasi, dan Tahsin, tanpa kolom paraf atau nilai.
 - Kartu tidak memuat Nomor Pendaftaran, Gelombang OKB, tanggal, foto anak, QR, Pilihan Kelas, atau asal sekolah.
 - Tidak ada lembar A4 atau garis potong. Penataan cetak dilakukan admin di Word.

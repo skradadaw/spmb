@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ADMIN_SECONDARY_BUTTON } from '@/features/admin/components/adminStyles';
 import { downloadBlob } from '../downloadBlob';
 import { nameTagFileName, nameTagPrintState } from '../nameTag';
-import { createNameTagPng, loadNameTagLogo } from '../nameTagCard';
+import { createNameTagPng, loadNameTagTemplate } from '../nameTagCard';
 
 /** Cetak satuan untuk kartu yang rusak, hilang, atau terlewat; boleh diunduh ulang kapan saja. */
 export function PrintNameTagButton({ status, namaLengkap, ruangOkb }: { status: string; namaLengkap: string; ruangOkb: string | null }) {
@@ -20,7 +20,7 @@ export function PrintNameTagButton({ status, namaLengkap, ruangOkb }: { status: 
     setBusy(true);
     setFailed(false);
     try {
-      const png = await createNameTagPng({ namaLengkap, ruangOkb, logo: await loadNameTagLogo() });
+      const png = await createNameTagPng({ namaLengkap, ruangOkb, template: await loadNameTagTemplate() });
       downloadBlob(png, nameTagFileName(ruangOkb, namaLengkap));
     } catch {
       setFailed(true);

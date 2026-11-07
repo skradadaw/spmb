@@ -4,18 +4,19 @@ import { PrintNameTagButton } from '../PrintNameTagButton';
 
 const card = vi.hoisted(() => ({
   createNameTagPng: vi.fn(),
-  loadNameTagLogo: vi.fn(),
+  loadNameTagTemplate: vi.fn(),
 }));
 vi.mock('../../nameTagCard', () => card);
 
 const png = new Blob(['png'], { type: 'image/png' });
+const template = { template: true };
 
 describe('PrintNameTagButton', () => {
   let downloaded: string[];
 
   beforeEach(() => {
     downloaded = [];
-    card.loadNameTagLogo.mockReset().mockResolvedValue(null);
+    card.loadNameTagTemplate.mockReset().mockResolvedValue(template);
     card.createNameTagPng.mockReset().mockResolvedValue(png);
     vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:x'), revokeObjectURL: vi.fn() }));
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { downloaded.push(this.download); });
@@ -29,7 +30,7 @@ describe('PrintNameTagButton', () => {
     render(<PrintNameTagButton status="Terjadwal OKB" namaLengkap="AISYAH PUTRI" ruangOkb="Ruang A" />);
     fireEvent.click(screen.getByRole('button', { name: 'Cetak Name Tag' }));
     await waitFor(() => expect(downloaded).toEqual(['Ruang A - Aisyah Putri.png']));
-    expect(card.createNameTagPng).toHaveBeenCalledWith({ namaLengkap: 'AISYAH PUTRI', ruangOkb: 'Ruang A', logo: null });
+    expect(card.createNameTagPng).toHaveBeenCalledWith({ namaLengkap: 'AISYAH PUTRI', ruangOkb: 'Ruang A', template });
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
@@ -63,6 +64,14 @@ describe('PrintNameTagButton', () => {
     fireEvent.click(button);
     await waitFor(() => expect(downloaded).toHaveLength(1));
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('says so when the card design cannot be loaded', async () => {
+    card.loadNameTagTemplate.mockRejectedValueOnce(new Error('missing'));
+    render(<PrintNameTagButton status="Terjadwal OKB" namaLengkap="Aisyah" ruangOkb="Ruang A" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Cetak Name Tag' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('Name Tag gagal dibuat. Silakan coba lagi.');
+    expect(downloaded).toEqual([]);
   });
 
   it.each(['Terverifikasi', 'Diterima', 'Ditolak', 'Dibatalkan'])('renders nothing while %s', (status) => {

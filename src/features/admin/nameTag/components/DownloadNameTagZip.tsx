@@ -7,7 +7,7 @@ import { ADMIN_SECONDARY_BUTTON } from '@/features/admin/components/adminStyles'
 import { cn } from '@/lib/utils';
 import { downloadBlob } from '../downloadBlob';
 import { nameTagZipFileName, planNameTagZip } from '../nameTag';
-import { createNameTagPng, loadNameTagLogo } from '../nameTagCard';
+import { createNameTagPng, loadNameTagTemplate } from '../nameTagCard';
 import type { NameTagPendaftar, NameTagSelection } from '../nameTagGroups';
 import { createNameTagZip } from '../nameTagZip';
 
@@ -21,11 +21,11 @@ export function DownloadNameTagZip({ selected, members }: { selected: NameTagSel
     setBusy(true);
     setFailed(false);
     try {
-      const logo = await loadNameTagLogo();
+      const template = await loadNameTagTemplate();
       const files = [];
       // Satu per satu: setiap kartu memakai canvas ukuran penuh.
       for (const { namaLengkap, ruangOkb, fileName } of cards) {
-        files.push({ fileName, png: await createNameTagPng({ namaLengkap, ruangOkb, logo }) });
+        files.push({ fileName, png: await createNameTagPng({ namaLengkap, ruangOkb, template }) });
       }
       downloadBlob(await createNameTagZip(files), nameTagZipFileName(selected));
     } catch {

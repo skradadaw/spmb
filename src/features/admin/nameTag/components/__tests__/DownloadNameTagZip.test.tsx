@@ -5,12 +5,12 @@ import { DownloadNameTagZip } from '../DownloadNameTagZip';
 
 const card = vi.hoisted(() => ({
   createNameTagPng: vi.fn(),
-  loadNameTagLogo: vi.fn(),
+  loadNameTagTemplate: vi.fn(),
 }));
 vi.mock('../../nameTagCard', () => card);
 
 const selected = { tanggal: '2026-11-20', gelombang: 2 as const };
-const logo = { logo: true };
+const template = { template: true };
 const pngOf = (text: string) => new Blob([text], { type: 'image/png' });
 const member = (id: string, namaLengkap: string, ruangOkb: string | null) => ({ id, namaLengkap, ruangOkb });
 const button = () => screen.getByRole('button', { name: 'Unduh ZIP Name Tag' }) as HTMLButtonElement;
@@ -26,7 +26,7 @@ describe('DownloadNameTagZip', () => {
 
   beforeEach(() => {
     downloads = [];
-    card.loadNameTagLogo.mockReset().mockResolvedValue(logo);
+    card.loadNameTagTemplate.mockReset().mockResolvedValue(template);
     card.createNameTagPng.mockReset().mockImplementation(async ({ namaLengkap }: { namaLengkap: string }) => pngOf(`png of ${namaLengkap}`));
     vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: vi.fn((blob: Blob) => { lastBlob = blob; return 'blob:x'; }), revokeObjectURL: vi.fn() }));
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { downloads.push({ fileName: this.download, blob: lastBlob }); });
@@ -70,15 +70,15 @@ describe('DownloadNameTagZip', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
-  it('draws every card with the full name, its Ruang OKB, and the logo loaded once', async () => {
+  it('draws every card with the full name, its Ruang OKB, and the template loaded once', async () => {
     render(<DownloadNameTagZip selected={selected} members={[member('a', 'Aisyah', 'Ruang A'), member('b', 'Citra', 'Ruang B')]} />);
     fireEvent.click(button());
 
     await waitFor(() => expect(downloads).toHaveLength(1));
-    expect(card.loadNameTagLogo).toHaveBeenCalledTimes(1);
+    expect(card.loadNameTagTemplate).toHaveBeenCalledTimes(1);
     expect(card.createNameTagPng.mock.calls.map(([arg]) => arg)).toEqual([
-      { namaLengkap: 'Aisyah', ruangOkb: 'Ruang A', logo },
-      { namaLengkap: 'Citra', ruangOkb: 'Ruang B', logo },
+      { namaLengkap: 'Aisyah', ruangOkb: 'Ruang A', template },
+      { namaLengkap: 'Citra', ruangOkb: 'Ruang B', template },
     ]);
   });
 
@@ -122,6 +122,16 @@ describe('DownloadNameTagZip', () => {
     await waitFor(() => expect(downloads).toHaveLength(1));
     expect(Object.keys(await unzipDownload())).toHaveLength(2);
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('says so when the card design cannot be loaded, and downloads nothing', async () => {
+    card.loadNameTagTemplate.mockRejectedValueOnce(new Error('missing'));
+    render(<DownloadNameTagZip selected={selected} members={[member('a', 'Aisyah', 'Ruang A')]} />);
+    fireEvent.click(button());
+
+    expect((await screen.findByRole('alert')).textContent).toBe('ZIP Name Tag gagal dibuat. Silakan coba lagi.');
+    expect(card.createNameTagPng).not.toHaveBeenCalled();
+    expect(downloads).toEqual([]);
   });
 
   it('says so when the ZIP cannot be made', async () => {
