@@ -59,6 +59,7 @@ describe('scanAttendanceAction', () => {
     expect(mocks.update).toHaveBeenCalledWith({ status: 'Sudah OKB' });
     expect(mocks.updateFilters).toContainEqual(['status', 'Terjadwal OKB']);
     expect(mocks.updateFilters).toContainEqual(['jadwal_okb_tanggal', '2026-11-07']);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb');
   });
 
   it('shows the Ruang OKB of a freshly scanned applicant', async () => {

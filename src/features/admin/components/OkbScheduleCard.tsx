@@ -58,7 +58,7 @@ export function OkbScheduleCard({ schedule, today }: Pick<AdminDashboardSummary,
             })}
           </ul>
         )}
-        <Link href="/admin/pendaftar?status=Terjadwal+OKB" className="mt-3 inline-block text-xs font-semibold text-emerald-700 hover:underline">Lihat semua yang terjadwal</Link>
+        <Link href="/admin/okb" className="mt-3 inline-block text-xs font-semibold text-emerald-700 hover:underline">Lihat semua jadwal</Link>
       </CardContent>
     </Card>
   );

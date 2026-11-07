@@ -58,6 +58,7 @@ describe('updateParticipantStatusAction', () => {
     expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2 });
     expect(mocks.filters).toContainEqual(['in:status', ['Terverifikasi', 'Terjadwal OKB']]);
     expect(mocks.revalidatePath).toHaveBeenCalledWith(`/admin/pendaftar/${participantId}`);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb');
   });
 
   it('rejects an impossible OKB date', async () => {

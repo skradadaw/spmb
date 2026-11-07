@@ -164,6 +164,7 @@ export async function updateParticipantStatusAction(
   if (result.status === 'success') {
     revalidatePath(`/admin/pendaftar/${participantId}`);
     revalidatePath('/admin/pendaftar');
+    revalidatePath('/admin/okb');
     if (intent === 'decide' || intent === 'undecide' || intent === 'cancel' || intent === 'restore') {
       revalidatePath('/pendaftaran');
       revalidatePath('/');

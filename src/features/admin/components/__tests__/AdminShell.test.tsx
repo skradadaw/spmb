@@ -79,6 +79,16 @@ describe('AdminShell navigation', () => {
     expect(link.getAttribute('aria-current')).toBe('page');
   });
 
+  it.each(['/admin/okb', '/admin/okb/name-tag', '/admin/okb/scan'])('marks OKB active in the menu on %s', (pathname) => {
+    mocks.pathname.mockReturnValue(pathname);
+    window.localStorage.setItem('admin-sidebar-collapsed', 'false');
+    render(<AdminShell><h1>Konten admin</h1></AdminShell>);
+
+    const link = within(screen.getByTestId('admin-sidebar')).getByRole('link', { name: 'OKB' });
+    expect(link.getAttribute('href')).toBe('/admin/okb');
+    expect(link.getAttribute('aria-current')).toBe('page');
+  });
+
   it('keeps logout inside the account menu', () => {
     window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell active="summary"><h1>Konten admin</h1></AdminShell>);

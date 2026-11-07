@@ -89,6 +89,7 @@ export async function scanAttendanceAction(rawNomor: string): Promise<ScanAttend
 
     revalidatePath(`/admin/pendaftar/${applicant.id}`);
     revalidatePath('/admin/pendaftar');
+    revalidatePath('/admin/okb');
     return { outcome: 'present', message: 'Hadir tercatat.', applicant: { ...applicant, status: 'Sudah OKB' } };
   } catch {
     return rejected('Kehadiran tidak dapat dicatat. Periksa koneksi lalu coba lagi.');

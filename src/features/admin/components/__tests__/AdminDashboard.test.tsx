@@ -67,6 +67,11 @@ describe('AdminDashboard', () => {
     expect(screen.getByRole('link', { name: 'Name Tag 25 Oktober 2026' }).getAttribute('href')).toBe('/admin/name-tag?tanggal=2026-10-25');
   });
 
+  it('opens the Jadwal tab to see the full schedule', () => {
+    render(<AdminDashboard summary={summary} />);
+    expect(screen.getByRole('link', { name: 'Lihat semua jadwal' }).getAttribute('href')).toBe('/admin/okb');
+  });
+
   it('hides the scan shortcut and shows an empty state without upcoming OKB', () => {
     render(<AdminDashboard summary={{ ...summary, schedule: [] }} />);
     expect(screen.getByText('Belum ada Jadwal OKB mendatang.')).toBeDefined();
