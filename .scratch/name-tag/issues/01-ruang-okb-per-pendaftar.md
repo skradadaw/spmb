@@ -8,9 +8,9 @@ Keputusan yang sudah disepakati ada di spec, bagian Skema, Aturan Ruang OKB, dan
 
 **Status:** ready-for-agent
 
-- [ ] Skema menambah kolom `ruang_okb` dan trigger pengosongan yang memakai `IS DISTINCT FROM`; tes skema diperbarui.
-- [ ] Nama ruangan dinormalkan, maksimal 30 karakter, dan nilai kosong mengosongkan Ruang OKB.
-- [ ] Action menolak sesi tidak valid, hanya mengubah Pendaftar Terjadwal OKB atau Sudah OKB, dan melaporkan jumlah yang berubah.
-- [ ] Detail Pendaftar Terjadwal OKB dan Sudah OKB menampilkan dan dapat mengubah Ruang OKB; status lain tidak dapat mengubahnya.
-- [ ] Hasil Scan Kehadiran menampilkan Ruang OKB, termasuk saat Pendaftar sudah tercatat hadir.
-- [ ] Ekspor admin memuat Ruang OKB; data untuk orang tua tidak memuatnya.
+- [x] Skema menambah kolom `ruang_okb` dan trigger pengosongan yang memakai `IS DISTINCT FROM`; tes skema diperbarui.
+- [x] Nama ruangan dinormalkan, maksimal 30 karakter, dan nilai kosong mengosongkan Ruang OKB.
+- [x] Action menolak sesi tidak valid, hanya mengubah Pendaftar Terjadwal OKB atau Sudah OKB, dan melaporkan jumlah yang berubah.
+- [x] Detail Pendaftar Terjadwal OKB dan Sudah OKB menampilkan dan dapat mengubah Ruang OKB; status lain tidak dapat mengubahnya.
+- [x] Hasil Scan Kehadiran menampilkan Ruang OKB, termasuk saat Pendaftar sudah tercatat hadir.
+- [x] Ekspor admin memuat Ruang OKB; data untuk orang tua tidak memuatnya.

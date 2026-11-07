@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
 import { createParticipantsRepository } from '../server/participantsRepository';
-import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contracts';
+import { PARTICIPANT_DETAIL_COLUMNS, PARTICIPANT_EXPORT_COLUMNS, PARTICIPANT_LIST_COLUMNS } from '../contracts';
 import { parseParticipantListQuery } from '../query';
 
 function fixture() {
@@ -191,11 +191,23 @@ describe('participants repository', () => {
     q.maybeSingle.mockResolvedValue({ data: { id: 'a', status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2 }, error: null });
     q.range.mockResolvedValueOnce({ data: [], error: null });
     const detail = await repo.getById('a');
-    expect(detail?.okb).toEqual({ jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 2' });
+    expect(detail?.okb).toEqual({ jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 2', ruangOkb: null });
 
     q.range.mockResolvedValueOnce({ data: [{ id: 'a', jadwal_okb_gelombang: 3 }], error: null });
     const [record] = await repo.exportDetails(['Terjadwal OKB']);
     expect(record.fields.jadwalGelombang).toBe('Gelombang 3');
+  });
+  it('reads the Ruang OKB in the detail and the export', async () => {
+    const { q, repo } = fixture();
+    q.maybeSingle.mockResolvedValue({ data: { id: 'a', status: 'Terjadwal OKB', ruang_okb: 'Ruang A' }, error: null });
+    q.range.mockResolvedValueOnce({ data: [], error: null });
+    expect((await repo.getById('a'))?.okb.ruangOkb).toBe('Ruang A');
+    expect(PARTICIPANT_DETAIL_COLUMNS.split(',')).toContain('ruang_okb');
+
+    q.range.mockResolvedValueOnce({ data: [{ id: 'a', ruang_okb: 'Ruang B' }], error: null });
+    const [record] = await repo.exportDetails(['Terjadwal OKB']);
+    expect(record.fields.ruangOkb).toBe('Ruang B');
+    expect(PARTICIPANT_EXPORT_COLUMNS.split(',')).toContain('ruang_okb');
   });
   it('counts applicants per status across batches, starting every status at zero', async () => {
     const { q, repo } = fixture();

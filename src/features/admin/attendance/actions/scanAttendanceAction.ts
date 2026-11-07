@@ -15,6 +15,7 @@ export type ScanApplicant = {
   jadwalTanggal: string | null;
   /** Gelombang OKB name, e.g. "Gelombang 1". */
   jadwalGelombang: string | null;
+  ruangOkb: string | null;
 };
 
 export type ScanAttendanceResult = {
@@ -46,7 +47,7 @@ export async function scanAttendanceAction(rawNomor: string): Promise<ScanAttend
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('pendaftar')
-      .select('id,nomor_pendaftaran,nama_lengkap,status,jadwal_okb_tanggal,jadwal_okb_gelombang')
+      .select('id,nomor_pendaftaran,nama_lengkap,status,jadwal_okb_tanggal,jadwal_okb_gelombang,ruang_okb')
       .eq('nomor_pendaftaran', nomor)
       .maybeSingle();
     if (error) throw error;
@@ -60,6 +61,7 @@ export async function scanAttendanceAction(rawNomor: string): Promise<ScanAttend
       status: String(data.status ?? ''),
       jadwalTanggal: typeof data.jadwal_okb_tanggal === 'string' ? data.jadwal_okb_tanggal : null,
       jadwalGelombang: wave ? okbWaveLabel(wave) : null,
+      ruangOkb: typeof data.ruang_okb === 'string' && data.ruang_okb ? data.ruang_okb : null,
     };
 
     if (applicant.status === 'Sudah OKB') return rejected('Sudah tercatat hadir OKB.', applicant);

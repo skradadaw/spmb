@@ -61,6 +61,24 @@ describe('scanAttendanceAction', () => {
     expect(mocks.updateFilters).toContainEqual(['jadwal_okb_tanggal', '2026-11-07']);
   });
 
+  it('shows the Ruang OKB of a freshly scanned applicant', async () => {
+    mocks.lookup.mockResolvedValue({ data: row({ ruang_okb: 'Ruang A' }), error: null });
+
+    await expect(scanAttendanceAction('OB-2027-001')).resolves.toMatchObject({ outcome: 'present', applicant: { ruangOkb: 'Ruang A' } });
+  });
+
+  it('shows the Ruang OKB of an applicant already recorded present', async () => {
+    mocks.lookup.mockResolvedValue({ data: row({ status: 'Sudah OKB', ruang_okb: 'Ruang A' }), error: null });
+
+    await expect(scanAttendanceAction('OB-2027-001')).resolves.toMatchObject({ outcome: 'rejected', message: 'Sudah tercatat hadir OKB.', applicant: { ruangOkb: 'Ruang A' } });
+  });
+
+  it('reports no Ruang OKB when none is assigned', async () => {
+    mocks.lookup.mockResolvedValue({ data: row({ ruang_okb: null }), error: null });
+
+    await expect(scanAttendanceAction('OB-2027-001')).resolves.toMatchObject({ applicant: { ruangOkb: null } });
+  });
+
   it('uses the Jakarta date, not the UTC date, near midnight', async () => {
     vi.setSystemTime(new Date('2026-11-06T18:30:00Z')); // 7 Nov 01.30 WIB
     mocks.lookup.mockResolvedValue({ data: row(), error: null });

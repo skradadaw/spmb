@@ -278,6 +278,27 @@ CREATE TRIGGER trg_clear_nisn_flag
 BEFORE UPDATE OF nisn ON public.pendaftar
 FOR EACH ROW EXECUTE FUNCTION public.clear_nisn_flag_on_change();
 
+-- Ruang OKB: ruangan tempat Pendaftar mengikuti ketiga Tes OKB; hanya terlihat oleh admin.
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ruang_okb TEXT;
+
+-- Ruang OKB dikosongkan bila Jadwal OKB benar-benar berubah atau dihapus; menyimpan ulang jadwal yang sama tidak mengubahnya.
+CREATE OR REPLACE FUNCTION public.clear_ruang_okb_on_schedule_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.jadwal_okb_tanggal IS DISTINCT FROM OLD.jadwal_okb_tanggal OR NEW.jadwal_okb_gelombang IS DISTINCT FROM OLD.jadwal_okb_gelombang THEN
+    NEW.ruang_okb := NULL;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_clear_ruang_okb ON public.pendaftar;
+CREATE TRIGGER trg_clear_ruang_okb
+BEFORE UPDATE OF jadwal_okb_tanggal, jadwal_okb_gelombang ON public.pendaftar
+FOR EACH ROW EXECUTE FUNCTION public.clear_ruang_okb_on_schedule_change();
+
 -- Perlu Tindak Lanjut sudah tidak dipakai; hitungannya dibuang.
 DROP TRIGGER IF EXISTS trg_sync_berkas_tindak_lanjut ON public.verifikasi_dokumen;
 DROP FUNCTION IF EXISTS public.sync_berkas_tindak_lanjut();

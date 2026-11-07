@@ -207,6 +207,34 @@ describe('ParticipantDetail', () => {
     expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Hadir OKB');
   });
 
+  it.each(['Terjadwal OKB', 'Sudah OKB'])('lets the admin change the Ruang OKB while %s', (status) => {
+    render(<ParticipantDetail participant={{ ...participant, status, okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: 'Ruang A' } }} />);
+    expect((screen.getByLabelText('Ruang OKB') as HTMLInputElement).value).toBe('Ruang A');
+    expect(screen.getByRole('button', { name: 'Simpan ruangan' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Kosongkan' })).toBeDefined();
+  });
+
+  it('marks a missing Ruang OKB and offers nothing to clear', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB', okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: null } }} />);
+    const input = screen.getByLabelText('Ruang OKB') as HTMLInputElement;
+    expect(input.value).toBe('');
+    expect(within(input.closest('form') as HTMLElement).getByText('Belum diisi')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Kosongkan' })).toBeNull();
+  });
+
+  it.each(['Terverifikasi', 'Diterima', 'Ditolak', 'Dibatalkan'])('does not let the admin change the Ruang OKB while %s', (status) => {
+    render(<ParticipantDetail participant={{ ...participant, status, okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: 'Ruang A' } }} />);
+    expect(screen.queryByLabelText('Ruang OKB')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Simpan ruangan' })).toBeNull();
+    // A room kept from before, e.g. while Dibatalkan, stays readable.
+    expect(screen.getByText('Ruang A')).toBeDefined();
+  });
+
+  it('shows no Ruang OKB at all before the applicant is scheduled', () => {
+    render(<ParticipantDetail participant={{ ...participant, status: 'Terverifikasi' }} />);
+    expect(screen.queryByText('Ruang OKB')).toBeNull();
+  });
+
   it('asks for confirmation before removing a Jadwal OKB', () => {
     render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB', okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1' } }} />);
     expect(screen.queryByRole('button', { name: /ya, hapus jadwal/i })).toBeNull();

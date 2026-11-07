@@ -6,6 +6,7 @@ import { Camera, CameraOff, CheckCircle2, RotateCcw, Undo2, XCircle } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { updateParticipantStatusAction } from '@/features/admin/participants/actions/updateParticipantStatusAction';
+import { RUANG_OKB_STATUSES } from '@/features/admin/nameTag/nameTag';
 import { scanAttendanceAction, type ScanAttendanceResult } from '../actions/scanAttendanceAction';
 
 const SCAN_INTERVAL_MS = 250;
@@ -188,6 +189,11 @@ function ResultCard({ item, undoing, undoError, onUndo }: { item: HistoryItem; u
             <>
               <p className="mt-1 break-words text-base font-semibold text-slate-900">{item.applicant.namaLengkap}</p>
               <p className="mt-0.5 text-sm text-slate-600">{item.applicant.nomorPendaftaran}{item.applicant.jadwalGelombang ? ` · ${item.applicant.jadwalGelombang}` : ''}</p>
+              {item.applicant.ruangOkb ? (
+                <p data-ruang-okb className="mt-2 text-sm text-slate-600">Ruang OKB <span className="block break-words text-xl font-bold text-slate-950">{item.applicant.ruangOkb}</span></p>
+              ) : (RUANG_OKB_STATUSES as readonly string[]).includes(item.applicant.status) && (
+                <p className="mt-2 text-sm font-semibold text-amber-800">Ruang OKB belum diisi</p>
+              )}
             </>
           )}
           <p className="mt-2 text-xs text-slate-500">{item.at}</p>

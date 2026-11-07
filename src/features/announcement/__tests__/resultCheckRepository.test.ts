@@ -19,7 +19,7 @@ describe('result check repository', () => {
     });
     expect(q.select).toHaveBeenCalledWith(RESULT_CHECK_COLUMNS);
     expect(q.eq).toHaveBeenCalledWith('nomor_pendaftaran', 'OB-2027-001');
-    for (const secret of ['nik', 'alamat', 'ayah', 'ibu', 'telepon', 'dokumen', 'catatan']) expect(RESULT_CHECK_COLUMNS).not.toContain(secret);
+    for (const secret of ['nik', 'alamat', 'ayah', 'ibu', 'telepon', 'dokumen', 'catatan', 'ruang_okb']) expect(RESULT_CHECK_COLUMNS).not.toContain(secret);
   });
 
   it('counts failures and checks the lock in the database with the configured limits', async () => {

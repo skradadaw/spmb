@@ -172,6 +172,7 @@ export function ParticipantDetail({ participant, backHref = '/admin/pendaftar', 
             previousStatus={participant.previousStatus}
             jadwalTanggal={participant.okb.jadwalTanggal ?? null}
             jadwalGelombang={participant.okb.jadwalGelombang ?? null}
+            ruangOkb={participant.okb.ruangOkb ?? null}
             pilihanKelas={participant.registration.pilihanKelas ?? null}
             kelasPenempatan={participant.decision.kelasPenempatan ?? null}
             nomorVa={participant.nomorVa}

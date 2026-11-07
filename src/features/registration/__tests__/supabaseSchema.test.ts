@@ -398,6 +398,13 @@ describe('Supabase registration security schema', () => {
     expect(compactSchema).toContain('ALTER TABLE public.pendaftar DROP COLUMN IF EXISTS berkas_tindak_lanjut;');
   });
 
+  it('stores an optional Ruang OKB and clears it only when the Jadwal OKB really changes', () => {
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ruang_okb TEXT;');
+    expect(compactSchema).toContain('IF NEW.jadwal_okb_tanggal IS DISTINCT FROM OLD.jadwal_okb_tanggal OR NEW.jadwal_okb_gelombang IS DISTINCT FROM OLD.jadwal_okb_gelombang THEN NEW.ruang_okb := NULL;');
+    expect(compactSchema).toContain('DROP TRIGGER IF EXISTS trg_clear_ruang_okb ON public.pendaftar;');
+    expect(compactSchema).toContain('BEFORE UPDATE OF jadwal_okb_tanggal, jadwal_okb_gelombang ON public.pendaftar FOR EACH ROW EXECUTE FUNCTION public.clear_ruang_okb_on_schedule_change();');
+  });
+
   it('lets admins change class choice only when the destination class has a free seat', () => {
     const functionSql = compactSql(schema.match(
       /CREATE OR REPLACE FUNCTION public\.update_applicant_registration\([\s\S]*?\$\$;/,

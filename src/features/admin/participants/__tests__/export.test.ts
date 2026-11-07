@@ -4,7 +4,7 @@ import { participantExportXlsx } from '../export';
 
 describe('participant Excel export', () => {
   it('creates an XLSX workbook with styled headers, readable data, and no formula cells', async () => {
-    const bytes = await participantExportXlsx([{ id: '1', createdAt: '2026-10-11T00:00:00Z', updatedAt: null, status: 'Diterima', adminNote: 'Periksa berkas', nisnMismatch: true, fields: { namaLengkap: '=HYPERLINK("x")', jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Reguler', asalSekolah: 'TK Melati', fatherNama: 'Budi' } }]);
+    const bytes = await participantExportXlsx([{ id: '1', createdAt: '2026-10-11T00:00:00Z', updatedAt: null, status: 'Diterima', adminNote: 'Periksa berkas', nisnMismatch: true, fields: { namaLengkap: '=HYPERLINK("x")', jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Reguler', asalSekolah: 'TK Melati', fatherNama: 'Budi', ruangOkb: 'LAB komputer' } }]);
     expect(new TextDecoder().decode(bytes.slice(0, 2))).toBe('PK');
     const entries: Record<string, string> = {};
     for (let offset = 0; bytes.readUInt32LE(offset) === 0x04034b50;) {
@@ -24,8 +24,10 @@ describe('participant Excel export', () => {
     expect(sheet).toContain('Administrasi - Catatan admin');
     expect(sheet).toContain('Rujukan murid - Kategori pengusul');
     expect(sheet).toContain('OKB - Tanggal OKB');
+    expect(sheet).toContain('OKB - Ruang OKB');
+    expect(sheet).toContain('>LAB komputer<');
     expect(sheet).toContain('Budi');
-    expect(sheet).toContain('A1:BD2');
+    expect(sheet).toContain('A1:BE2');
     expect(sheet).toContain('Administrasi - NISN tidak sesuai');
     expect(sheet).toContain('>Ya<');
     expect(sheet).toContain('11 Oktober 2026');

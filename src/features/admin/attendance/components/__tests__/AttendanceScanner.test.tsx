@@ -35,6 +35,35 @@ describe('AttendanceScanner', () => {
     expect(screen.queryByRole('button', { name: 'Batalkan' })).toBeNull();
   });
 
+  it('shows where to send the applicant after a scan', async () => {
+    mocks.scan.mockResolvedValue({ outcome: 'present', message: 'Hadir tercatat.', applicant: { ...applicant, ruangOkb: 'Ruang A' } });
+    render(<AttendanceScanner />);
+    scanManually();
+    expect((await screen.findByText('Ruang A')).closest('[data-ruang-okb]')?.textContent).toContain('Ruang OKB');
+  });
+
+  it('still shows the Ruang OKB when the applicant was already recorded present', async () => {
+    mocks.scan.mockResolvedValue({ outcome: 'rejected', message: 'Sudah tercatat hadir OKB.', applicant: { ...applicant, ruangOkb: 'Ruang A' } });
+    render(<AttendanceScanner />);
+    scanManually();
+    expect(await screen.findByText('Ruang A')).toBeDefined();
+  });
+
+  it('says so when the scanned applicant has no Ruang OKB yet', async () => {
+    mocks.scan.mockResolvedValue({ outcome: 'present', message: 'Hadir tercatat.', applicant: { ...applicant, ruangOkb: null } });
+    render(<AttendanceScanner />);
+    scanManually();
+    expect(await screen.findByText('Ruang OKB belum diisi')).toBeDefined();
+  });
+
+  it('does not mention a Ruang OKB for an applicant who is not scheduled', async () => {
+    mocks.scan.mockResolvedValue({ outcome: 'rejected', message: 'Belum dijadwalkan OKB. Jadwalkan terlebih dahulu di detail pendaftar.', applicant: { ...applicant, status: 'Terverifikasi', ruangOkb: null } });
+    render(<AttendanceScanner />);
+    scanManually();
+    await screen.findByText(/Belum dijadwalkan OKB/);
+    expect(screen.queryByText(/Ruang OKB/)).toBeNull();
+  });
+
   it('offers no undo for a rejected scan', async () => {
     mocks.scan.mockResolvedValue({ outcome: 'rejected', message: 'Sudah tercatat hadir OKB.', applicant });
     render(<AttendanceScanner />);
