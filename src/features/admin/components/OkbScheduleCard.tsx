@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { CalendarDays, ScanLine } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { nameTagHref } from '@/features/admin/nameTag/nameTagGroups';
 import { cn } from '@/lib/utils';
 import type { AdminDashboardSummary } from '../contracts';
 
@@ -50,6 +51,7 @@ export function OkbScheduleCard({ schedule, today }: Pick<AdminDashboardSummary,
                         <li key={wave.label} className="rounded-full border border-sky-100 bg-sky-50 px-2 py-0.5 text-[11px] font-medium leading-4 text-sky-800">{waveLabel(wave, day.waves.length === 1)}</li>
                       ))}
                     </ul>
+                    <Link href={nameTagHref(day.date)} aria-label={`Name Tag ${formatDate(day.date, { day: 'numeric', month: 'long', year: 'numeric' })}`} className="mt-1.5 inline-block text-xs font-semibold text-emerald-700 hover:underline">Name Tag</Link>
                   </div>
                   <p className="shrink-0 text-right leading-tight">
                     <span className="block text-xl font-bold tabular-nums text-slate-900">{day.total}</span>

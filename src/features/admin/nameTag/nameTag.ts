@@ -73,3 +73,31 @@ export function nameTagFileName(ruangOkb: string, fullName: string) {
   const name = formatNameTagName(safeFileNamePart(fullName)).slice(0, 80).trim();
   return `${[ruang, name].filter(Boolean).join(' - ') || 'Name Tag'}.png`;
 }
+
+/** Huruf besar-kecil tidak membedakan: Windows akan menimpa file yang hanya berbeda di situ. */
+function uniqueFileName(fileName: string, used: Set<string>) {
+  let candidate = fileName;
+  for (let copy = 2; used.has(candidate.toLowerCase()); copy++) {
+    candidate = fileName.replace(/\.png$/, ` (${copy}).png`);
+  }
+  used.add(candidate.toLowerCase());
+  return candidate;
+}
+
+/**
+ * Cetak sekaligus: Pendaftar tanpa Ruang OKB tidak ikut dan hanya dihitung.
+ * Akhiran nama kembar mengikuti urutan `members`, jadi stabil selama urutannya sama.
+ */
+export function planNameTagZip(members: { namaLengkap: string; ruangOkb: string | null }[]) {
+  const used = new Set<string>();
+  const cards: { namaLengkap: string; ruangOkb: string; fileName: string }[] = [];
+  for (const { namaLengkap, ruangOkb: rawRuang } of members) {
+    const ruangOkb = normalizeRuangOkb(rawRuang ?? '');
+    if (ruangOkb) cards.push({ namaLengkap, ruangOkb, fileName: uniqueFileName(nameTagFileName(ruangOkb, namaLengkap), used) });
+  }
+  return { cards, withoutRuangCount: members.length - cards.length };
+}
+
+export function nameTagZipFileName({ tanggal, gelombang }: { tanggal: string; gelombang: number }) {
+  return `Name Tag ${tanggal} Gelombang ${gelombang}.zip`;
+}

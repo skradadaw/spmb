@@ -1,6 +1,7 @@
 import { CalendarDays } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { DownloadNameTagZip } from '@/features/admin/nameTag/components/DownloadNameTagZip';
 import { NameTagGroupPicker } from '@/features/admin/nameTag/components/NameTagGroupPicker';
 import { RuangOkbBulkForm } from '@/features/admin/nameTag/components/RuangOkbBulkForm';
 import { buildNameTagView } from '@/features/admin/nameTag/nameTagGroups';
@@ -24,7 +25,7 @@ export default async function NameTagPage({ searchParams }: Props) {
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
       <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Name Tag</h1>
       <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
-        Pilih tanggal dan Gelombang OKB, lalu centang Pendaftar untuk mengisi Ruang OKB mereka sekaligus.
+        Pilih tanggal dan Gelombang OKB, lalu centang Pendaftar untuk mengisi Ruang OKB mereka sekaligus. Name Tag diunduh untuk semua Pendaftar yang sudah punya Ruang OKB.
       </p>
     </section>
     <div className="mt-6">
@@ -38,7 +39,8 @@ export default async function NameTagPage({ searchParams }: Props) {
       {view?.selected && (
         <section aria-label="Pendaftar pada kelompok terpilih" className="space-y-4 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-5 shadow-sm">
           <NameTagGroupPicker groups={view.groups} selected={view.selected} />
-          {/* key: centang dan isian tidak terbawa ke kelompok lain. */}
+          {/* key: pesan gagal, centang, dan isian tidak terbawa ke kelompok lain. */}
+          <DownloadNameTagZip key={`zip/${view.selected.tanggal}/${view.selected.gelombang}`} selected={view.selected} members={view.members} />
           <RuangOkbBulkForm key={`${view.selected.tanggal}/${view.selected.gelombang}`} members={view.members} suggestions={view.suggestions} />
         </section>
       )}

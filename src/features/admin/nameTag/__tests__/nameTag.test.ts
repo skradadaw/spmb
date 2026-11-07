@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abbreviateName, isValidRuangOkb, nameTagFileName, nameTagPrintState, normalizeRuangOkb, RUANG_OKB_MAX_LENGTH } from '../nameTag';
+import { abbreviateName, isValidRuangOkb, nameTagFileName, nameTagPrintState, nameTagZipFileName, normalizeRuangOkb, planNameTagZip, RUANG_OKB_MAX_LENGTH } from '../nameTag';
 
 /** One unit per character, so the max width is the longest string that fits. */
 const byLength = (text: string) => text.length;
@@ -100,6 +100,61 @@ describe('nameTagFileName', () => {
     const fileName = nameTagFileName('Ruang A', 'a'.repeat(200));
     expect(fileName.length).toBeLessThanOrEqual(100);
     expect(fileName.endsWith('.png')).toBe(true);
+  });
+});
+
+describe('planNameTagZip', () => {
+  const member = (namaLengkap: string, ruangOkb: string | null) => ({ id: namaLengkap, namaLengkap, ruangOkb });
+  const fileNames = (members: ReturnType<typeof member>[]) => planNameTagZip(members).cards.map(card => card.fileName);
+
+  it('takes only Pendaftar with a Ruang OKB, keeps their order, and counts the rest', () => {
+    const plan = planNameTagZip([member('Aisyah', 'Ruang B'), member('Bilal', null), member('Citra', 'Ruang A'), member('Dina', ''), member('Eka', '   ')]);
+
+    expect(plan.cards).toEqual([
+      { namaLengkap: 'Aisyah', ruangOkb: 'Ruang B', fileName: 'Ruang B - Aisyah.png' },
+      { namaLengkap: 'Citra', ruangOkb: 'Ruang A', fileName: 'Ruang A - Citra.png' },
+    ]);
+    expect(plan.withoutRuangCount).toBe(3);
+  });
+
+  it('has nothing to download for an empty group', () => {
+    expect(planNameTagZip([])).toEqual({ cards: [], withoutRuangCount: 0 });
+  });
+
+  it('numbers twins in the same room in the order given', () => {
+    expect(fileNames([member('Aisyah Putri', 'Ruang A'), member('Aisyah Putri', 'Ruang A'), member('Aisyah Putri', 'Ruang A')])).toEqual([
+      'Ruang A - Aisyah Putri.png',
+      'Ruang A - Aisyah Putri (2).png',
+      'Ruang A - Aisyah Putri (3).png',
+    ]);
+  });
+
+  it('does not number twins in different rooms', () => {
+    expect(fileNames([member('Aisyah', 'Ruang A'), member('Aisyah', 'Ruang B')])).toEqual(['Ruang A - Aisyah.png', 'Ruang B - Aisyah.png']);
+  });
+
+  it('treats names differing only in letter case as twins, since Windows would overwrite one', () => {
+    expect(fileNames([member('Aisyah', 'Ruang A'), member('AISYAH', 'RUANG A')])).toEqual(['Ruang A - Aisyah.png', 'RUANG A - Aisyah (2).png']);
+  });
+
+  it('treats names that become equal after cleaning as twins', () => {
+    expect(fileNames([member('Aisyah Putri', 'Lab 1'), member('Aisyah*Putri', 'Lab/1')])).toEqual(['Lab 1 - Aisyah Putri.png', 'Lab 1 - Aisyah Putri (2).png']);
+    const long = 'a'.repeat(100);
+    expect(new Set(fileNames([member(`${long}x`, 'Ruang A'), member(`${long}y`, 'Ruang A')])).size).toBe(2);
+  });
+
+  it('steps past a name that already looks numbered', () => {
+    expect(fileNames([member('Aisyah', 'Ruang A'), member('Aisyah (2)', 'Ruang A'), member('Aisyah', 'Ruang A')])).toEqual([
+      'Ruang A - Aisyah.png',
+      'Ruang A - Aisyah (2).png',
+      'Ruang A - Aisyah (3).png',
+    ]);
+  });
+});
+
+describe('nameTagZipFileName', () => {
+  it('holds the date and the Gelombang OKB', () => {
+    expect(nameTagZipFileName({ tanggal: '2026-11-20', gelombang: 2 })).toBe('Name Tag 2026-11-20 Gelombang 2.zip');
   });
 });
 

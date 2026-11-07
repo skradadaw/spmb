@@ -8,8 +8,8 @@ Keputusan yang sudah disepakati ada di spec, bagian Pemilihan Pendaftar dan Nama
 
 **Status:** ready-for-agent
 
-- [ ] Modul Name Tag murni memilih Pendaftar yang masuk ZIP, menghitung yang tanpa Ruang OKB, dan membuat nama file unik dengan akhiran seperti `(2)` dalam urutan yang stabil.
-- [ ] ZIP berisi satu PNG per Pendaftar yang memenuhi syarat, dan nama ZIP memuat tanggal dan Gelombang OKB.
-- [ ] Halaman menampilkan jumlah kartu dan jumlah Pendaftar tanpa Ruang OKB, dan menonaktifkan unduhan bila tidak ada kartu.
-- [ ] Kegagalan membuat gambar atau ZIP menampilkan pesan yang jelas.
-- [ ] Kartu Jadwal OKB terdekat menautkan ke halaman Name Tag.
+- [x] Modul Name Tag murni memilih Pendaftar yang masuk ZIP, menghitung yang tanpa Ruang OKB, dan membuat nama file unik dengan akhiran seperti `(2)` dalam urutan yang stabil.
+- [x] ZIP berisi satu PNG per Pendaftar yang memenuhi syarat, dan nama ZIP memuat tanggal dan Gelombang OKB.
+- [x] Halaman menampilkan jumlah kartu dan jumlah Pendaftar tanpa Ruang OKB, dan menonaktifkan unduhan bila tidak ada kartu.
+- [x] Kegagalan membuat gambar atau ZIP menampilkan pesan yang jelas.
+- [x] Kartu Jadwal OKB terdekat menautkan ke halaman Name Tag.

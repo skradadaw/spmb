@@ -75,12 +75,33 @@ describe('NameTagPage', () => {
     expect(mocks.replace).toHaveBeenCalledWith('/admin/name-tag?tanggal=2026-11-20&gelombang=2', { scroll: false });
   });
 
+  it('counts the cards of the selected group only, and offers the ZIP when there are some', async () => {
+    mocks.fetchRows.mockResolvedValue([
+      ...rows,
+      { id: 'd', namaLengkap: 'Dina', ruangOkb: 'Ruang B', tanggal: '2026-11-20', gelombang: 1 },
+      { id: 'e', namaLengkap: 'Eka', ruangOkb: null, tanggal: '2026-11-20', gelombang: 1 },
+    ]);
+    render(await open({ tanggal: '2026-11-20', gelombang: '1' }));
+
+    expect(screen.getByText('2 kartu akan diunduh.')).toBeDefined();
+    expect(screen.getByText('1 Pendaftar tanpa Ruang OKB tidak ikut diunduh.')).toBeDefined();
+    expect((screen.getByRole('button', { name: 'Unduh ZIP Name Tag' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('disables the ZIP when nobody in the group has a Ruang OKB', async () => {
+    render(await open({ tanggal: '2026-11-25', gelombang: '3' }));
+
+    expect(screen.getByText('0 kartu akan diunduh.')).toBeDefined();
+    expect((screen.getByRole('button', { name: 'Unduh ZIP Name Tag' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it('says so when no upcoming Jadwal OKB exists', async () => {
     mocks.fetchRows.mockResolvedValue([]);
     render(await open());
 
     expect(screen.getByText('Belum ada Jadwal OKB mendatang.')).toBeDefined();
     expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Unduh ZIP Name Tag' })).toBeNull();
   });
 
   it('shows an error instead of an empty list when the query fails', async () => {
