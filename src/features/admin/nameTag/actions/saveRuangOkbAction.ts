@@ -35,6 +35,7 @@ export async function saveRuangOkbAction(participantIds: string[], rawRuang: str
     // Juga saat ada status yang sudah berubah, agar admin melihat data terbaru.
     revalidatePath('/admin/pendaftar');
     revalidatePath('/admin/pendaftar/[id]', 'page');
+    revalidatePath('/admin/name-tag');
 
     const updated = data.length;
     if (updated === 0) return fail('Status pendaftar sudah berubah. Ruang OKB tidak disimpan.');

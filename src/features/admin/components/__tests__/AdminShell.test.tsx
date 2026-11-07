@@ -2,10 +2,13 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdminShell } from '../AdminShell';
 
+const mocks = vi.hoisted(() => ({ pathname: vi.fn(() => '/admin') }));
+vi.mock('next/navigation', () => ({ usePathname: mocks.pathname }));
 vi.mock('@/features/auth/logout-action', () => ({ logoutAdminAction: vi.fn() }));
 
 describe('AdminShell navigation', () => {
   beforeEach(() => {
+    mocks.pathname.mockReturnValue('/admin');
     const values = new Map<string, string>();
     Object.defineProperty(window, 'localStorage', {
       configurable: true,
@@ -64,6 +67,16 @@ describe('AdminShell navigation', () => {
 
     fireEvent.keyDown(window, { key: 'b', ctrlKey: true });
     expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
+  });
+
+  it('marks Name Tag active in the menu on its page', () => {
+    mocks.pathname.mockReturnValue('/admin/name-tag');
+    window.localStorage.setItem('admin-sidebar-collapsed', 'false');
+    render(<AdminShell><h1>Konten admin</h1></AdminShell>);
+
+    const link = within(screen.getByTestId('admin-sidebar')).getByRole('link', { name: 'Name Tag' });
+    expect(link.getAttribute('href')).toBe('/admin/name-tag');
+    expect(link.getAttribute('aria-current')).toBe('page');
   });
 
   it('keeps logout inside the account menu', () => {

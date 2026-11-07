@@ -1,10 +1,11 @@
-import { Armchair, LayoutDashboard, Megaphone, ScanLine, UsersRound } from 'lucide-react';
+import { Armchair, IdCard, LayoutDashboard, Megaphone, ScanLine, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-export type AdminSection = 'summary' | 'participants' | 'attendance' | 'announcement' | 'capacity';
+export type AdminSection = 'summary' | 'participants' | 'nameTag' | 'attendance' | 'announcement' | 'capacity';
 export const ADMIN_NAV_ITEMS = [
   { key: 'summary', href: '/admin', label: 'Ringkasan', icon: LayoutDashboard },
   { key: 'participants', href: '/admin/pendaftar', label: 'Data Pendaftar', icon: UsersRound },
+  { key: 'nameTag', href: '/admin/name-tag', label: 'Name Tag', icon: IdCard },
   { key: 'attendance', href: '/admin/scan', label: 'Scan Kehadiran', icon: ScanLine },
   { key: 'announcement', href: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
   { key: 'capacity', href: '/admin/kuota', label: 'Kuota Kelas', icon: Armchair },
