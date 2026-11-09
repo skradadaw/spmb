@@ -7,7 +7,9 @@ const nextConfig: NextConfig = {
   redirects() {
     return [
       { source: "/admin/name-tag", destination: "/admin/okb/name-tag", permanent: false },
-      { source: "/admin/scan", destination: "/admin/okb/scan", permanent: false },
+      { source: "/admin/okb/scan", destination: "/admin/scan", permanent: false },
+      { source: "/admin/pengumuman/:path*", destination: "/admin/okb/pengumuman/:path*", permanent: false },
+      { source: "/admin/kuota", destination: "/admin/pengaturan/kuota", permanent: false },
     ];
   },
 };

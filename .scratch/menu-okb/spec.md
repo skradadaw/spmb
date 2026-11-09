@@ -204,3 +204,9 @@ Tes yang baik memeriksa perilaku yang terlihat dari luar: apa yang ditampilkan, 
 - Pekerjaan ini bergantung pada fitur Name Tag, jadi harus berawal dari `feat/name-tag` atau setelah branch itu digabung ke `main`.
 - Kartu di Ringkasan dan tab Jadwal sengaja menghitung secara berbeda: kartu hanya menghitung Pendaftar yang masih Terjadwal OKB, sedangkan tab Jadwal ikut menghitung Sudah OKB. Pada hari OKB, angka keduanya bisa berbeda.
 - Filter tanggal di Data Pendaftar adalah kandidat lanjutan bila tautan per Gelombang OKB ternyata kurang tepat di lapangan.
+
+## Perubahan Setelah Implementasi
+
+- Scan Kehadiran dikeluarkan dari menu OKB dan kembali menjadi item sidebar sendiri di `/admin/scan`. Alamat tab lama `/admin/okb/scan` dialihkan ke sana.
+- Pengumuman masuk ke menu OKB sebagai tab ketiga di `/admin/okb/pengumuman`, menggantikan tab Scan Kehadiran. Alamat lama `/admin/pengumuman`, termasuk alamat template Surat Penerimaan di bawahnya, dialihkan sementara ke alamat baru.
+- Urutan tab menjadi Jadwal, Name Tag, lalu Pengumuman. Tombol Scan Kehadiran pada tanggal hari ini di tab Jadwal dan di kartu Ringkasan kini membuka `/admin/scan`.

@@ -80,7 +80,7 @@ describe('OkbSchedulePage', () => {
     render(await OkbSchedulePage());
 
     const scan = within(day('Jumat, 20 November 2026')).getByRole('link', { name: /Scan Kehadiran/ });
-    expect(scan.getAttribute('href')).toBe('/admin/okb/scan');
+    expect(scan.getAttribute('href')).toBe('/admin/scan');
     expect(within(day('Rabu, 25 November 2026')).queryByRole('link', { name: /Scan Kehadiran/ })).toBeNull();
   });
 

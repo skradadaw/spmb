@@ -15,7 +15,7 @@ const TEMPLATE_BUCKET = 'template_surat';
 const LINK = 'inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--admin-sidebar)] underline-offset-2 hover:underline';
 
 const previewHref = (sample: 'biasa' | 'panjang', path?: string) =>
-  `/admin/pengumuman/template/pratinjau?contoh=${sample}${path ? `&path=${encodeURIComponent(path)}` : ''}`;
+  `/admin/okb/pengumuman/template/pratinjau?contoh=${sample}${path ? `&path=${encodeURIComponent(path)}` : ''}`;
 
 /** Unggah template Surat Penerimaan, periksa pratinjaunya, lalu aktifkan (ADR 0002). */
 export function TemplateCard({ active }: { active: { uploadedAt: string } | null }) {
@@ -71,7 +71,7 @@ export function TemplateCard({ active }: { active: { uploadedAt: string } | null
         {active ? (
           <>
             <p className="text-sm">Template aktif, diunggah {format(new Date(active.uploadedAt), 'd MMMM yyyy HH.mm', { locale: idLocale })}</p>
-            <a href="/admin/pengumuman/template" target="_blank" rel="noreferrer" className={LINK}>Unduh template<ExternalLink aria-hidden="true" className="size-3" /></a>
+            <a href="/admin/okb/pengumuman/template" target="_blank" rel="noreferrer" className={LINK}>Unduh template<ExternalLink aria-hidden="true" className="size-3" /></a>
             <a href={previewHref('biasa')} target="_blank" rel="noreferrer" className={LINK}>Lihat pratinjau<ExternalLink aria-hidden="true" className="size-3" /></a>
           </>
         ) : (

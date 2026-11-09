@@ -6,6 +6,7 @@ import { NameTagGroupPicker } from '@/features/admin/nameTag/components/NameTagG
 import { RuangOkbBulkForm } from '@/features/admin/nameTag/components/RuangOkbBulkForm';
 import { buildNameTagView, nameTagGroupKey } from '@/features/admin/nameTag/nameTagGroups';
 import { fetchNameTagRows } from '@/features/admin/nameTag/server/nameTagRepository';
+import { fetchRuangOkbList } from '@/features/admin/ruangOkb/server/ruangOkbRepository';
 import { getAdminSession } from '@/features/auth/session';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
 
@@ -17,7 +18,12 @@ export default async function NameTagPage({ searchParams }: Props) {
   if (!await getAdminSession()) redirect('/login');
 
   const { tanggal, gelombang } = await searchParams;
-  const rows = await fetchNameTagRows(getSupabaseAdmin()).catch(() => null);
+  const supabase = getSupabaseAdmin();
+  const [rows, rooms] = await Promise.all([
+    fetchNameTagRows(supabase).catch(() => null),
+    // Tanpa daftar ruangan, Pendaftar dan unduhan Name Tag tetap tampil; formnya memberi tahu.
+    fetchRuangOkbList(supabase).catch(() => null),
+  ]);
   const view = rows && buildNameTagView(rows, { tanggal, gelombang });
 
   return <>
@@ -37,7 +43,7 @@ export default async function NameTagPage({ searchParams }: Props) {
           <NameTagGroupPicker groups={view.groups} selected={view.selected} />
           {/* key: pesan gagal, centang, dan isian tidak terbawa ke kelompok lain. */}
           <DownloadNameTagZip key={`zip/${nameTagGroupKey(view.selected)}`} selected={view.selected} members={view.members} />
-          <RuangOkbBulkForm key={nameTagGroupKey(view.selected)} members={view.members} suggestions={view.suggestions} />
+          <RuangOkbBulkForm key={nameTagGroupKey(view.selected)} members={view.members} rooms={rooms} />
         </section>
       )}
     </div>

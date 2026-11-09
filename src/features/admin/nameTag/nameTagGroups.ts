@@ -9,17 +9,11 @@ export type NameTagView = {
   groups: NameTagGroup[];
   selected: NameTagSelection | null;
   members: NameTagPendaftar[];
-  suggestions: string[];
 };
 
 const compareText = (left: string, right: string) => left.localeCompare(right, 'id-ID', { numeric: true, sensitivity: 'base' });
 
 export const nameTagGroupKey = ({ tanggal, gelombang }: NameTagSelection) => `${tanggal}/${gelombang}`;
-
-/** Saran nama ruangan, dari ruangan milik semua Pendaftar pada `rows`. */
-export function ruangOkbSuggestions(rows: NameTagRow[]) {
-  return [...new Set(rows.flatMap(row => row.ruangOkb ?? []))].sort(compareText);
-}
 
 function toGroups(rows: NameTagRow[]): NameTagGroup[] {
   const groups = new Map<string, NameTagGroup>();
@@ -50,7 +44,7 @@ export function buildNameTagView(rows: NameTagRow[], params: { tanggal?: unknown
     .filter(row => row.tanggal === selected?.tanggal && row.gelombang === selected.gelombang)
     .map(({ id, namaLengkap, ruangOkb }) => ({ id, namaLengkap, ruangOkb }))
     .sort((left, right) => compareText(left.namaLengkap, right.namaLengkap) || left.id.localeCompare(right.id));
-  return { groups, selected, members, suggestions: ruangOkbSuggestions(rows) };
+  return { groups, selected, members };
 }
 
 export function nameTagHref(tanggal: string, gelombang?: OkbWave) {

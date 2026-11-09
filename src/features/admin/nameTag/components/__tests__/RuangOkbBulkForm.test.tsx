@@ -13,10 +13,16 @@ const members = [
 ];
 const success = (updated: number) => ({ status: 'success', message: `Ruang OKB disimpan untuk ${updated} Pendaftar.`, updated });
 
-const renderForm = (props: Partial<React.ComponentProps<typeof RuangOkbBulkForm>> = {}) => render(<RuangOkbBulkForm members={members} suggestions={['Ruang A', 'Ruang B']} {...props} />);
+const rooms = [{ id: 'room-a', nama: 'Ruang A' }, { id: 'room-b', nama: 'Ruang B' }];
+const renderForm = (props: Partial<React.ComponentProps<typeof RuangOkbBulkForm>> = {}) => render(<RuangOkbBulkForm members={members} rooms={rooms} {...props} />);
 const check = (name: string) => screen.getByRole('checkbox', { name: `Pilih ${name}` }) as HTMLInputElement;
 const selectAll = () => screen.getByRole('checkbox', { name: 'Pilih semua Pendaftar' }) as HTMLInputElement;
-const ruang = () => screen.getByLabelText('Nama ruangan') as HTMLInputElement;
+const ruang = () => screen.getByRole('combobox', { name: 'Ruang OKB' });
+const chooseRoom = (nama: string) => {
+  HTMLElement.prototype.scrollIntoView = vi.fn();
+  fireEvent.keyDown(ruang(), { key: 'Enter' });
+  fireEvent.click(screen.getByRole('option', { name: nama }));
+};
 const saveButton = () => screen.getByRole('button', { name: 'Simpan ruangan' }) as HTMLButtonElement;
 const clearButton = () => screen.getByRole('button', { name: 'Kosongkan' }) as HTMLButtonElement;
 
@@ -41,13 +47,13 @@ describe('RuangOkbBulkForm', () => {
     renderForm();
     fireEvent.click(check('Aisyah Putri'));
     fireEvent.click(check('Bilal'));
-    fireEvent.change(ruang(), { target: { value: 'Ruang B' } });
+    chooseRoom('Ruang B');
     fireEvent.click(saveButton());
 
     expect(await screen.findByText('Ruang OKB disimpan untuk 2 Pendaftar.')).toBeDefined();
-    expect(mocks.save).toHaveBeenCalledWith(['id-aisyah', 'id-bilal'], 'Ruang B');
+    expect(mocks.save).toHaveBeenCalledWith(['id-aisyah', 'id-bilal'], 'room-b');
     await waitFor(() => expect(check('Aisyah Putri').checked).toBe(false));
-    expect(ruang().value).toBe('');
+    expect(ruang().textContent).toContain('Pilih ruangan');
   });
 
   it('checks and unchecks everyone at once, showing a partial selection on the master checkbox', () => {
@@ -65,25 +71,23 @@ describe('RuangOkbBulkForm', () => {
     expect(check('Bilal').checked).toBe(false);
   });
 
-  it('clears the room of the checked Pendaftar regardless of what is typed', async () => {
+  it('clears the room of the checked Pendaftar regardless of what is chosen', async () => {
     renderForm();
     fireEvent.click(check('Ahmad Fauzi'));
-    fireEvent.change(ruang(), { target: { value: 'Ruang B' } });
+    chooseRoom('Ruang B');
     fireEvent.click(clearButton());
 
     await waitFor(() => expect(mocks.save).toHaveBeenCalledWith(['id-ahmad'], ''));
   });
 
-  it('cannot save without a selection or a name, so an empty field never clears rooms by accident', () => {
+  it('cannot save without a selection or a room, so saving never clears rooms by accident', () => {
     renderForm();
     expect(saveButton().disabled).toBe(true);
 
     fireEvent.click(check('Bilal'));
     expect(saveButton().disabled).toBe(true);
-    fireEvent.change(ruang(), { target: { value: '   ' } });
-    expect(saveButton().disabled).toBe(true);
 
-    fireEvent.change(ruang(), { target: { value: 'Ruang B' } });
+    chooseRoom('Ruang B');
     expect(saveButton().disabled).toBe(false);
   });
 
@@ -96,53 +100,50 @@ describe('RuangOkbBulkForm', () => {
     expect(clearButton().disabled).toBe(false);
   });
 
-  it('suggests rooms already in use while still accepting a new name', () => {
+  it('offers the rooms from the list in the given order', () => {
     renderForm();
-    const list = document.getElementById(ruang().getAttribute('list') ?? '');
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+    fireEvent.keyDown(ruang(), { key: 'Enter' });
 
-    expect([...(list?.querySelectorAll('option') ?? [])].map(option => option.value)).toEqual(['Ruang A', 'Ruang B']);
-    expect(ruang().tagName).toBe('INPUT');
+    expect(screen.getAllByRole('option').map(option => option.textContent)).toEqual(['Ruang A', 'Ruang B']);
   });
 
-  it('leaves the length limit to the server, so an over-long name gets its message', async () => {
-    mocks.save.mockResolvedValue({ status: 'error', message: 'Nama ruangan maksimal 30 karakter.', updated: 0 });
-    renderForm();
-    expect(ruang().hasAttribute('maxlength')).toBe(false);
+  it('points to Pengaturan instead of a room choice when the room list is still empty, but can still clear', () => {
+    renderForm({ rooms: [] });
 
-    fireEvent.click(check('Bilal'));
-    fireEvent.change(ruang(), { target: { value: 'x'.repeat(31) } });
-    fireEvent.click(saveButton());
-
-    expect(await screen.findByText('Nama ruangan maksimal 30 karakter.')).toBeDefined();
-    expect(mocks.save).toHaveBeenCalledWith(['id-bilal'], 'x'.repeat(31));
+    expect(screen.getByText(/Belum ada ruangan\. Tambahkan di/)).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Pengaturan' }).getAttribute('href')).toBe('/admin/pengaturan/ruang-okb');
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Simpan ruangan' })).toBeNull();
+    expect(clearButton()).toBeDefined();
   });
 
-  it('keeps the selection and the name on a partial save, dropping those gone from the reloaded list', async () => {
+  it('keeps the selection and the room on a partial save, dropping those gone from the reloaded list', async () => {
     mocks.save.mockResolvedValue({ status: 'error', message: 'Ruang OKB disimpan untuk 1 dari 2 Pendaftar. Status 1 Pendaftar lainnya sudah berubah.', updated: 1 });
     const { rerender } = renderForm();
     fireEvent.click(check('Aisyah Putri'));
     fireEvent.click(check('Bilal'));
-    fireEvent.change(ruang(), { target: { value: 'Ruang B' } });
+    chooseRoom('Ruang B');
     fireEvent.click(saveButton());
 
     expect(await screen.findByText(/Status 1 Pendaftar lainnya sudah berubah/)).toBeDefined();
     expect(check('Aisyah Putri').checked).toBe(true);
-    expect(ruang().value).toBe('Ruang B');
+    expect(ruang().textContent).toContain('Ruang B');
 
     // The action revalidates the page: Bilal's status changed, so he is gone from the list.
-    rerender(<RuangOkbBulkForm members={members.filter(member => member.id !== 'id-bilal')} suggestions={['Ruang A', 'Ruang B']} />);
+    rerender(<RuangOkbBulkForm members={members.filter(member => member.id !== 'id-bilal')} rooms={rooms} />);
     expect(screen.getByText('1 dipilih')).toBeDefined();
 
     mocks.save.mockResolvedValue(success(1));
     fireEvent.click(saveButton());
-    await waitFor(() => expect(mocks.save).toHaveBeenLastCalledWith(['id-aisyah'], 'Ruang B'));
+    await waitFor(() => expect(mocks.save).toHaveBeenLastCalledWith(['id-aisyah'], 'room-b'));
   });
 
   it('keeps the selection when nothing could be saved', async () => {
     mocks.save.mockResolvedValue({ status: 'error', message: 'Ruang OKB tidak dapat disimpan. Periksa koneksi lalu coba lagi.', updated: 0 });
     renderForm();
     fireEvent.click(check('Bilal'));
-    fireEvent.change(ruang(), { target: { value: 'Ruang B' } });
+    chooseRoom('Ruang B');
     fireEvent.click(saveButton());
 
     expect(await screen.findByText(/tidak dapat disimpan/)).toBeDefined();

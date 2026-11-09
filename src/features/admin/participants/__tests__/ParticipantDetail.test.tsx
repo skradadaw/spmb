@@ -207,18 +207,20 @@ describe('ParticipantDetail', () => {
     expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Hadir OKB');
   });
 
+  const rooms = [{ id: 'room-a', nama: 'Ruang A' }, { id: 'room-b', nama: 'Ruang B' }];
+
   it.each(['Terjadwal OKB', 'Sudah OKB'])('lets the admin change the Ruang OKB while %s', (status) => {
-    render(<ParticipantDetail participant={{ ...participant, status, okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: 'Ruang A' } }} />);
-    expect((screen.getByLabelText('Ruang OKB') as HTMLInputElement).value).toBe('Ruang A');
+    render(<ParticipantDetail participant={{ ...participant, status, okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: 'Ruang A' } }} ruangOkbRooms={rooms} />);
+    expect(screen.getByRole('combobox', { name: 'Ruang OKB' }).textContent).toContain('Ruang A');
     expect(screen.getByRole('button', { name: 'Simpan ruangan' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Kosongkan' })).toBeDefined();
   });
 
   it('marks a missing Ruang OKB and offers nothing to clear', () => {
-    render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB', okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: null } }} />);
-    const input = screen.getByLabelText('Ruang OKB') as HTMLInputElement;
-    expect(input.value).toBe('');
-    expect(within(input.closest('form') as HTMLElement).getByText('Belum diisi')).toBeDefined();
+    render(<ParticipantDetail participant={{ ...participant, status: 'Terjadwal OKB', okb: { jadwalTanggal: '2026-11-07', jadwalGelombang: 'Gelombang 1', ruangOkb: null } }} ruangOkbRooms={rooms} />);
+    const choice = screen.getByRole('combobox', { name: 'Ruang OKB' });
+    expect(choice.textContent).toContain('Pilih ruangan');
+    expect(within(choice.closest('form') as HTMLElement).getByText('Belum diisi')).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Kosongkan' })).toBeNull();
   });
 

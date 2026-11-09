@@ -1,5 +1,6 @@
 'use client';
 
+import type { RuangOkb } from '@/features/admin/ruangOkb/ruangOkb';
 import { useActionState, useState, type ReactNode } from 'react';
 import { format, parse, isValid } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
@@ -48,7 +49,7 @@ type Props = {
   /** Gelombang OKB name, e.g. "Gelombang 1". */
   jadwalGelombang: string | null;
   ruangOkb: string | null;
-  ruangOkbSuggestions: string[];
+  ruangOkbRooms: readonly RuangOkb[] | null;
   pilihanKelas: string | null;
   kelasPenempatan: string | null;
   nomorVa: string | null;
@@ -69,7 +70,7 @@ function currentStep(status: string) {
   }
 }
 
-export function ParticipantStatusPanel({ participantId, namaLengkap, status, previousStatus, jadwalTanggal, jadwalGelombang, ruangOkb, ruangOkbSuggestions, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
+export function ParticipantStatusPanel({ participantId, namaLengkap, status, previousStatus, jadwalTanggal, jadwalGelombang, ruangOkb, ruangOkbRooms, pilihanKelas, kelasPenempatan, nomorVa, diumumkanPada }: Props) {
   const [state, formAction, pending] = useActionState(updateParticipantStatusAction, initialState);
   const [rescheduling, setRescheduling] = useState(false);
   const [editingDecision, setEditingDecision] = useState(false);
@@ -112,7 +113,7 @@ export function ParticipantStatusPanel({ participantId, namaLengkap, status, pre
 
       {allowsRuangOkb(status) ? (
         <>
-          <RuangOkbForm applicantId={participantId} ruangOkb={ruangOkb} suggestions={ruangOkbSuggestions} />
+          <RuangOkbForm applicantId={participantId} ruangOkb={ruangOkb} rooms={ruangOkbRooms} />
           <PrintNameTagButton status={status} namaLengkap={namaLengkap} ruangOkb={ruangOkb} />
         </>
       ) : ruangOkb && (

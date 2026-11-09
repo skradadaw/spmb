@@ -26,14 +26,10 @@ export default async function AnnouncementPage() {
   ]);
 
   return <>
-    <section className="flex flex-col gap-2">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
-      <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Pengumuman</h1>
-      <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
-        Siapkan Surat Penerimaan dan Nomor VA, lalu umumkan Hasil OKB agar orang tua dapat melihatnya di halaman Cek Hasil OKB.
-      </p>
-    </section>
-    <div className="mt-6 space-y-5">
+    <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
+      Siapkan Surat Penerimaan dan Nomor VA, lalu umumkan Hasil OKB agar orang tua dapat melihatnya di halaman Cek Hasil OKB.
+    </p>
+    <div className="mt-4 space-y-5">
       <AnnouncementStep
         id="langkah-umumkan"
         title="Umumkan per Gelombang OKB"

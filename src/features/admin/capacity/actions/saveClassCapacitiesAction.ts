@@ -42,7 +42,7 @@ export async function saveClassCapacitiesAction(
     return { status: 'error', message: 'Kuota kelas tidak dapat disimpan. Silakan coba lagi.' };
   }
 
-  revalidatePath('/admin/kuota');
+  revalidatePath('/admin/pengaturan/kuota');
   revalidatePath('/pendaftaran');
   revalidatePath('/');
   return { status: 'success', message: 'Kuota kelas berhasil disimpan.' };

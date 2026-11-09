@@ -9,6 +9,11 @@ import { OkbTabs } from '../OkbTabs';
 describe('OkbTabs', () => {
   beforeEach(() => { mocks.pathname.mockReturnValue('/admin/okb'); });
 
+  it('has no Scan Kehadiran tab, since the scan has its own menu item', () => {
+    render(<OkbTabs />);
+    expect(screen.queryByRole('link', { name: 'Scan Kehadiran' })).toBeNull();
+  });
+
   it('marks Jadwal active on the opening address', () => {
     render(<OkbTabs />);
 
@@ -17,12 +22,12 @@ describe('OkbTabs', () => {
     expect(link.getAttribute('aria-current')).toBe('page');
   });
 
-  it('marks only Scan Kehadiran active on its address', () => {
-    mocks.pathname.mockReturnValue('/admin/okb/scan');
+  it('marks only Pengumuman active on its addresses', () => {
+    mocks.pathname.mockReturnValue('/admin/okb/pengumuman');
     render(<OkbTabs />);
 
-    const link = screen.getByRole('link', { name: 'Scan Kehadiran' });
-    expect(link.getAttribute('href')).toBe('/admin/okb/scan');
+    const link = screen.getByRole('link', { name: 'Pengumuman' });
+    expect(link.getAttribute('href')).toBe('/admin/okb/pengumuman');
     expect(link.getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('link', { name: 'Name Tag' }).getAttribute('aria-current')).toBeNull();
   });

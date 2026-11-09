@@ -61,7 +61,7 @@ export async function commitVaImportAction(pairs: Array<{ nomorPendaftaran: stri
     if (result.status !== 'ok') return { success: false, error: 'Data pendaftar sudah berubah sejak file dibaca. Baca ulang file lalu coba lagi.' };
 
     revalidatePath('/admin/pendaftar');
-    revalidatePath('/admin/pengumuman');
+    revalidatePath('/admin/okb/pengumuman');
     return { success: true, saved: result.disimpan ?? report.toSave.length };
   } catch {
     return { success: false, error: 'Nomor VA tidak dapat disimpan. Tidak ada perubahan yang tersimpan.' };

@@ -63,7 +63,7 @@ describe('template Surat Penerimaan actions', () => {
     expect(await activateTemplateAction(path)).toEqual({ success: true });
     expect(mocks.repository.activate).toHaveBeenCalledWith(path);
     expect(mocks.repository.remove).toHaveBeenCalledWith(oldPath);
-    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pengumuman');
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb/pengumuman');
   });
 
   it('never activates or discards a path the system did not create', async () => {

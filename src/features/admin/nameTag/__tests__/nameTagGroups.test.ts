@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildNameTagView, nameTagHref, ruangOkbSuggestions, type NameTagRow } from '../nameTagGroups';
+import { buildNameTagView, nameTagHref, type NameTagRow } from '../nameTagGroups';
 
 const row = (id: string, namaLengkap: string, tanggal: string, gelombang: 1 | 2 | 3, ruangOkb: string | null = null): NameTagRow => ({ id, namaLengkap, ruangOkb, tanggal, gelombang });
 
@@ -48,21 +48,11 @@ describe('buildNameTagView', () => {
     expect(buildNameTagView(rows, { tanggal: ['2026-11-20'], gelombang: 'x' }).selected).toEqual({ tanggal: '2026-11-10', gelombang: 3 });
   });
 
-  it('suggests each room in use across all groups once, in natural order', () => {
-    expect(buildNameTagView(rows, { tanggal: '2026-11-10' }).suggestions).toEqual(['Ruang 2', 'Ruang 10', 'Ruang B']);
-  });
-
   it('has nothing selected when no Pendaftar is scheduled', () => {
-    expect(buildNameTagView([], { tanggal: '2026-11-20', gelombang: '1' })).toEqual({ groups: [], selected: null, members: [], suggestions: [] });
+    expect(buildNameTagView([], { tanggal: '2026-11-20', gelombang: '1' })).toEqual({ groups: [], selected: null, members: [] });
   });
 });
 
-describe('ruangOkbSuggestions', () => {
-  it('gives the same rooms as the Name Tag page, whatever group is open', () => {
-    expect(ruangOkbSuggestions(rows)).toEqual(buildNameTagView(rows, { tanggal: '2026-11-10' }).suggestions);
-    expect(ruangOkbSuggestions(rows)).toEqual(['Ruang 2', 'Ruang 10', 'Ruang B']);
-  });
-});
 
 describe('nameTagHref', () => {
   it('links to a date, with or without a Gelombang', () => {

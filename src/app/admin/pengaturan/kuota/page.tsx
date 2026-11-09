@@ -21,15 +21,11 @@ export default async function ClassCapacityPage() {
   }
 
   return <>
-    <section className="flex flex-col gap-2">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--admin-sidebar)]">Administrasi</p>
-      <h1 className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">Kuota Kelas</h1>
-      <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
-        Bagi {REGISTRATION_CAPACITY} kursi Siswa Baru ke tiap Pilihan Kelas. Kelas yang sudah penuh otomatis tidak bisa dipilih di formulir.
-        Pendaftar Ditolak, Dibatalkan, dan Pindahan tidak ikut dihitung.
-      </p>
-    </section>
-    <div className="mt-6">
+    <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
+      Bagi {REGISTRATION_CAPACITY} kursi Siswa Baru ke tiap Pilihan Kelas. Kelas yang sudah penuh otomatis tidak bisa dipilih di formulir.
+      Pendaftar Ditolak, Dibatalkan, dan Pindahan tidak ikut dihitung.
+    </p>
+    <div className="mt-5">
       {capacities ? (
         <Card className="max-w-3xl rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
           <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Pembagian kuota</CardTitle></CardHeader>

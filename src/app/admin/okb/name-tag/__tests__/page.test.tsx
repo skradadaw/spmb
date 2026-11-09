@@ -4,12 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getAdminSession: vi.fn(),
   fetchRows: vi.fn(),
+  fetchRooms: vi.fn(),
   replace: vi.fn(),
   redirect: vi.fn(() => { throw new Error('NEXT_REDIRECT'); }),
 }));
 vi.mock('@/features/auth/session', () => ({ getAdminSession: mocks.getAdminSession }));
 vi.mock('@/features/registration/server/supabaseAdmin', () => ({ getSupabaseAdmin: () => ({}) }));
 vi.mock('@/features/admin/nameTag/server/nameTagRepository', () => ({ fetchNameTagRows: mocks.fetchRows }));
+vi.mock('@/features/admin/ruangOkb/server/ruangOkbRepository', () => ({ fetchRuangOkbList: mocks.fetchRooms }));
 vi.mock('@/features/admin/nameTag/actions/saveRuangOkbAction', () => ({ saveRuangOkbAction: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect, useRouter: () => ({ replace: mocks.replace }) }));
 
@@ -31,6 +33,7 @@ describe('NameTagPage', () => {
     vi.clearAllMocks();
     mocks.getAdminSession.mockResolvedValue(true);
     mocks.fetchRows.mockResolvedValue(rows);
+    mocks.fetchRooms.mockResolvedValue([{ id: 'r1', nama: 'Ruang A' }, { id: 'r2', nama: 'Ruang B' }]);
   });
 
   it('sends anyone without an admin session to the login page before reading data', async () => {
@@ -93,6 +96,21 @@ describe('NameTagPage', () => {
 
     expect(screen.getByText('0 kartu akan diunduh.')).toBeDefined();
     expect((screen.getByRole('button', { name: 'Unduh ZIP Name Tag' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('offers the rooms from the list for the checked Pendaftar', async () => {
+    render(await open({ tanggal: '2026-11-20', gelombang: '1' }));
+    openSelect('Ruang OKB');
+
+    expect(screen.getAllByRole('option').map(option => option.textContent)).toEqual(['Ruang A', 'Ruang B']);
+  });
+
+  it('keeps the Pendaftar list and Name Tag download when the room list cannot be loaded', async () => {
+    mocks.fetchRooms.mockRejectedValue(new Error('db down'));
+    render(await open({ tanggal: '2026-11-20', gelombang: '1' }));
+
+    expect(screen.getByText('Daftar Ruang OKB belum dapat dimuat. Muat ulang halaman.')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Unduh ZIP Name Tag' })).toBeDefined();
   });
 
   it('says so when no upcoming Jadwal OKB exists', async () => {

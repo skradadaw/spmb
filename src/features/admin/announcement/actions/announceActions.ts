@@ -11,7 +11,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 function revalidateAnnouncement(participantId?: string) {
   if (participantId) revalidatePath(`/admin/pendaftar/${participantId}`);
   revalidatePath('/admin/pendaftar');
-  revalidatePath('/admin/pengumuman');
+  revalidatePath('/admin/okb/pengumuman');
   revalidatePath('/admin');
 }
 

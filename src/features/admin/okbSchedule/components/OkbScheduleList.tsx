@@ -38,7 +38,7 @@ export function OkbScheduleList({ days, today }: { days: OkbScheduleDay[]; today
                 </h2>
                 <p className="mt-0.5 text-sm tabular-nums text-slate-600">{countLabel(day, isToday)}</p>
               </div>
-              {isToday && <ButtonLink href="/admin/okb/scan" size="sm"><ScanLine aria-hidden="true" />Scan Kehadiran</ButtonLink>}
+              {isToday && <ButtonLink href="/admin/scan" size="sm"><ScanLine aria-hidden="true" />Scan Kehadiran</ButtonLink>}
             </div>
             <ul aria-label="Gelombang OKB" className="mt-3 divide-y divide-slate-200/70 border-t border-slate-200/70">
               {day.waves.map(wave => {

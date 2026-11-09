@@ -398,9 +398,38 @@ describe('Supabase registration security schema', () => {
     expect(compactSchema).toContain('ALTER TABLE public.pendaftar DROP COLUMN IF EXISTS berkas_tindak_lanjut;');
   });
 
-  it('stores an optional Ruang OKB and clears it only when the Jadwal OKB really changes', () => {
-    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ruang_okb TEXT;');
-    expect(compactSchema).toContain('IF NEW.jadwal_okb_tanggal IS DISTINCT FROM OLD.jadwal_okb_tanggal OR NEW.jadwal_okb_gelombang IS DISTINCT FROM OLD.jadwal_okb_gelombang THEN NEW.ruang_okb := NULL;');
+  it('keeps Ruang OKB as an admin-only list of uniquely named rooms', () => {
+    expect(compactSchema).toContain('CREATE TABLE IF NOT EXISTS public.ruang_okb');
+    expect(compactSchema).toContain("CHECK (nama = btrim(regexp_replace(nama, '\\s+', ' ', 'g')) AND char_length(nama) BETWEEN 1 AND 30)");
+    expect(compactSchema).toContain('CREATE UNIQUE INDEX IF NOT EXISTS ruang_okb_nama_key ON public.ruang_okb (lower(nama));');
+    expect(compactSchema).toContain('ALTER TABLE public.ruang_okb ENABLE ROW LEVEL SECURITY;');
+    expect(compactSchema).toContain('REVOKE ALL ON TABLE public.ruang_okb FROM PUBLIC, anon, authenticated;');
+    expect(compactSchema).toContain('GRANT ALL ON TABLE public.ruang_okb TO service_role;');
+  });
+
+  it('links each Pendaftar to a room that cannot be deleted while in use', () => {
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ruang_okb_id UUID REFERENCES public.ruang_okb(id) ON DELETE RESTRICT;');
+    expect(compactSchema).not.toContain('ADD COLUMN IF NOT EXISTS ruang_okb TEXT');
+  });
+
+  it('turns typed Ruang OKB names into rooms once, merging names that differ only in case or spacing', () => {
+    const migration = compactSql(schema.match(/-- Migrasi Ruang OKB teks bebas[\s\S]*?END \$\$;/)?.[0] ?? '');
+
+    expect(migration).toContain("WHERE table_schema = 'public' AND table_name = 'pendaftar' AND column_name = 'ruang_okb'");
+    expect(migration).toContain('ON CONFLICT ((lower(nama))) DO NOTHING;');
+    expect(migration).toContain('UPDATE public.pendaftar AS p SET ruang_okb_id = r.id');
+    expect(migration).toContain('ALTER TABLE public.pendaftar DROP COLUMN ruang_okb;');
+  });
+
+  it('still exposes the room name as ruang_okb for readers, through a computed column', () => {
+    expect(compactSchema).toContain('CREATE OR REPLACE FUNCTION public.ruang_okb(public.pendaftar) RETURNS TEXT LANGUAGE sql STABLE');
+    expect(compactSchema).toContain('SELECT nama FROM public.ruang_okb WHERE id = $1.ruang_okb_id');
+    expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.ruang_okb(public.pendaftar) FROM PUBLIC, anon, authenticated;');
+    expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.ruang_okb(public.pendaftar) TO service_role;');
+  });
+
+  it('clears the Ruang OKB only when the Jadwal OKB really changes', () => {
+    expect(compactSchema).toContain('IF NEW.jadwal_okb_tanggal IS DISTINCT FROM OLD.jadwal_okb_tanggal OR NEW.jadwal_okb_gelombang IS DISTINCT FROM OLD.jadwal_okb_gelombang THEN NEW.ruang_okb_id := NULL;');
     expect(compactSchema).toContain('DROP TRIGGER IF EXISTS trg_clear_ruang_okb ON public.pendaftar;');
     expect(compactSchema).toContain('BEFORE UPDATE OF jadwal_okb_tanggal, jadwal_okb_gelombang ON public.pendaftar FOR EACH ROW EXECUTE FUNCTION public.clear_ruang_okb_on_schedule_change();');
   });

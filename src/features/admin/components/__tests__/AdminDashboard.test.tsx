@@ -49,6 +49,7 @@ describe('AdminDashboard', () => {
     expect(screen.getByText('Penuh')).toBeDefined();
     expect(screen.getAllByText('Sisa 8 kursi')).toHaveLength(2);
     expect(screen.getByText(/Pindahan, di luar kuota/).textContent).toContain('7');
+    expect(screen.getByRole('link', { name: 'Atur kuota' }).getAttribute('href')).toBe('/admin/pengaturan/kuota');
   });
 
   it('lists upcoming OKB days, marks today and offers the attendance scan', () => {
@@ -58,7 +59,7 @@ describe('AdminDashboard', () => {
     expect(screen.getByText('Gelombang 2 · 8 pendaftar')).toBeDefined();
     // A single Gelombang needs no count of its own; the day total already gives it.
     expect(screen.getByText('Gelombang 3')).toBeDefined();
-    expect(screen.getByRole('link', { name: /Scan Kehadiran/ }).getAttribute('href')).toBe('/admin/okb/scan');
+    expect(screen.getByRole('link', { name: /Scan Kehadiran/ }).getAttribute('href')).toBe('/admin/scan');
   });
 
   it('links each upcoming OKB day to its Name Tag page', () => {

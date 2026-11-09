@@ -43,6 +43,7 @@ describe('saveClassCapacitiesAction', () => {
       p_total: 112,
     });
     expect(mocks.revalidatePath).toHaveBeenCalledWith('/pendaftaran');
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pengaturan/kuota');
   });
 
   it('rejects a split that does not add up to 112 before touching the database', async () => {

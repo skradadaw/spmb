@@ -29,7 +29,7 @@ describe('announceParticipantAction', () => {
     const result = await announceParticipantAction(idle, form('announce'));
     expect(result).toEqual({ status: 'success', message: 'Hasil OKB diumumkan. Orang tua sudah dapat melihatnya di halaman Cek Hasil OKB.' });
     expect(mocks.rpc).toHaveBeenCalledWith('announce_results', { p_pendaftar_id: participantId, p_gelombang: null, p_umumkan: true });
-    for (const path of [`/admin/pendaftar/${participantId}`, '/admin/pendaftar', '/admin/pengumuman', '/admin']) {
+    for (const path of [`/admin/pendaftar/${participantId}`, '/admin/pendaftar', '/admin/okb/pengumuman', '/admin']) {
       expect(mocks.revalidatePath).toHaveBeenCalledWith(path);
     }
   });
@@ -95,7 +95,7 @@ describe('announceWaveAction', () => {
     const result = await announceWaveAction(idle, waveForm('announce'));
     expect(mocks.rpc).toHaveBeenCalledWith('announce_results', { p_pendaftar_id: null, p_gelombang: 2, p_umumkan: true });
     expect(result).toEqual({ status: 'success', message: 'Gelombang 2 diumumkan: 20 Diterima dan 3 Ditolak. 2 pendaftar belum diputuskan dan dilewati.' });
-    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pengumuman');
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb/pengumuman');
   });
 
   it('refuses the whole Gelombang and lists every Pendaftar Diterima without Nomor VA', async () => {

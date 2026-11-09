@@ -19,8 +19,8 @@ describe('TemplateCard', () => {
   it('shows when the active template was uploaded with links to download and preview it', () => {
     render(<TemplateCard active={{ uploadedAt: '2026-10-29T03:15:00Z' }} />);
     expect(screen.getByText(/Template aktif, diunggah 29 Oktober 2026/)).toBeDefined();
-    expect(screen.getByRole('link', { name: /Unduh template/ }).getAttribute('href')).toBe('/admin/pengumuman/template');
-    expect(screen.getByRole('link', { name: /Lihat pratinjau/ }).getAttribute('href')).toBe('/admin/pengumuman/template/pratinjau?contoh=biasa');
+    expect(screen.getByRole('link', { name: /Unduh template/ }).getAttribute('href')).toBe('/admin/okb/pengumuman/template');
+    expect(screen.getByRole('link', { name: /Lihat pratinjau/ }).getAttribute('href')).toBe('/admin/okb/pengumuman/template/pratinjau?contoh=biasa');
     expect(screen.getByRole('button', { name: 'Ganti template' })).toBeDefined();
   });
 });

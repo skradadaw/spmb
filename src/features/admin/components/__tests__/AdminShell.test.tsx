@@ -69,16 +69,28 @@ describe('AdminShell navigation', () => {
     expect(screen.getByTestId('admin-sidebar').getAttribute('data-state')).toBe('expanded');
   });
 
-  it('keeps Name Tag and Scan Kehadiran out of the menu, as tabs of OKB', () => {
+  it('keeps Name Tag and Pengumuman out of the menu, as tabs of OKB', () => {
     window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell><h1>Konten admin</h1></AdminShell>);
     const sidebar = within(screen.getByTestId('admin-sidebar'));
 
     expect(sidebar.queryByRole('link', { name: 'Name Tag' })).toBeNull();
-    expect(sidebar.queryByRole('link', { name: 'Scan Kehadiran' })).toBeNull();
+    expect(sidebar.queryByRole('link', { name: 'Pengumuman' })).toBeNull();
   });
 
-  it.each(['/admin/okb', '/admin/okb/name-tag', '/admin/okb/scan'])('marks OKB active in the menu on %s', (pathname) => {
+  it('gives Scan Kehadiran its own menu item, marked active on its page', () => {
+    mocks.pathname.mockReturnValue('/admin/scan');
+    window.localStorage.setItem('admin-sidebar-collapsed', 'false');
+    render(<AdminShell><h1>Konten admin</h1></AdminShell>);
+    const sidebar = within(screen.getByTestId('admin-sidebar'));
+
+    const link = sidebar.getByRole('link', { name: 'Scan Kehadiran' });
+    expect(link.getAttribute('href')).toBe('/admin/scan');
+    expect(link.getAttribute('aria-current')).toBe('page');
+    expect(sidebar.getByRole('link', { name: 'OKB' }).getAttribute('aria-current')).toBeNull();
+  });
+
+  it.each(['/admin/okb', '/admin/okb/name-tag', '/admin/okb/pengumuman', '/admin/okb/pengumuman/template'])('marks OKB active in the menu on %s', (pathname) => {
     mocks.pathname.mockReturnValue(pathname);
     window.localStorage.setItem('admin-sidebar-collapsed', 'false');
     render(<AdminShell><h1>Konten admin</h1></AdminShell>);
@@ -89,14 +101,37 @@ describe('AdminShell navigation', () => {
   });
 
   it('offers one OKB item in the mobile menu, marked active on its tabs', () => {
-    mocks.pathname.mockReturnValue('/admin/okb/scan');
+    mocks.pathname.mockReturnValue('/admin/okb/pengumuman');
     render(<AdminShell><h1>Konten admin</h1></AdminShell>);
     fireEvent.click(screen.getByRole('button', { name: 'Buka menu admin' }));
     const menu = within(screen.getByRole('navigation', { name: 'Navigasi admin mobile' }));
 
     expect(menu.getByRole('link', { name: 'OKB' }).getAttribute('aria-current')).toBe('page');
     expect(menu.queryByRole('link', { name: 'Name Tag' })).toBeNull();
-    expect(menu.queryByRole('link', { name: 'Scan Kehadiran' })).toBeNull();
+    expect(menu.queryByRole('link', { name: 'Pengumuman' })).toBeNull();
+    expect(menu.getByRole('link', { name: 'Scan Kehadiran' }).getAttribute('href')).toBe('/admin/scan');
+  });
+
+  it.each(['/admin/pengaturan/kuota', '/admin/pengaturan/ruang-okb'])('replaces Kuota Kelas with one Pengaturan item, marked active on %s', (pathname) => {
+    mocks.pathname.mockReturnValue(pathname);
+    window.localStorage.setItem('admin-sidebar-collapsed', 'false');
+    render(<AdminShell><h1>Konten admin</h1></AdminShell>);
+    const sidebar = within(screen.getByTestId('admin-sidebar'));
+
+    const link = sidebar.getByRole('link', { name: 'Pengaturan' });
+    expect(link.getAttribute('href')).toBe('/admin/pengaturan');
+    expect(link.getAttribute('aria-current')).toBe('page');
+    expect(sidebar.queryByRole('link', { name: 'Kuota Kelas' })).toBeNull();
+  });
+
+  it('offers the Pengaturan item in the mobile menu too', () => {
+    mocks.pathname.mockReturnValue('/admin/pengaturan/kuota');
+    render(<AdminShell><h1>Konten admin</h1></AdminShell>);
+    fireEvent.click(screen.getByRole('button', { name: 'Buka menu admin' }));
+    const menu = within(screen.getByRole('navigation', { name: 'Navigasi admin mobile' }));
+
+    expect(menu.getByRole('link', { name: 'Pengaturan' }).getAttribute('aria-current')).toBe('page');
+    expect(menu.queryByRole('link', { name: 'Kuota Kelas' })).toBeNull();
   });
 
   it('keeps logout inside the account menu', () => {

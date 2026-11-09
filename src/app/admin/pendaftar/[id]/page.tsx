@@ -1,7 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { allowsRuangOkb } from '@/features/admin/nameTag/nameTag';
-import { ruangOkbSuggestions } from '@/features/admin/nameTag/nameTagGroups';
-import { fetchNameTagRows } from '@/features/admin/nameTag/server/nameTagRepository';
+import { fetchRuangOkbList } from '@/features/admin/ruangOkb/server/ruangOkbRepository';
 import { ParticipantDetail } from '@/features/admin/participants/components/ParticipantDetail';
 import { createParticipantsRepository } from '@/features/admin/participants/server/participantsRepository';
 import { getAdminSession } from '@/features/auth/session';
@@ -50,10 +49,10 @@ export default async function ParticipantPage({ params, searchParams }: Props) {
   const protocol = requestHeaders.get('x-forwarded-proto') ?? (host?.startsWith('localhost') ? 'http' : 'https');
   const siteOrigin = host ? `${protocol}://${host}` : undefined;
 
-  // Saran hanya pelengkap: bila gagal dimuat, Ruang OKB tetap bisa diketik.
-  const suggestions = allowsRuangOkb(participant.status)
-    ? await fetchNameTagRows(getSupabaseAdmin()).then(ruangOkbSuggestions).catch((): string[] => [])
+  // Bila daftar ruangan gagal dimuat, detail tetap terbuka dan form Ruang OKB memberi tahu (null).
+  const rooms = allowsRuangOkb(participant.status)
+    ? await fetchRuangOkbList(getSupabaseAdmin()).catch(() => null)
     : [];
 
-  return <ParticipantDetail participant={participant} backHref={backHref} siteOrigin={siteOrigin} ruangOkbSuggestions={suggestions} />;
+  return <ParticipantDetail participant={participant} backHref={backHref} siteOrigin={siteOrigin} ruangOkbRooms={rooms} />;
 }

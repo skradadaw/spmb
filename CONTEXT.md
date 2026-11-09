@@ -19,7 +19,7 @@ _Avoid_: tes masuk, seleksi
 Salah satu dari tiga bagian OKB yang diikuti setiap Pendaftar: Literasi, Numerasi, dan Tahsin.
 
 **Ruang OKB** (*OKB Room*):
-Ruangan tempat seorang Pendaftar mengikuti ketiga Tes OKB. Pendaftar dalam satu Gelombang OKB pada tanggal yang sama dapat terbagi ke beberapa Ruang OKB. Ditetapkan admin dan di dalam sistem hanya terlihat oleh admin; dikosongkan ketika Jadwal OKB Pendaftar diubah atau dihapus.
+Ruangan tempat seorang Pendaftar mengikuti ketiga Tes OKB. Pendaftar dalam satu Gelombang OKB pada tanggal yang sama dapat terbagi ke beberapa Ruang OKB. Ditetapkan admin dengan memilih dari daftar ruangan yang sudah disiapkan admin di Pengaturan, bukan diketik bebas. Di dalam sistem hanya terlihat oleh admin; dikosongkan ketika Jadwal OKB Pendaftar diubah atau dihapus.
 
 **Jadwal OKB** (*OKB Schedule*):
 Tanggal dan Gelombang OKB yang ditetapkan admin langsung pada seorang Pendaftar. Pendaftar yang tidak hadir dapat dijadwalkan ulang.

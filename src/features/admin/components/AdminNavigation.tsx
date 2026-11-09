@@ -1,13 +1,13 @@
-import { Armchair, CalendarDays, LayoutDashboard, Megaphone, UsersRound } from 'lucide-react';
+import { CalendarDays, LayoutDashboard, ScanLine, Settings, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-export type AdminSection = 'summary' | 'participants' | 'okb' | 'announcement' | 'capacity';
+export type AdminSection = 'summary' | 'participants' | 'okb' | 'attendance' | 'settings';
 export const ADMIN_NAV_ITEMS = [
   { key: 'summary', href: '/admin', label: 'Ringkasan', icon: LayoutDashboard },
   { key: 'participants', href: '/admin/pendaftar', label: 'Data Pendaftar', icon: UsersRound },
   { key: 'okb', href: '/admin/okb', label: 'OKB', icon: CalendarDays },
-  { key: 'announcement', href: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
-  { key: 'capacity', href: '/admin/kuota', label: 'Kuota Kelas', icon: Armchair },
+  { key: 'attendance', href: '/admin/scan', label: 'Scan Kehadiran', icon: ScanLine },
+  { key: 'settings', href: '/admin/pengaturan', label: 'Pengaturan', icon: Settings },
 ] as const satisfies ReadonlyArray<{ key: AdminSection; href: string; label: string; icon: unknown }>;
 
 /** Desktop sidebar navigation, compact rows in the style of claude.ai; the mobile menu is AdminMobileMenu. */

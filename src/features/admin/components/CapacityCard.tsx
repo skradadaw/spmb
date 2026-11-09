@@ -37,7 +37,7 @@ export function CapacityCard({ capacity, transfers }: Pick<AdminDashboardSummary
         })}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
           <span><strong className="tabular-nums text-slate-800">{transfers}</strong> Pindahan, di luar kuota</span>
-          <Link href="/admin/kuota" className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline">Atur kuota<ChevronRight aria-hidden="true" className="size-3.5" /></Link>
+          <Link href="/admin/pengaturan/kuota" className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline">Atur kuota<ChevronRight aria-hidden="true" className="size-3.5" /></Link>
         </div>
       </CardContent>
     </Card>

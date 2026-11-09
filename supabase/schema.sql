@@ -279,7 +279,56 @@ BEFORE UPDATE OF nisn ON public.pendaftar
 FOR EACH ROW EXECUTE FUNCTION public.clear_nisn_flag_on_change();
 
 -- Ruang OKB: ruangan tempat Pendaftar mengikuti ketiga Tes OKB; hanya terlihat oleh admin.
-ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ruang_okb TEXT;
+-- Admin menyiapkan daftar ruangan di Pengaturan, lalu memilih salah satunya untuk Pendaftar.
+CREATE TABLE IF NOT EXISTS public.ruang_okb (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nama TEXT NOT NULL CHECK (nama = btrim(regexp_replace(nama, '\s+', ' ', 'g')) AND char_length(nama) BETWEEN 1 AND 30),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Nama yang hanya berbeda huruf besar-kecil dianggap ruangan yang sama.
+CREATE UNIQUE INDEX IF NOT EXISTS ruang_okb_nama_key ON public.ruang_okb (lower(nama));
+
+ALTER TABLE public.ruang_okb ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.ruang_okb FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.ruang_okb TO service_role;
+
+-- RESTRICT: ruangan yang masih dipakai Pendaftar tidak dapat dihapus.
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS ruang_okb_id UUID REFERENCES public.ruang_okb(id) ON DELETE RESTRICT;
+
+-- Migrasi Ruang OKB teks bebas: hanya berjalan selama kolom teks lama masih ada.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'pendaftar' AND column_name = 'ruang_okb'
+  ) THEN
+    INSERT INTO public.ruang_okb (nama)
+    SELECT DISTINCT ON (lower(cleaned)) cleaned
+    FROM (SELECT btrim(regexp_replace(ruang_okb, '\s+', ' ', 'g')) AS cleaned FROM public.pendaftar) AS lama
+    WHERE cleaned <> ''
+    ORDER BY lower(cleaned), cleaned
+    ON CONFLICT ((lower(nama))) DO NOTHING;
+
+    UPDATE public.pendaftar AS p SET ruang_okb_id = r.id
+    FROM public.ruang_okb AS r
+    WHERE lower(btrim(regexp_replace(p.ruang_okb, '\s+', ' ', 'g'))) = lower(r.nama);
+
+    ALTER TABLE public.pendaftar DROP COLUMN ruang_okb;
+  END IF;
+END $$;
+
+-- Computed column: pembaca tetap memilih `ruang_okb` dan mendapat nama ruangannya.
+CREATE OR REPLACE FUNCTION public.ruang_okb(public.pendaftar)
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT nama FROM public.ruang_okb WHERE id = $1.ruang_okb_id
+$$;
+
+REVOKE ALL ON FUNCTION public.ruang_okb(public.pendaftar) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.ruang_okb(public.pendaftar) TO service_role;
 
 -- Ruang OKB dikosongkan bila Jadwal OKB benar-benar berubah atau dihapus; menyimpan ulang jadwal yang sama tidak mengubahnya.
 CREATE OR REPLACE FUNCTION public.clear_ruang_okb_on_schedule_change()
@@ -288,7 +337,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   IF NEW.jadwal_okb_tanggal IS DISTINCT FROM OLD.jadwal_okb_tanggal OR NEW.jadwal_okb_gelombang IS DISTINCT FROM OLD.jadwal_okb_gelombang THEN
-    NEW.ruang_okb := NULL;
+    NEW.ruang_okb_id := NULL;
   END IF;
   RETURN NEW;
 END;

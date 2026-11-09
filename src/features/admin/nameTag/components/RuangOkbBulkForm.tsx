@@ -1,36 +1,43 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { startTransition, useActionState, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ADMIN_ACTIONS, ADMIN_DANGER_BUTTON, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON } from '@/features/admin/components/adminStyles';
 import { formatParticipantFieldValue } from '@/features/admin/participants/presentation';
+import type { RuangOkb } from '@/features/admin/ruangOkb/ruangOkb';
 import { cn } from '@/lib/utils';
 import { saveRuangOkbAction, type SaveRuangOkbResult } from '../actions/saveRuangOkbAction';
-import { normalizeRuangOkb } from '../nameTag';
 import type { NameTagPendaftar } from '../nameTagGroups';
-import { initialRuangOkbResult, RuangOkbInput, RuangOkbResultMessage } from './RuangOkbField';
+import { initialRuangOkbResult, RuangOkbChoice, RuangOkbResultMessage } from './RuangOkbField';
 
 const displayName = (member: NameTagPendaftar) => formatParticipantFieldValue('identity', 'namaLengkap', member.namaLengkap);
 
 /** Daftar Pendaftar satu kelompok; yang dicentang diberi satu Ruang OKB sekaligus. */
-export function RuangOkbBulkForm({ members, suggestions }: { members: NameTagPendaftar[]; suggestions: string[] }) {
+export function RuangOkbBulkForm({ members, rooms }: { members: NameTagPendaftar[]; rooms: readonly RuangOkb[] | null }) {
   const [checkedIds, setCheckedIds] = useState<ReadonlySet<string>>(new Set());
-  const [ruang, setRuang] = useState('');
+  const [ruangOkbId, setRuangOkbId] = useState('');
 
   // Dihitung dari daftar terbaru, agar Pendaftar yang hilang setelah dimuat ulang tidak ikut terkirim.
   const checkedMembers = members.filter(member => checkedIds.has(member.id));
   const allChecked = checkedMembers.length === members.length;
 
-  const [state, formAction, pending] = useActionState(async (_previous: SaveRuangOkbResult, formData: FormData) => {
-    const result = await saveRuangOkbAction(checkedMembers.map(member => member.id), formData.get('clear') === '1' ? '' : ruang);
-    // Saat sebagian gagal, pilihan dan nama tetap ada agar admin bisa memeriksanya.
+  const [state, saveAction, pending] = useActionState(async (_previous: SaveRuangOkbResult, clear: boolean) => {
+    const result = await saveRuangOkbAction(checkedMembers.map(member => member.id), clear ? '' : ruangOkbId);
+    // Saat sebagian gagal, pilihan Pendaftar dan ruangan tetap ada agar admin bisa memeriksanya.
     if (result.status === 'success') {
       setCheckedIds(new Set());
-      setRuang('');
+      setRuangOkbId('');
     }
     return result;
   }, initialRuangOkbResult);
+
+  // Dikirim lewat onSubmit, bukan prop action: React mereset form setelah action, dan Radix Select ikut mengosongkan pilihannya.
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const clear = (event.nativeEvent as SubmitEvent).submitter?.getAttribute('name') === 'clear';
+    startTransition(() => saveAction(clear));
+  }
 
   function toggle(id: string, checked: boolean) {
     const next = new Set(checkedIds);
@@ -41,12 +48,12 @@ export function RuangOkbBulkForm({ members, suggestions }: { members: NameTagPen
 
   return (
     <div className="space-y-4">
-      <form action={formAction} className="space-y-2 rounded-xl border border-slate-200 p-3">
-        <Label htmlFor="ruang-okb-sekaligus" className={ADMIN_LABEL}>Nama ruangan</Label>
-        <RuangOkbInput id="ruang-okb-sekaligus" value={ruang} onChange={event => setRuang(event.target.value)} suggestions={suggestions} />
+      <form onSubmit={submit} className="space-y-2 rounded-xl border border-slate-200 p-3">
+        <Label htmlFor="ruang-okb-sekaligus" className={ADMIN_LABEL}>Ruang OKB</Label>
+        <RuangOkbChoice id="ruang-okb-sekaligus" rooms={rooms} value={ruangOkbId} onChange={setRuangOkbId} />
         <div className={ADMIN_ACTIONS}>
           {/* Simpan comes first in the DOM so Enter saves rather than clears; order-last keeps it rightmost. */}
-          <Button type="submit" disabled={pending || checkedMembers.length === 0 || !normalizeRuangOkb(ruang)} className={cn(ADMIN_PRIMARY_BUTTON, 'order-last')}>Simpan ruangan</Button>
+          {!!rooms?.length && <Button type="submit" disabled={pending || checkedMembers.length === 0 || !ruangOkbId} className={cn(ADMIN_PRIMARY_BUTTON, 'order-last')}>Simpan ruangan</Button>}
           <Button type="submit" name="clear" value="1" disabled={pending || !checkedMembers.some(member => member.ruangOkb)} className={ADMIN_DANGER_BUTTON}>Kosongkan</Button>
         </div>
         <RuangOkbResultMessage result={state} />

@@ -1,21 +1,37 @@
 'use client';
 
-import { useId, type ComponentProps } from 'react';
-import { Input } from '@/components/ui/input';
-import { ADMIN_FIELD } from '@/features/admin/components/adminStyles';
+import Link from 'next/link';
+import { FormSelect } from '@/features/admin/components/FormSelect';
+import { ruangOkbKey, type RuangOkb } from '@/features/admin/ruangOkb/ruangOkb';
 import { cn } from '@/lib/utils';
 import type { SaveRuangOkbResult } from '../actions/saveRuangOkbAction';
 
 export const initialRuangOkbResult: SaveRuangOkbResult = { status: 'idle', message: '', updated: 0 };
 
-/** Nama ruangan diketik bebas, dengan saran dari nama yang sudah dipakai. Batas panjangnya diperiksa server setelah dinormalkan. */
-export function RuangOkbInput({ suggestions, ...props }: ComponentProps<typeof Input> & { suggestions: string[] }) {
-  const suggestionsId = useId();
+/** Id ruangan di daftar yang namanya sama dengan Ruang OKB tersimpan; nama ruangan unik, jadi cukup dicocokkan. */
+export function ruangOkbIdFor(rooms: readonly RuangOkb[], ruangOkb: string | null) {
+  if (!ruangOkb) return '';
+  const key = ruangOkbKey(ruangOkb);
+  return rooms.find(room => ruangOkbKey(room.nama) === key)?.id ?? '';
+}
+
+/** Ruang OKB dipilih dari daftar ruangan di Pengaturan, dalam urutan yang diberikan. */
+function RuangOkbSelect({ id, rooms, value, onChange }: { id: string; rooms: readonly RuangOkb[]; value: string; onChange: (value: string) => void }) {
+  return <FormSelect id={id} name="ruangOkbId" value={value} onChange={onChange} placeholder="Pilih ruangan" options={rooms.map(room => ({ value: room.id, label: room.nama }))} className="h-9" />;
+}
+
+/** Pilihan ruangan, atau keterangan bila daftarnya kosong (`[]`) atau gagal dimuat (`null`). */
+export function RuangOkbChoice({ id, rooms, value, onChange }: { id: string; rooms: readonly RuangOkb[] | null; value: string; onChange: (value: string) => void }) {
+  if (!rooms) return <p className="text-xs font-semibold text-rose-700">Daftar Ruang OKB belum dapat dimuat. Muat ulang halaman.</p>;
+  if (rooms.length === 0) return <EmptyRuangOkbList />;
+  return <RuangOkbSelect id={id} rooms={rooms} value={value} onChange={onChange} />;
+}
+
+function EmptyRuangOkbList() {
   return (
-    <>
-      <Input {...props} list={suggestionsId} autoComplete="off" placeholder="Mis. Ruang A" className={ADMIN_FIELD} />
-      <datalist id={suggestionsId}>{suggestions.map(suggestion => <option key={suggestion} value={suggestion} />)}</datalist>
-    </>
+    <p className="text-xs text-[var(--admin-muted)]">
+      Belum ada ruangan. Tambahkan di <Link href="/admin/pengaturan/ruang-okb" className="font-semibold text-[var(--admin-sidebar)] hover:underline">Pengaturan</Link>.
+    </p>
   );
 }
 

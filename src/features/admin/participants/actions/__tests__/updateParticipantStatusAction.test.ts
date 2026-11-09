@@ -183,7 +183,7 @@ describe('updateParticipantStatusAction', () => {
 
     await expect(updateParticipantStatusAction(idle, form('restore'))).resolves.toEqual({
       status: 'error',
-      message: 'Kuota Pilihan Kelas pendaftar ini sudah penuh. Geser kuota di menu Kuota Kelas terlebih dahulu.',
+      message: 'Kuota Pilihan Kelas pendaftar ini sudah penuh. Geser kuota di menu Pengaturan terlebih dahulu.',
     });
   });
 

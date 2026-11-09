@@ -127,7 +127,7 @@ describe('updateParticipantDataAction', () => {
     mocks.rpc.mockResolvedValue({ data: 'full', error: null });
 
     const result = await updateParticipantDataAction(idle, form('registration', { jenisPendaftaran: 'Siswa Baru', pilihanKelas: 'Bilingual' }));
-    expect(result.message).toBe('Kuota Bilingual sudah penuh. Geser kuota di menu Kuota Kelas terlebih dahulu.');
+    expect(result.message).toBe('Kuota Bilingual sudah penuh. Geser kuota di menu Pengaturan terlebih dahulu.');
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 

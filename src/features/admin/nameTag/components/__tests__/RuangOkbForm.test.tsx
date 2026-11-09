@@ -7,7 +7,13 @@ vi.mock('../../actions/saveRuangOkbAction', () => ({ saveRuangOkbAction: mocks.s
 import { RuangOkbForm } from '../RuangOkbForm';
 
 const applicantId = '123e4567-e89b-12d3-a456-426614174000';
-const renderForm = (ruangOkb: string | null = null, suggestions: string[] = []) => render(<RuangOkbForm applicantId={applicantId} ruangOkb={ruangOkb} suggestions={suggestions} />);
+const rooms = [{ id: 'room-2', nama: 'Kelas 2' }, { id: 'room-10', nama: 'Kelas 10' }];
+const renderForm = (ruangOkb: string | null = null, list = rooms) => render(<RuangOkbForm applicantId={applicantId} ruangOkb={ruangOkb} rooms={list} />);
+const chooseRoom = (nama: string) => {
+  HTMLElement.prototype.scrollIntoView = vi.fn();
+  fireEvent.keyDown(screen.getByRole('combobox', { name: 'Ruang OKB' }), { key: 'Enter' });
+  fireEvent.click(screen.getByRole('option', { name: nama }));
+};
 
 describe('RuangOkbForm', () => {
   beforeEach(() => {
@@ -15,18 +21,38 @@ describe('RuangOkbForm', () => {
     mocks.save.mockResolvedValue({ status: 'success', message: 'Ruang OKB disimpan untuk 1 Pendaftar.', updated: 1 });
   });
 
-  it('saves the typed room for this applicant and shows the result', async () => {
+  it('offers the rooms from the list in the given order', () => {
     renderForm();
-    fireEvent.change(screen.getByLabelText('Ruang OKB'), { target: { value: 'Ruang B' } });
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Ruang OKB' }), { key: 'Enter' });
+
+    expect(screen.getAllByRole('option').map(option => option.textContent)).toEqual(['Kelas 2', 'Kelas 10']);
+  });
+
+  it('saves the chosen room for this applicant by its id and shows the result', async () => {
+    renderForm();
+    chooseRoom('Kelas 10');
     fireEvent.click(screen.getByRole('button', { name: 'Simpan ruangan' }));
 
     expect(await screen.findByText('Ruang OKB disimpan untuk 1 Pendaftar.')).toBeDefined();
-    expect(mocks.save).toHaveBeenCalledWith([applicantId], 'Ruang B');
+    expect(mocks.save).toHaveBeenCalledWith([applicantId], 'room-10');
   });
 
-  it('clears the room regardless of what is typed', async () => {
+  it('starts on the room already assigned', () => {
+    renderForm('Kelas 10');
+
+    expect(screen.getByRole('combobox', { name: 'Ruang OKB' }).textContent).toContain('Kelas 10');
+  });
+
+  it('cannot save before a room is chosen', () => {
+    renderForm();
+
+    expect((screen.getByRole('button', { name: 'Simpan ruangan' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('clears the room regardless of what is chosen', async () => {
     mocks.save.mockResolvedValue({ status: 'success', message: 'Ruang OKB dikosongkan untuk 1 Pendaftar.', updated: 1 });
-    renderForm('Ruang A');
+    renderForm('Kelas 2');
     fireEvent.click(screen.getByRole('button', { name: 'Kosongkan' }));
 
     expect(await screen.findByText('Ruang OKB dikosongkan untuk 1 Pendaftar.')).toBeDefined();
@@ -34,24 +60,20 @@ describe('RuangOkbForm', () => {
   });
 
   it('shows why the room could not be saved', async () => {
-    mocks.save.mockResolvedValue({ status: 'error', message: 'Nama ruangan maksimal 30 karakter.', updated: 0 });
+    mocks.save.mockResolvedValue({ status: 'error', message: 'Ruang OKB tidak ditemukan. Muat ulang halaman lalu pilih lagi.', updated: 0 });
     renderForm();
+    chooseRoom('Kelas 2');
     fireEvent.click(screen.getByRole('button', { name: 'Simpan ruangan' }));
 
-    expect(await screen.findByText('Nama ruangan maksimal 30 karakter.')).toBeDefined();
+    expect(await screen.findByText('Ruang OKB tidak ditemukan. Muat ulang halaman lalu pilih lagi.')).toBeDefined();
   });
 
-  it('suggests rooms already in use while still accepting a new name', () => {
-    renderForm(null, ['Ruang A', 'Ruang B']);
-    const input = screen.getByLabelText('Ruang OKB');
-    const list = document.getElementById(input.getAttribute('list') ?? '');
+  it('points to Pengaturan when the room list is still empty', () => {
+    renderForm(null, []);
 
-    expect([...(list?.querySelectorAll('option') ?? [])].map(option => option.value)).toEqual(['Ruang A', 'Ruang B']);
-  });
-
-  it('leaves the length limit to the server, so an over-long name gets its message', () => {
-    renderForm();
-
-    expect(screen.getByLabelText('Ruang OKB').hasAttribute('maxlength')).toBe(false);
+    expect(screen.getByText(/Belum ada ruangan/).textContent).toContain('Belum ada ruangan. Tambahkan di Pengaturan');
+    expect(screen.getByRole('link', { name: 'Pengaturan' }).getAttribute('href')).toBe('/admin/pengaturan/ruang-okb');
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Simpan ruangan' })).toBeNull();
   });
 });

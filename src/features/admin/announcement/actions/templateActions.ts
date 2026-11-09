@@ -55,7 +55,7 @@ export async function activateTemplateAction(path: string): Promise<TemplateResu
   } catch (error) {
     return fail(error instanceof AcceptanceTemplateError ? error.message : 'Template tidak dapat diaktifkan. Silakan coba lagi.');
   }
-  revalidatePath('/admin/pengumuman');
+  revalidatePath('/admin/okb/pengumuman');
   return { success: true };
 }
 
