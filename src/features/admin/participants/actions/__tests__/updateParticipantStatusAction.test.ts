@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   session: vi.fn(),
@@ -49,16 +49,59 @@ describe('updateParticipantStatusAction', () => {
     mocks.filters.length = 0;
     mocks.session.mockResolvedValue(true);
     mocks.writeMaybeSingle.mockResolvedValue({ data: { id: participantId }, error: null });
+    mocks.readMaybeSingle.mockResolvedValue({ data: { status: 'Terverifikasi', jadwal_okb_tanggal: null, jadwal_okb_gelombang: null, ruang_okb: null }, error: null });
+    // 1 Nov 2026 di Jakarta: tanggal jadwal di tes ini tidak di masa lalu.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-01T03:00:00Z'));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('schedules OKB for a verified or already scheduled applicant', async () => {
     const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalGelombang: '2' }));
 
     expect(result).toEqual({ status: 'success', message: 'Jadwal OKB berhasil disimpan.' });
-    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2 });
-    expect(mocks.filters).toContainEqual(['in:status', ['Terverifikasi', 'Terjadwal OKB']]);
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2, ruang_okb_id: null });
+    expect(mocks.filters).toContainEqual(['eq:status', 'Terverifikasi']);
     expect(mocks.revalidatePath).toHaveBeenCalledWith(`/admin/pendaftar/${participantId}`);
     expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb');
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb/name-tag');
+  });
+
+  it('clears the Ruang OKB when a rescheduled date or Gelombang differs', async () => {
+    mocks.readMaybeSingle.mockResolvedValue({ data: { status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 1, ruang_okb: 'Ruang A' }, error: null });
+
+    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalGelombang: '2' }));
+
+    expect(result).toEqual({ status: 'success', message: 'Jadwal OKB berhasil disimpan. Ruang OKB dikosongkan, pilih ruangan lagi.' });
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2, ruang_okb_id: null });
+    expect(mocks.filters).toContainEqual(['eq:status', 'Terjadwal OKB']);
+  });
+
+  it('keeps the Ruang OKB when the schedule is saved unchanged', async () => {
+    mocks.readMaybeSingle.mockResolvedValue({ data: { status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2, ruang_okb: 'Ruang A' }, error: null });
+
+    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-07', jadwalGelombang: '2' }));
+
+    expect(result).toEqual({ status: 'success', message: 'Jadwal OKB berhasil disimpan.' });
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terjadwal OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2 });
+  });
+
+  it('rejects an OKB date before today in Jakarta', async () => {
+    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-10-31', jadwalGelombang: '2' }));
+
+    expect(result).toEqual({ status: 'error', message: 'Tanggal OKB tidak boleh sebelum hari ini.' });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it('does not schedule an applicant outside Terverifikasi or Terjadwal OKB', async () => {
+    mocks.readMaybeSingle.mockResolvedValue({ data: { status: 'Sudah OKB', jadwal_okb_tanggal: '2026-11-07', jadwal_okb_gelombang: 2, ruang_okb: 'Ruang A' }, error: null });
+
+    const result = await updateParticipantStatusAction(idle, form('schedule', { jadwalTanggal: '2026-11-08', jadwalGelombang: '2' }));
+
+    expect(result.status).toBe('error');
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 
   it('rejects an impossible OKB date', async () => {
@@ -88,7 +131,7 @@ describe('updateParticipantStatusAction', () => {
     const result = await updateParticipantStatusAction(idle, form('unschedule'));
 
     expect(result).toEqual({ status: 'success', message: 'Jadwal OKB dihapus. Pendaftar kembali Terverifikasi.' });
-    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terverifikasi', jadwal_okb_tanggal: null, jadwal_okb_gelombang: null });
+    expect(mocks.update).toHaveBeenCalledWith({ status: 'Terverifikasi', jadwal_okb_tanggal: null, jadwal_okb_gelombang: null, ruang_okb_id: null });
     expect(mocks.filters).toContainEqual(['eq:status', 'Terjadwal OKB']);
     expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pendaftar');
   });

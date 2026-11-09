@@ -2,7 +2,7 @@
 
 import type { RuangOkb } from '@/features/admin/ruangOkb/ruangOkb';
 import { useActionState, useState, type ReactNode } from 'react';
-import { format, parse, isValid } from 'date-fns';
+import { format, parse, isValid, startOfDay } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { CalendarCheck, CalendarClock, CalendarDays, CalendarX2, Check, ChevronDown, Download, Pencil, RotateCcw, UserCheck, UserX, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -78,11 +78,15 @@ export function ParticipantStatusPanel({ participantId, namaLengkap, status, pre
   const [seenState, setSeenState] = useState(state);
   if (state !== seenState) {
     setSeenState(state);
-    if (state.status === 'success') setEditingDecision(false);
+    if (state.status === 'success') {
+      setEditingDecision(false);
+      setRescheduling(false);
+    }
   }
   const cancelled = status === 'Dibatalkan';
   const canCancel = (CANCELLABLE_STATUSES as readonly string[]).includes(status);
   const hasSchedule = Boolean(jadwalTanggal || jadwalGelombang);
+  const showRuangOkb = allowsRuangOkb(status) || Boolean(ruangOkb);
   const decided = status === 'Diterima' || status === 'Ditolak';
 
   return (
@@ -95,59 +99,66 @@ export function ParticipantStatusPanel({ participantId, namaLengkap, status, pre
         <StepIndicator current={currentStep(status)} muted={cancelled} />
       </div>
 
-      {hasSchedule && (
+      {/* Tanggal, Gelombang, dan Ruang OKB dalam satu kartu Jadwal OKB. */}
+      {(hasSchedule || showRuangOkb) && (
         <section className="space-y-2">
           <h3 className={ADMIN_SECTION_TITLE}>Jadwal OKB</h3>
-          <dl className="grid grid-cols-2 divide-x divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="px-3 py-2">
-              <dt className="text-[11px] font-medium text-slate-500">Tanggal</dt>
-              <dd className="mt-0.5 text-sm font-medium text-slate-950">{formatParticipantFieldValue('okb', 'jadwalTanggal', jadwalTanggal)}</dd>
-            </div>
-            <div className="px-3 py-2">
-              <dt className="text-[11px] font-medium text-slate-500">Gelombang</dt>
-              <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{jadwalGelombang ?? 'Belum diisi'}</dd>
-            </div>
-          </dl>
+          <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+            {hasSchedule && (
+              <dl className="grid grid-cols-2 divide-x divide-slate-100">
+                <div className="px-3 py-2">
+                  <dt className="text-[11px] font-medium text-slate-500">Tanggal</dt>
+                  <dd className="mt-0.5 text-sm font-medium text-slate-950">{formatParticipantFieldValue('okb', 'jadwalTanggal', jadwalTanggal)}</dd>
+                </div>
+                <div className="px-3 py-2">
+                  <dt className="text-[11px] font-medium text-slate-500">Gelombang</dt>
+                  <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{jadwalGelombang ?? 'Belum diisi'}</dd>
+                </div>
+              </dl>
+            )}
+            {allowsRuangOkb(status) ? (
+              <RuangOkbForm
+                applicantId={participantId}
+                ruangOkb={ruangOkb}
+                rooms={ruangOkbRooms}
+                extraAction={<PrintNameTagButton status={status} namaLengkap={namaLengkap} ruangOkb={ruangOkb} />}
+              />
+            ) : ruangOkb && (
+              <dl className="px-3 py-2">
+                <dt className="text-[11px] font-medium text-slate-500">Ruang OKB</dt>
+                <dd className="mt-0.5 break-words text-sm font-medium text-slate-950">{ruangOkb}</dd>
+              </dl>
+            )}
+          </div>
         </section>
       )}
 
-      {allowsRuangOkb(status) ? (
-        <>
-          <RuangOkbForm applicantId={participantId} ruangOkb={ruangOkb} rooms={ruangOkbRooms} />
-          <PrintNameTagButton status={status} namaLengkap={namaLengkap} ruangOkb={ruangOkb} />
-        </>
-      ) : ruangOkb && (
-        <div className="space-y-1 rounded-xl border border-slate-200 p-3">
-          <p className={ADMIN_SECTION_TITLE}>Ruang OKB</p>
-          <p className="break-words text-sm font-medium text-slate-950">{ruangOkb}</p>
-        </div>
-      )}
-
-      {status === 'Terjadwal OKB' && (
-        <div className={ADMIN_ACTIONS}>
+      {/* Selama form Jadwalkan ulang terbuka, aksi lain disembunyikan agar tidak bentrok. */}
+      {status === 'Terjadwal OKB' && !rescheduling && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <ConfirmDialog
             participantId={participantId}
             intent="unschedule"
             trigger={<><CalendarX2 aria-hidden="true" className="size-3.5" />Hapus jadwal</>}
             triggerClassName={ADMIN_DANGER_BUTTON}
             title="Hapus Jadwal OKB?"
-            description="Tanggal dan Gelombang OKB dikosongkan, lalu pendaftar kembali Terverifikasi dan perlu dijadwalkan lagi. Kursinya tetap terpakai."
+            description="Tanggal, Gelombang, dan Ruang OKB dikosongkan, lalu pendaftar kembali Terverifikasi dan perlu dijadwalkan lagi. Kursinya tetap terpakai."
             confirmLabel="Ya, hapus jadwal"
             confirmClassName={ADMIN_DANGER_SOLID_BUTTON}
             pending={pending}
             formAction={formAction}
           />
-          {!rescheduling && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Button type="button" onClick={() => setRescheduling(true)} className={ADMIN_SECONDARY_BUTTON}>
               <CalendarClock aria-hidden="true" className="size-3.5" />Jadwalkan ulang
             </Button>
-          )}
-          <form action={formAction}>
-            <input type="hidden" name="participantId" value={participantId} />
-            <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
-              <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
-            </Button>
-          </form>
+            <form action={formAction}>
+              <input type="hidden" name="participantId" value={participantId} />
+              <Button type="submit" name="intent" value="attend" disabled={pending} className={ADMIN_PRIMARY_BUTTON}>
+                <UserCheck aria-hidden="true" className="size-3.5" />Tandai hadir OKB
+              </Button>
+            </form>
+          </div>
         </div>
       )}
 
@@ -157,6 +168,7 @@ export function ParticipantStatusPanel({ participantId, namaLengkap, status, pre
           title={rescheduling ? 'Jadwalkan ulang OKB' : 'Jadwalkan OKB'}
           jadwalTanggal={jadwalTanggal}
           jadwalGelombang={jadwalGelombang}
+          ruangOkb={rescheduling ? ruangOkb : null}
           pending={pending}
           formAction={formAction}
           onCancel={rescheduling ? () => setRescheduling(false) : undefined}
@@ -274,17 +286,21 @@ function StepIndicator({ current, muted }: { current: number; muted: boolean }) 
   );
 }
 
-function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, pending, formAction, onCancel }: {
+function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, ruangOkb, pending, formAction, onCancel }: {
   participantId: string;
   title: string;
   jadwalTanggal: string | null;
   jadwalGelombang: string | null;
+  /** Ruang OKB saat ini; dikosongkan server bila tanggal atau Gelombang berubah. */
+  ruangOkb: string | null;
   pending: boolean;
   formAction: FormAction;
   onCancel?: () => void;
 }) {
-  const [gelombang, setGelombang] = useState(String(OKB_WAVES.find(wave => okbWaveLabel(wave) === jadwalGelombang) ?? ''));
+  const savedGelombang = String(OKB_WAVES.find(wave => okbWaveLabel(wave) === jadwalGelombang) ?? '');
+  const [gelombang, setGelombang] = useState(savedGelombang);
   const [tanggal, setTanggal] = useState(jadwalTanggal ?? '');
+  const moved = tanggal !== (jadwalTanggal ?? '') || gelombang !== savedGelombang;
   return (
     <form action={formAction} className="space-y-3 rounded-xl border border-slate-200 p-3">
       <input type="hidden" name="participantId" value={participantId} />
@@ -307,6 +323,9 @@ function ScheduleForm({ participantId, title, jadwalTanggal, jadwalGelombang, pe
           />
         </div>
       </div>
+      {ruangOkb && moved && (
+        <p className="text-[11px] leading-4 text-amber-700">Jadwal berubah: Ruang OKB ({ruangOkb}) akan dikosongkan dan perlu dipilih lagi.</p>
+      )}
       <div className={cn(ADMIN_ACTIONS, 'border-t border-slate-100 pt-3')}>
         {onCancel && <Button type="button" onClick={onCancel} className={ADMIN_SECONDARY_BUTTON}>Batal</Button>}
         <Button type="submit" name="intent" value="schedule" disabled={pending || !tanggal || !gelombang} className={ADMIN_PRIMARY_BUTTON}>
@@ -358,6 +377,8 @@ function DateField({ id, name, value, placeholder, onChange }: {
             locale={idLocale}
             selected={selected}
             defaultMonth={selected ?? new Date()}
+            // Jadwal OKB tidak boleh di masa lalu: scan kehadiran dan Name Tag hanya untuk hari ini dan sesudahnya.
+            disabled={{ before: startOfDay(new Date()) }}
             onSelect={(date) => {
               onChange(date ? format(date, 'yyyy-MM-dd') : '');
               setOpen(false);

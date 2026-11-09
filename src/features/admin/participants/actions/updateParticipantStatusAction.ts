@@ -16,6 +16,10 @@ export type UpdateParticipantStatusState = { status: 'idle' | 'success' | 'error
 const ok = (message: string): UpdateParticipantStatusState => ({ status: 'success', message });
 const fail = (message: string): UpdateParticipantStatusState => ({ status: 'error', message });
 const STALE = 'Status pendaftar sudah berubah. Muat ulang halaman lalu coba lagi.';
+const SCHEDULABLE_STATUSES = ['Terverifikasi', 'Terjadwal OKB'] as const;
+
+/** Tanggal hari ini (yyyy-MM-dd) di zona waktu sekolah, sama dengan aturan scan kehadiran. */
+const jakartaToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
 
 function isValidDate(value: string) {
   if (!DATE_PATTERN.test(value)) return false;
@@ -43,21 +47,38 @@ export async function updateParticipantStatusAction(
       const gelombang = parseOkbWave(formData.get('jadwalGelombang'));
       if (!isValidDate(tanggal)) return fail('Tanggal OKB tidak valid.');
       if (!gelombang) return fail('Pilih Gelombang OKB.');
+      if (tanggal < jakartaToday()) return fail('Tanggal OKB tidak boleh sebelum hari ini.');
 
+      const { data: current, error: readError } = await supabase
+        .from('pendaftar')
+        .select('status, jadwal_okb_tanggal, jadwal_okb_gelombang, ruang_okb')
+        .eq('id', participantId)
+        .maybeSingle();
+      if (readError) throw readError;
+      const status = typeof current?.status === 'string' ? current.status : '';
+      if (!(SCHEDULABLE_STATUSES as readonly string[]).includes(status)) return fail(STALE);
+
+      // Ruang OKB dipilih untuk satu tanggal dan Gelombang; bila jadwalnya pindah, admin memilih ruangan lagi.
+      const moved = current?.jadwal_okb_tanggal !== tanggal || parseOkbWave(current?.jadwal_okb_gelombang) !== gelombang;
+      const clearsRuang = moved && Boolean(current?.ruang_okb);
       const { data, error } = await supabase
         .from('pendaftar')
-        .update({ status: 'Terjadwal OKB', jadwal_okb_tanggal: tanggal, jadwal_okb_gelombang: gelombang })
+        .update({ status: 'Terjadwal OKB', jadwal_okb_tanggal: tanggal, jadwal_okb_gelombang: gelombang, ...(moved && { ruang_okb_id: null }) })
         .eq('id', participantId)
-        .in('status', ['Terverifikasi', 'Terjadwal OKB'])
+        .eq('status', status)
         .select('id')
         .maybeSingle();
       if (error) throw error;
-      result = data ? ok('Jadwal OKB berhasil disimpan.') : fail(STALE);
+      result = !data
+        ? fail(STALE)
+        : clearsRuang
+          ? ok('Jadwal OKB berhasil disimpan. Ruang OKB dikosongkan, pilih ruangan lagi.')
+          : ok('Jadwal OKB berhasil disimpan.');
     } else if (intent === 'unschedule') {
-      // Hapus Jadwal OKB: still in process, so the seat stays taken.
+      // Hapus Jadwal OKB: still in process, so the seat stays taken. Ruang OKB belongs to the schedule, so it goes too.
       const { data, error } = await supabase
         .from('pendaftar')
-        .update({ status: 'Terverifikasi', jadwal_okb_tanggal: null, jadwal_okb_gelombang: null })
+        .update({ status: 'Terverifikasi', jadwal_okb_tanggal: null, jadwal_okb_gelombang: null, ruang_okb_id: null })
         .eq('id', participantId)
         .eq('status', 'Terjadwal OKB')
         .select('id')
@@ -165,6 +186,7 @@ export async function updateParticipantStatusAction(
     revalidatePath(`/admin/pendaftar/${participantId}`);
     revalidatePath('/admin/pendaftar');
     revalidatePath('/admin/okb');
+    revalidatePath('/admin/okb/name-tag');
     if (intent === 'decide' || intent === 'undecide' || intent === 'cancel' || intent === 'restore') {
       revalidatePath('/pendaftaran');
       revalidatePath('/');

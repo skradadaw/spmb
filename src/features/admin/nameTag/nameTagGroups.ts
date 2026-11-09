@@ -52,3 +52,21 @@ export function nameTagHref(tanggal: string, gelombang?: OkbWave) {
   if (gelombang) params.set('gelombang', String(gelombang));
   return `/admin/okb/name-tag?${params}`;
 }
+
+export type RuangOkbSummary = { total: number; withRoom: number; withoutRoom: number; perRoom: { nama: string; count: number }[] };
+
+/** Progres pembagian Ruang OKB satu kelompok: berapa yang sudah punya ruangan, dan isi tiap ruangan. */
+export function summarizeRuangOkb(members: NameTagPendaftar[]): RuangOkbSummary {
+  const perRoom = new Map<string, number>();
+  for (const { ruangOkb } of members) {
+    const nama = ruangOkb?.trim();
+    if (nama) perRoom.set(nama, (perRoom.get(nama) ?? 0) + 1);
+  }
+  const withRoom = [...perRoom.values()].reduce((sum, count) => sum + count, 0);
+  return {
+    total: members.length,
+    withRoom,
+    withoutRoom: members.length - withRoom,
+    perRoom: [...perRoom].map(([nama, count]) => ({ nama, count })).sort((left, right) => compareText(left.nama, right.nama)),
+  };
+}

@@ -17,7 +17,7 @@ export function ruangOkbIdFor(rooms: readonly RuangOkb[], ruangOkb: string | nul
 
 /** Ruang OKB dipilih dari daftar ruangan di Pengaturan, dalam urutan yang diberikan. */
 function RuangOkbSelect({ id, rooms, value, onChange }: { id: string; rooms: readonly RuangOkb[]; value: string; onChange: (value: string) => void }) {
-  return <FormSelect id={id} name="ruangOkbId" value={value} onChange={onChange} placeholder="Pilih ruangan" options={rooms.map(room => ({ value: room.id, label: room.nama }))} className="h-9" />;
+  return <FormSelect id={id} name="ruangOkbId" value={value} onChange={onChange} placeholder="Pilih ruangan" options={rooms.map(room => ({ value: room.id, label: room.nama }))} className="h-9 text-sm" />;
 }
 
 /** Pilihan ruangan, atau keterangan bila daftarnya kosong (`[]`) atau gagal dimuat (`null`). */

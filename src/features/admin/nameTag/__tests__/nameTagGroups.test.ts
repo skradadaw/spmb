@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildNameTagView, nameTagHref, type NameTagRow } from '../nameTagGroups';
+import { buildNameTagView, nameTagHref, summarizeRuangOkb, type NameTagRow } from '../nameTagGroups';
 
 const row = (id: string, namaLengkap: string, tanggal: string, gelombang: 1 | 2 | 3, ruangOkb: string | null = null): NameTagRow => ({ id, namaLengkap, ruangOkb, tanggal, gelombang });
 
@@ -58,5 +58,24 @@ describe('nameTagHref', () => {
   it('links to a date, with or without a Gelombang', () => {
     expect(nameTagHref('2026-11-20')).toBe('/admin/okb/name-tag?tanggal=2026-11-20');
     expect(nameTagHref('2026-11-20', 2)).toBe('/admin/okb/name-tag?tanggal=2026-11-20&gelombang=2');
+  });
+});
+
+describe('summarizeRuangOkb', () => {
+  const member = (id: string, ruangOkb: string | null) => ({ id, namaLengkap: id, ruangOkb });
+
+  it('counts who already has a room and how many are in each room, in natural order', () => {
+    const summary = summarizeRuangOkb([member('a', 'Kelas 10'), member('b', null), member('c', 'Kelas 2'), member('d', 'Kelas 10'), member('e', '  ')]);
+
+    expect(summary).toEqual({
+      total: 5,
+      withRoom: 3,
+      withoutRoom: 2,
+      perRoom: [{ nama: 'Kelas 2', count: 1 }, { nama: 'Kelas 10', count: 2 }],
+    });
+  });
+
+  it('is empty for a group without Pendaftar', () => {
+    expect(summarizeRuangOkb([])).toEqual({ total: 0, withRoom: 0, withoutRoom: 0, perRoom: [] });
   });
 });

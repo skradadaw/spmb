@@ -15,8 +15,10 @@ const success = (updated: number) => ({ status: 'success', message: `Ruang OKB d
 
 const rooms = [{ id: 'room-a', nama: 'Ruang A' }, { id: 'room-b', nama: 'Ruang B' }];
 const renderForm = (props: Partial<React.ComponentProps<typeof RuangOkbBulkForm>> = {}) => render(<RuangOkbBulkForm members={members} rooms={rooms} {...props} />);
-const check = (name: string) => screen.getByRole('checkbox', { name: `Pilih ${name}` }) as HTMLInputElement;
-const selectAll = () => screen.getByRole('checkbox', { name: 'Pilih semua Pendaftar' }) as HTMLInputElement;
+const check = (name: string) => screen.getByRole('checkbox', { name: `Pilih ${name}` });
+const selectAll = () => screen.getByRole('checkbox', { name: 'Pilih semua Pendaftar' });
+/** shadcn Checkbox (Base UI) memakai aria-checked: true, false, atau mixed. */
+const state = (element: HTMLElement) => element.getAttribute('aria-checked');
 const ruang = () => screen.getByRole('combobox', { name: 'Ruang OKB' });
 const chooseRoom = (nama: string) => {
   HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -52,23 +54,21 @@ describe('RuangOkbBulkForm', () => {
 
     expect(await screen.findByText('Ruang OKB disimpan untuk 2 Pendaftar.')).toBeDefined();
     expect(mocks.save).toHaveBeenCalledWith(['id-aisyah', 'id-bilal'], 'room-b');
-    await waitFor(() => expect(check('Aisyah Putri').checked).toBe(false));
+    await waitFor(() => expect(state(check('Aisyah Putri'))).toBe('false'));
     expect(ruang().textContent).toContain('Pilih ruangan');
   });
 
   it('checks and unchecks everyone at once, showing a partial selection on the master checkbox', () => {
     renderForm();
     fireEvent.click(check('Bilal'));
-    expect(selectAll().indeterminate).toBe(true);
-    expect(selectAll().checked).toBe(false);
+    expect(state(selectAll())).toBe('mixed');
 
     fireEvent.click(selectAll());
-    expect(selectAll().checked).toBe(true);
-    expect(selectAll().indeterminate).toBe(false);
-    expect(members.every(member => (screen.getByRole('checkbox', { name: new RegExp(`^Pilih ${member.namaLengkap}`, 'i') }) as HTMLInputElement).checked)).toBe(true);
+    expect(state(selectAll())).toBe('true');
+    expect(members.every(member => state(screen.getByRole('checkbox', { name: new RegExp(`^Pilih ${member.namaLengkap}`, 'i') })) === 'true')).toBe(true);
 
     fireEvent.click(selectAll());
-    expect(check('Bilal').checked).toBe(false);
+    expect(state(check('Bilal'))).toBe('false');
   });
 
   it('clears the room of the checked Pendaftar regardless of what is chosen', async () => {
@@ -127,7 +127,7 @@ describe('RuangOkbBulkForm', () => {
     fireEvent.click(saveButton());
 
     expect(await screen.findByText(/Status 1 Pendaftar lainnya sudah berubah/)).toBeDefined();
-    expect(check('Aisyah Putri').checked).toBe(true);
+    expect(state(check('Aisyah Putri'))).toBe('true');
     expect(ruang().textContent).toContain('Ruang B');
 
     // The action revalidates the page: Bilal's status changed, so he is gone from the list.
@@ -147,6 +147,79 @@ describe('RuangOkbBulkForm', () => {
     fireEvent.click(saveButton());
 
     expect(await screen.findByText(/tidak dapat disimpan/)).toBeDefined();
-    expect(check('Bilal').checked).toBe(true);
+    expect(state(check('Bilal'))).toBe('true');
+  });
+
+  describe('filter', () => {
+    const filter = (name: RegExp) => screen.getByRole('tab', { name });
+    const visibleNames = () => within(screen.getByRole('list', { name: 'Daftar Pendaftar' })).getAllByRole('listitem').map(item => item.querySelector('[data-name]')?.textContent);
+
+    it('offers everyone, those without a room, and each room in use, with their counts', () => {
+      renderForm();
+      const filters = within(screen.getByRole('tablist', { name: 'Saring Pendaftar' })).getAllByRole('tab');
+
+      expect(filters.map(button => button.textContent)).toEqual(['Semua3', 'Belum ada ruangan2', 'Ruang A1']);
+      expect(filter(/^Semua/).getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('shows only the Pendaftar of the chosen filter', () => {
+      renderForm();
+      fireEvent.click(filter(/^Belum ada ruangan/));
+
+      expect(visibleNames()).toEqual(['Aisyah Putri', 'Bilal']);
+      expect(filter(/^Belum ada ruangan/).getAttribute('aria-selected')).toBe('true');
+
+      fireEvent.click(filter(/^Ruang A/));
+      expect(visibleNames()).toEqual(['Ahmad Fauzi']);
+    });
+
+    it('selects only the shown Pendaftar with Pilih semua, and starts over when the filter changes', async () => {
+      mocks.save.mockResolvedValue(success(2));
+      renderForm();
+      fireEvent.click(filter(/^Belum ada ruangan/));
+      fireEvent.click(selectAll());
+      expect(screen.getByText('2 dipilih')).toBeDefined();
+
+      chooseRoom('Ruang B');
+      fireEvent.click(saveButton());
+      await waitFor(() => expect(mocks.save).toHaveBeenCalledWith(['id-aisyah', 'id-bilal'], 'room-b'));
+
+      fireEvent.click(check('Bilal'));
+      fireEvent.click(filter(/^Semua/));
+      expect(screen.queryByText(/dipilih/)).toBeNull();
+      expect(state(check('Bilal'))).toBe('false');
+    });
+
+    it('hides the without-room filter once everyone has a room', () => {
+      renderForm({ members: members.map(member => ({ ...member, ruangOkb: 'Ruang A' })) });
+
+      expect(screen.queryByRole('tab', { name: /^Belum ada ruangan/ })).toBeNull();
+    });
+  });
+
+  it('labels the master checkbox Pilih semua until someone is checked, then counts the selection', () => {
+    renderForm();
+    expect(screen.getByText('Pilih semua')).toBeDefined();
+
+    fireEvent.click(check('Bilal'));
+    expect(screen.getByText('1 dipilih')).toBeDefined();
+    expect(screen.queryByText('Pilih semua')).toBeNull();
+  });
+
+  it('says how many of the group are shown', () => {
+    renderForm();
+    fireEvent.click(screen.getByRole('tab', { name: /^Belum ada ruangan/ }));
+
+    expect(screen.getByText('Menampilkan 2 dari 3 Pendaftar')).toBeDefined();
+  });
+
+
+  it('checks a Pendaftar by clicking anywhere on the row, and unchecks on a second click', () => {
+    renderForm();
+    fireEvent.click(screen.getByText('Bilal'));
+    expect(state(check('Bilal'))).toBe('true');
+
+    fireEvent.click(screen.getByText('Bilal'));
+    expect(state(check('Bilal'))).toBe('false');
   });
 });

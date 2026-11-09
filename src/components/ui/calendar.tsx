@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { DayPicker, type DropdownProps } from "react-day-picker"
-import "react-day-picker/style.css"
+import { DayPicker, getDefaultClassNames, type DropdownProps } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import {
@@ -14,6 +13,8 @@ import {
 } from "@/components/ui/select"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
+
+const NAV_BUTTON = "flex size-8 cursor-pointer items-center justify-center rounded-lg border-none text-gray-500 outline-none transition-all hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-[#00AA13]/30"
 
 function CustomDropdown(props: DropdownProps) {
   const { options, value, onChange, disabled, "aria-label": ariaLabel } = props;
@@ -62,41 +63,47 @@ function CustomDropdown(props: DropdownProps) {
 
 function Calendar({
   className,
+  classNames,
   showOutsideDays = true,
   components,
   ...props
 }: CalendarProps) {
+  // Class ditempel langsung lewat classNames (digabung dengan class bawaan rdp-*), bukan selector
+  // arbitrary: Tailwind membaca "_" sebagai spasi, sehingga `[&_.rdp-day_button]` tidak pernah cocok.
+  // CSS bawaan react-day-picker diimpor di globals.css dalam layer base agar utility di sini menang.
+  const defaults = getDefaultClassNames()
   return (
-    <div
-      className={cn(
-        "p-3 sm:p-4 bg-white rounded-2xl select-none w-fit mx-auto",
-        /* CSS Variables for react-day-picker v10 */
-        "[&_.rdp-root]:[--rdp-accent-color:#00AA13] [&_.rdp-root]:[--rdp-accent-background-color:#E6F7E9]",
-        "[&_.rdp-root]:[--rdp-day-height:36px] sm:[&_.rdp-root]:[--rdp-day-height:40px]",
-        "[&_.rdp-root]:[--rdp-day-width:36px] sm:[&_.rdp-root]:[--rdp-day-width:40px]",
-        "[&_.rdp-root]:[--rdp-day_button-height:34px] sm:[&_.rdp-root]:[--rdp-day_button-height:36px]",
-        "[&_.rdp-root]:[--rdp-day_button-width:34px] sm:[&_.rdp-root]:[--rdp-day_button-width:36px]",
-        "[&_.rdp-root]:[--rdp-day_button-border-radius:10px]",
-        /* Header & Month Caption */
-        "[&_.rdp-month_caption]:flex [&_.rdp-month_caption]:items-center [&_.rdp-month_caption]:justify-between [&_.rdp-month_caption]:mb-3 [&_.rdp-month_caption]:h-auto",
-        "[&_.rdp-dropdowns]:flex [&_.rdp-dropdowns]:items-center [&_.rdp-dropdowns]:gap-1.5",
-        /* Nav Buttons */
-        "[&_.rdp-nav]:flex [&_.rdp-nav]:items-center [&_.rdp-nav]:gap-1",
-        "[&_.rdp-button_next]:w-8 [&_.rdp-button_next]:h-8 [&_.rdp-button_next]:rounded-lg [&_.rdp-button_next]:flex [&_.rdp-button_next]:items-center [&_.rdp-button_next]:justify-center [&_.rdp-button_next]:text-gray-500 [&_.rdp-button_next]:hover:bg-gray-100 [&_.rdp-button_next]:hover:text-gray-900 [&_.rdp-button_next]:transition-all [&_.rdp-button_next]:cursor-pointer [&_.rdp-button_next]:border-none [&_.rdp-button_next]:outline-none",
-        "[&_.rdp-button_previous]:w-8 [&_.rdp-button_previous]:h-8 [&_.rdp-button_previous]:rounded-lg [&_.rdp-button_previous]:flex [&_.rdp-button_previous]:items-center [&_.rdp-button_previous]:justify-center [&_.rdp-button_previous]:text-gray-500 [&_.rdp-button_previous]:hover:bg-gray-100 [&_.rdp-button_previous]:hover:text-gray-900 [&_.rdp-button_previous]:transition-all [&_.rdp-button_previous]:cursor-pointer [&_.rdp-button_previous]:border-none [&_.rdp-button_previous]:outline-none",
-        /* Grid Table & Days */
-        "[&_.rdp-month_grid]:border-collapse [&_.rdp-month_grid]:w-full",
-        "[&_.rdp-weekday]:text-[11px] [&_.rdp-weekday]:font-bold [&_.rdp-weekday]:text-gray-400 [&_.rdp-weekday]:py-1.5 [&_.rdp-weekday]:uppercase [&_.rdp-weekday]:tracking-wider [&_.rdp-weekday]:text-center",
-        "[&_.rdp-day]:text-center [&_.rdp-day]:p-0",
-        "[&_.rdp-day_button]:font-medium [&_.rdp-day_button]:text-xs [&_.rdp-day_button]:transition-all [&_.rdp-day_button]:cursor-pointer [&_.rdp-day_button:hover]:bg-green-50 [&_.rdp-day_button:hover]:text-[#00AA13]",
-        "[&_.rdp-day_button[aria-selected='true']]:bg-[#00AA13] [&_.rdp-day_button[aria-selected='true']]:text-white [&_.rdp-day_button[aria-selected='true']]:font-bold [&_.rdp-day_button[aria-selected='true']]:shadow-md [&_.rdp-day_button[aria-selected='true']]:shadow-[#00AA13]/30",
-        "[&_.rdp-today:not([aria-selected='true'])_.rdp-day_button]:text-[#00AA13] [&_.rdp-today:not([aria-selected='true'])_.rdp-day_button]:font-bold [&_.rdp-today:not([aria-selected='true'])_.rdp-day_button]:bg-green-50 [&_.rdp-today:not([aria-selected='true'])_.rdp-day_button]:border [&_.rdp-today:not([aria-selected='true'])_.rdp-day_button]:border-green-200",
-        "[&_.rdp-outside_.rdp-day_button]:text-gray-300 [&_.rdp-outside_.rdp-day_button:hover]:text-gray-400",
-        className
-      )}
-    >
+    <div className={cn("p-3 sm:p-4 bg-white rounded-2xl select-none w-fit mx-auto", className)}>
       <DayPicker
         showOutsideDays={showOutsideDays}
+        classNames={{
+          root: cn(defaults.root, "[--rdp-accent-color:#00AA13] [--rdp-accent-background-color:#E6F7E9]"),
+          month_caption: cn(defaults.month_caption, "mb-3 flex h-auto items-center justify-between"),
+          dropdowns: cn(defaults.dropdowns, "flex items-center gap-1.5"),
+          nav: cn(defaults.nav, "flex items-center gap-1"),
+          button_previous: cn(defaults.button_previous, NAV_BUTTON),
+          button_next: cn(defaults.button_next, NAV_BUTTON),
+          chevron: cn(defaults.chevron, "fill-current"),
+          month_grid: cn(defaults.month_grid, "w-full border-collapse"),
+          weekday: cn(defaults.weekday, "py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-gray-400"),
+          day: cn(defaults.day, "size-9 p-0 text-center sm:size-10"),
+          day_button: cn(
+            defaults.day_button,
+            "mx-auto size-[34px] cursor-pointer rounded-[10px] border border-transparent text-xs font-medium transition-all sm:size-9",
+            "hover:bg-green-50 hover:text-[#00AA13] disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit"
+          ),
+          selected: cn(
+            defaults.selected,
+            "text-xs [&>button]:border-transparent [&>button]:bg-[#00AA13] [&>button]:font-bold [&>button]:text-white [&>button]:shadow-md [&>button]:shadow-[#00AA13]/30",
+            "[&>button:hover]:bg-[#00AA13] [&>button:hover]:text-white"
+          ),
+          today: cn(
+            defaults.today,
+            "[&:not([aria-selected]):not([data-disabled])>button]:border-green-200 [&:not([aria-selected]):not([data-disabled])>button]:bg-green-50 [&:not([aria-selected]):not([data-disabled])>button]:font-bold [&:not([aria-selected]):not([data-disabled])>button]:text-[#00AA13]"
+          ),
+          outside: cn(defaults.outside, "[&>button]:text-gray-300 [&>button:hover]:text-gray-400"),
+          ...classNames,
+        }}
         components={{
           Dropdown: CustomDropdown,
           ...components,

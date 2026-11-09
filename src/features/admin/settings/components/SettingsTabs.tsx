@@ -13,7 +13,7 @@ const SETTINGS_TABS = [
 export function SettingsTabs() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Bagian pengaturan" className="overflow-x-auto border-b border-[var(--admin-border)]">
+    <nav aria-label="Bagian pengaturan" className="overflow-x-auto overflow-y-hidden border-b border-[var(--admin-border)]">
       <div className="flex min-w-max gap-1">
         {SETTINGS_TABS.map(({ href, label }) => {
           const active = pathname.startsWith(href);

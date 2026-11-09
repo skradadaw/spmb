@@ -14,7 +14,7 @@ const OKB_TABS = [
 export function OkbTabs() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Bagian OKB" className="overflow-x-auto border-b border-[var(--admin-border)]">
+    <nav aria-label="Bagian OKB" className="overflow-x-auto overflow-y-hidden border-b border-[var(--admin-border)]">
       <div className="flex min-w-max gap-1">
         {OKB_TABS.map(({ href, label }) => {
           // Jadwal is the bare /admin/okb, which every tab address starts with.
