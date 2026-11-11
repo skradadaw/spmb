@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+// Self-host agar dev/build tidak gagal mengunduh dari Google Fonts saat offline atau di balik proxy.
+// Variable font subset latin dari Google Fonts (v12), mencakup ketebalan 200–800.
+const plusJakartaSans = localFont({
+  src: "./fonts/PlusJakartaSans-latin.woff2",
+  weight: "200 800",
+  style: "normal",
   variable: "--font-plus-jakarta",
   display: "swap",
   preload: false,

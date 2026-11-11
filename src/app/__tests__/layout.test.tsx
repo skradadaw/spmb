@@ -2,8 +2,8 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('next/font/google', () => ({
-  Plus_Jakarta_Sans: () => ({
+vi.mock('next/font/local', () => ({
+  default: () => ({
     className: 'font-jakarta',
     variable: '--font-plus-jakarta',
   }),
