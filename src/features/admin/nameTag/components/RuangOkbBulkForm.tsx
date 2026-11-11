@@ -85,11 +85,11 @@ export function RuangOkbBulkForm({ members, rooms }: { members: NameTagPendaftar
 
   return (
     <Card role="region" aria-labelledby="bagi-ruang-okb" className={NAME_TAG_CARD}>
-      <div className="space-y-4 border-b border-[var(--admin-border)] px-5 pt-5">
+      <div className="space-y-4 border-b border-[var(--admin-border)] px-5 pb-4 pt-5">
         <NameTagCardHeader id="bagi-ruang-okb" step={2} title="Bagi Ruang OKB" />
         <Tabs value={filter} onValueChange={value => chooseFilter(value as Filter)}>
-          {/* Garis aktif diwarnai sama dengan tab menu OKB dan menimpa garis bawah kartu. */}
-          <TabsList variant="line" aria-label="Saring Pendaftar" className="-mb-px h-auto w-full justify-start gap-4 overflow-x-auto overflow-y-hidden p-0">
+          {/* Saringan berupa chip; tinggi bawaan h-8 dilepas agar chip bisa turun ke baris baru tanpa terpotong. */}
+          <TabsList aria-label="Saring Pendaftar" className="h-auto w-full flex-wrap justify-start gap-2 rounded-none bg-transparent p-0 group-data-horizontal/tabs:h-auto">
             {filters.map(item => {
               const active = item.filter === filter;
               return (
@@ -97,10 +97,21 @@ export function RuangOkbBulkForm({ members, rooms }: { members: NameTagPendaftar
                   key={item.filter}
                   value={item.filter}
                   disabled={pending}
-                  className="h-auto flex-none gap-2 px-0.5 pb-3 pt-0 text-[var(--admin-muted)] after:bg-[var(--admin-sidebar)] group-data-horizontal/tabs:after:bottom-0 data-active:font-semibold data-active:text-[var(--admin-sidebar)]"
+                  className={cn(
+                    'h-8 flex-none gap-2 rounded-full border-[var(--admin-border)] bg-white pl-3.5 pr-1.5 text-[13px] font-medium text-slate-600 shadow-none',
+                    'hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900',
+                    'data-active:border-[var(--admin-sidebar)] data-active:bg-[var(--admin-sidebar)] data-active:text-white data-active:hover:bg-[var(--admin-sidebar)] data-active:hover:text-white',
+                  )}
                 >
                   {item.label}
-                  <Badge variant="secondary" className={cn('min-w-5 justify-center px-1.5 py-0.5 text-[11px] tabular-nums', active && 'bg-[var(--admin-sidebar)] text-white')}>{item.count}</Badge>
+                  <span
+                    className={cn(
+                      'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums',
+                      active ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600',
+                    )}
+                  >
+                    {item.count}
+                  </span>
                 </TabsTrigger>
               );
             })}
