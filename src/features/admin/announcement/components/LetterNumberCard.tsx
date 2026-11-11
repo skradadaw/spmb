@@ -1,17 +1,16 @@
 'use client';
 
 import { useActionState, useState } from 'react';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { ADMIN_PRIMARY_BUTTON } from '@/features/admin/components/adminStyles';
+import { ADMIN_ACTIONS, ADMIN_FIELD, ADMIN_LABEL, ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON } from '@/features/admin/components/adminStyles';
 import { formatNomorSurat, LETTER_NUMBER_FORMAT_MAX_LENGTH, LETTER_NUMBER_PLACEHOLDER, parseLetterNumberSettings, type LetterNumberSettings } from '@/features/announcement/letterNumber';
 import { saveLetterNumberAction, type LetterNumberState } from '../actions/letterNumberActions';
 
 const initialState: LetterNumberState = { status: 'idle', message: '' };
-const FIELD = 'h-9 rounded-lg text-sm';
 const EXAMPLE_FORMAT = `400.3.10.1/${LETTER_NUMBER_PLACEHOLDER}-SDS3AM/OKB/2026`;
 const EXAMPLE_START = '350';
 
@@ -21,15 +20,16 @@ export function LetterNumberCard({ settings, lastUsed }: { settings: LetterNumbe
   const [format, setFormat] = useState(settings?.format ?? '');
   const [nomorAwal, setNomorAwal] = useState(settings ? String(settings.nomorAwal) : '');
 
+  const empty = !format && !nomorAwal;
   const parsed = parseLetterNumberSettings({ format, nomorAwal });
   // Sama dengan aturan di database: melanjutkan nomor terakhir, atau nomor awal bila lebih besar.
   const next = parsed.ok ? Math.max(parsed.settings.nomorAwal, (lastUsed ?? 0) + 1) : null;
 
   return (
-    <form action={action} className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
+    <form action={action} className="flex flex-1 flex-col gap-3">
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
         <div className="space-y-1.5">
-          <Label htmlFor="format-nomor-surat" className="text-xs font-semibold">Format nomor surat</Label>
+          <Label htmlFor="format-nomor-surat" className={ADMIN_LABEL}>Format nomor surat</Label>
           <Input
             id="format-nomor-surat"
             name="format"
@@ -38,11 +38,15 @@ export function LetterNumberCard({ settings, lastUsed }: { settings: LetterNumbe
             maxLength={LETTER_NUMBER_FORMAT_MAX_LENGTH}
             placeholder={EXAMPLE_FORMAT}
             required
-            className={cn(FIELD, 'font-mono')}
+            aria-describedby="format-nomor-surat-hint"
+            className={cn(ADMIN_FIELD, 'font-mono')}
           />
+          <p id="format-nomor-surat-hint" className="text-xs text-[var(--admin-muted)]">
+            <span className="font-mono font-semibold text-slate-700">{LETTER_NUMBER_PLACEHOLDER}</span> diganti nomor urut.
+          </p>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="nomor-urut-awal" className="text-xs font-semibold">Nomor urut awal</Label>
+          <Label htmlFor="nomor-urut-awal" className={ADMIN_LABEL}>Nomor urut awal</Label>
           <Input
             id="nomor-urut-awal"
             name="nomorAwal"
@@ -51,47 +55,44 @@ export function LetterNumberCard({ settings, lastUsed }: { settings: LetterNumbe
             inputMode="numeric"
             placeholder={EXAMPLE_START}
             required
-            className={cn(FIELD, 'font-mono')}
+            className={cn(ADMIN_FIELD, 'font-mono')}
           />
         </div>
       </div>
 
-      {!settings && !format && !nomorAwal && (
-        <button
-          type="button"
-          onClick={() => { setFormat(EXAMPLE_FORMAT); setNomorAwal(EXAMPLE_START); }}
-          className="text-xs font-semibold text-[var(--admin-sidebar)] underline-offset-2 hover:underline"
-        >
-          Pakai contoh: {EXAMPLE_FORMAT}, mulai {EXAMPLE_START}
-        </button>
-      )}
-
-      <p className="text-xs leading-5 text-[var(--admin-muted)]">
-        Tulis <span className="font-mono font-semibold">{LETTER_NUMBER_PLACEHOLDER}</span> di tempat nomor urut.
-        Baris Nomor di template ditulis ulang oleh sistem dengan format ini, jadi isi template boleh sama persis.
-      </p>
-
-      <div data-letter-number-status className="rounded-xl border border-[var(--admin-border)] bg-[var(--admin-canvas)] px-3 py-2.5 text-sm">
+      <div
+        data-letter-number-status
+        className={cn('rounded-xl border px-3 py-2.5', parsed.ok ? 'border-[var(--admin-border)] bg-[var(--admin-canvas)]' : 'border-amber-200 bg-amber-50')}
+      >
         {parsed.ok && next !== null ? (
-          <>
-            <p>Surat berikutnya: <span className="font-mono font-semibold">Nomor: {formatNomorSurat(parsed.settings.format, next)}</span></p>
-            {lastUsed !== null && <p className="mt-0.5 text-xs text-[var(--admin-muted)]">Nomor urut terakhir yang sudah dipakai: {lastUsed}.</p>}
-          </>
-        ) : settings ? (
-          <p className="font-medium text-amber-700">{parsed.ok ? '' : parsed.error}</p>
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+            <div>
+              <p className="text-xs font-medium text-[var(--admin-muted)]">Surat berikutnya</p>
+              <p className="mt-0.5 break-all font-mono text-sm font-semibold text-slate-900">{formatNomorSurat(parsed.settings.format, next)}</p>
+            </div>
+            {lastUsed !== null && <p className="text-xs text-[var(--admin-muted)]">Terakhir dipakai: <span className="font-mono font-semibold text-slate-700">{lastUsed}</span></p>}
+          </div>
         ) : (
-          <p className="font-medium text-amber-700">Nomor surat belum diatur. Hasil OKB belum dapat diumumkan.</p>
+          <p className="text-sm font-medium text-amber-800">
+            {empty ? 'Nomor surat belum diatur. Hasil OKB belum dapat diumumkan.' : parsed.ok ? '' : parsed.error}
+          </p>
         )}
       </div>
 
-      <Button type="submit" disabled={saving} className={ADMIN_PRIMARY_BUTTON}>
-        {saving ? <Loader2 aria-hidden="true" className="size-3.5 animate-spin" /> : <Save aria-hidden="true" className="size-3.5" />}
-        Simpan nomor surat
-      </Button>
-
-      {state.message && (
-        <p aria-live="polite" className={cn('text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>{state.message}</p>
-      )}
+      <div className={cn(ADMIN_ACTIONS, 'mt-auto')}>
+        {state.message && (
+          <p aria-live="polite" className={cn('mr-auto text-xs font-semibold', state.status === 'success' ? 'text-emerald-700' : 'text-rose-700')}>{state.message}</p>
+        )}
+        {!settings && empty && (
+          <Button type="button" onClick={() => { setFormat(EXAMPLE_FORMAT); setNomorAwal(EXAMPLE_START); }} className={ADMIN_SECONDARY_BUTTON}>
+            <Wand2 aria-hidden="true" className="size-3.5" />Isi dengan contoh
+          </Button>
+        )}
+        <Button type="submit" disabled={saving} className={ADMIN_PRIMARY_BUTTON}>
+          {saving ? <Loader2 aria-hidden="true" className="size-3.5 animate-spin" /> : <Save aria-hidden="true" className="size-3.5" />}
+          Simpan nomor surat
+        </Button>
+      </div>
     </form>
   );
 }

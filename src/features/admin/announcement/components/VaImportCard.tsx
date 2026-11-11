@@ -43,6 +43,7 @@ export function VaImportCard() {
           {reading ? 'Membaca...' : 'Baca file'}
         </Button>
       </form>
+      <p className="text-xs text-[var(--admin-muted)]">Di Excel, format kolom Nomor VA sebagai Teks agar 16 digitnya utuh.</p>
 
       {preview.message && (
         <p aria-live="polite" className={cn('text-xs font-semibold', preview.status === 'error' ? 'text-rose-700' : 'text-slate-800')}>{preview.message}</p>
