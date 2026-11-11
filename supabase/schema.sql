@@ -120,6 +120,9 @@ ALTER TABLE public.pendaftar
   ADD CONSTRAINT pendaftar_nomor_va_check
   CHECK (nomor_va IS NULL OR nomor_va ~ '^[0-9]{16}$');
 
+-- Nomor urut Surat Penerimaan: diberikan sekali saat Pengumuman Hasil OKB dan tidak pernah berubah.
+ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_urut_surat INTEGER;
+
 -- 4. Indeks
 CREATE INDEX IF NOT EXISTS idx_pendaftar_nik ON public.pendaftar (nik);
 CREATE INDEX IF NOT EXISTS idx_pendaftar_created_at ON public.pendaftar (created_at DESC);
@@ -151,6 +154,21 @@ WHERE nomor_pendaftaran IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_va
 ON public.pendaftar (nomor_va)
 WHERE nomor_va IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_urut_surat
+ON public.pendaftar (nomor_urut_surat)
+WHERE nomor_urut_surat IS NOT NULL;
+
+-- Satu baris saja: format nomor Surat Penerimaan ({urut} diganti nomor urut) dan nomor urut pertama.
+CREATE TABLE IF NOT EXISTS public.pengaturan_nomor_surat (
+  id TEXT PRIMARY KEY DEFAULT 'aktif' CHECK (id = 'aktif'),
+  format TEXT NOT NULL CHECK (position('{urut}' in format) > 0),
+  nomor_awal INTEGER NOT NULL CHECK (nomor_awal > 0)
+);
+
+ALTER TABLE public.pengaturan_nomor_surat ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.pengaturan_nomor_surat FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.pengaturan_nomor_surat TO service_role;
 
 -- Nomor urut berikutnya untuk Open Booking 2027/2028. Ganti prefiks untuk tahun ajaran berikutnya.
 CREATE OR REPLACE FUNCTION public.next_registration_number()
@@ -550,7 +568,9 @@ REVOKE ALL ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) FROM PUBLIC, an
 GRANT EXECUTE ON FUNCTION public.decide_admission(UUID, TEXT, TEXT) TO service_role;
 
 -- Pengumuman Hasil OKB untuk satu Pendaftar atau satu Gelombang OKB, dalam satu transaksi.
--- Mengumumkan ditolak seluruhnya bila belum ada template aktif atau ada Pendaftar Diterima tanpa Nomor VA.
+-- Mengumumkan ditolak seluruhnya bila belum ada template aktif, nomor surat belum diatur,
+-- atau ada Pendaftar Diterima tanpa Nomor VA.
+-- Pendaftar Diterima yang diumumkan mendapat nomor urut surat berikutnya, urut Nomor Pendaftaran.
 CREATE OR REPLACE FUNCTION public.announce_results(
   p_pendaftar_id UUID,
   p_gelombang SMALLINT,
@@ -567,6 +587,8 @@ DECLARE
   v_ditolak INTEGER;
   v_dilewati INTEGER;
   v_ditarik INTEGER;
+  v_nomor_awal INTEGER;
+  v_nomor_berikutnya INTEGER;
 BEGIN
   IF (p_pendaftar_id IS NULL) = (p_gelombang IS NULL) OR p_umumkan IS NULL THEN
     RETURN jsonb_build_object('status', 'invalid');
@@ -594,6 +616,16 @@ BEGIN
 
   IF NOT EXISTS (SELECT 1 FROM public.template_surat_penerimaan) THEN
     RETURN jsonb_build_object('status', 'no-template');
+  END IF;
+
+  -- Baris pengaturan dikunci agar dua pengumuman bersamaan tidak memakai nomor urut yang sama.
+  SELECT nomor_awal INTO v_nomor_awal
+  FROM public.pengaturan_nomor_surat
+  WHERE id = 'aktif'
+  FOR UPDATE;
+
+  IF v_nomor_awal IS NULL THEN
+    RETURN jsonb_build_object('status', 'no-letter-number');
   END IF;
 
   SELECT COALESCE(jsonb_agg(jsonb_build_object('nama', nama_lengkap, 'nomor', nomor_pendaftaran) ORDER BY nama_lengkap), '[]'::JSONB)
@@ -624,6 +656,23 @@ BEGIN
   SELECT count(*) FILTER (WHERE status = 'Diterima'), count(*) FILTER (WHERE status = 'Ditolak')
   INTO v_diterima, v_ditolak
   FROM diumumkan;
+
+  -- Nomor yang sudah diberikan tetap melekat walau pengumuman ditarik lalu diumumkan lagi.
+  SELECT GREATEST(v_nomor_awal, COALESCE(max(nomor_urut_surat) + 1, v_nomor_awal))
+  INTO v_nomor_berikutnya
+  FROM public.pendaftar;
+
+  UPDATE public.pendaftar AS p
+  SET nomor_urut_surat = v_nomor_berikutnya + x.urutan - 1
+  FROM (
+    SELECT id, row_number() OVER (ORDER BY nomor_pendaftaran, id) AS urutan
+    FROM public.pendaftar
+    WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang)
+      AND status = 'Diterima'
+      AND diumumkan_pada IS NOT NULL
+      AND nomor_urut_surat IS NULL
+  ) AS x
+  WHERE p.id = x.id;
 
   RETURN jsonb_build_object('status', 'ok', 'diterima', v_diterima, 'ditolak', v_ditolak, 'dilewati', v_dilewati);
 END;

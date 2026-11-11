@@ -4,6 +4,8 @@ export type ApplicantResultRecord = {
   namaLengkap: string | null;
   /** Hanya untuk Surat Penerimaan; tidak pernah ditampilkan di halaman. */
   tempatLahir: string | null;
+  /** Hanya untuk Surat Penerimaan; tidak pernah ditampilkan di halaman. */
+  asalSekolah: string | null;
   tanggalLahir: string | null;
   status: string;
   jadwalTanggal: string | null;
@@ -14,6 +16,8 @@ export type ApplicantResultRecord = {
   jenisPendaftaran: string | null;
   kelasTujuan: string | null;
   nomorVa: string | null;
+  /** Nomor urut Surat Penerimaan, diberikan saat Pengumuman Hasil OKB. */
+  nomorUrutSurat: number | null;
 };
 
 /** Tahap yang ditampilkan kepada orang tua sebelum Pengumuman Hasil OKB. */

@@ -97,6 +97,6 @@ export async function authorizeAcceptanceLetter(
   return {
     allowed: true,
     nomorPendaftaran: record.nomorPendaftaran,
-    letter: { namaLengkap: record.namaLengkap ?? '', nomorVa: view.nomorVa, tempatLahir: record.tempatLahir, tanggalLahir: record.tanggalLahir },
+    letter: { namaLengkap: record.namaLengkap ?? '', nomorVa: view.nomorVa, asalSekolah: record.asalSekolah, tempatLahir: record.tempatLahir, tanggalLahir: record.tanggalLahir, nomorUrutSurat: record.nomorUrutSurat },
   };
 }

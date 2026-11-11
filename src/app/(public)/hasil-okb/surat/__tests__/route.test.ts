@@ -16,7 +16,7 @@ vi.mock('@/features/announcement/server/acceptanceLetterService', async (importO
 
 import { POST } from '../route';
 
-const letter = { namaLengkap: 'SITI AMINAH', nomorVa: '7456012627300120', tempatLahir: 'PURWAKARTA', tanggalLahir: '2020-03-12' };
+const letter = { namaLengkap: 'SITI AMINAH', nomorVa: '7456012627300120', asalSekolah: 'TK AL-MUHAJIRIN', tempatLahir: 'PURWAKARTA', tanggalLahir: '2020-03-12', nomorUrutSurat: 351 };
 
 function request() {
   const body = new FormData();

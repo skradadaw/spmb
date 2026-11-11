@@ -4,7 +4,7 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from 'lucide-react';
+import { CheckCircle2, Download, ExternalLink, FileText, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ADMIN_PRIMARY_BUTTON, ADMIN_SECONDARY_BUTTON } from '@/features/admin/components/adminStyles';
@@ -82,7 +82,7 @@ export function TemplateCard({ active }: { active: { uploadedAt: string } | null
       {pendingPath ? (
         <section aria-label="Pratinjau template baru" className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
           <p className="text-sm font-semibold">Periksa pratinjau sebelum mengaktifkan</p>
-          <p className="text-xs leading-5 text-[var(--admin-muted)]">Pastikan nama anak, Nomor VA, serta tempat dan tanggal lahir berada tepat di tempatnya, termasuk untuk nama yang sangat panjang.</p>
+          <p className="text-xs leading-5 text-[var(--admin-muted)]">Pastikan nomor surat, nama anak, asal sekolah, Nomor VA, serta tempat dan tanggal lahir berada tepat di tempatnya, termasuk untuk nama yang sangat panjang.</p>
           <div className="flex flex-wrap gap-4">
             <a href={previewHref('biasa', pendingPath)} target="_blank" rel="noreferrer" className={LINK}>Pratinjau nama biasa<ExternalLink aria-hidden="true" className="size-3" /></a>
             <a href={previewHref('panjang', pendingPath)} target="_blank" rel="noreferrer" className={LINK}>Pratinjau nama sangat panjang<ExternalLink aria-hidden="true" className="size-3" /></a>
@@ -94,12 +94,13 @@ export function TemplateCard({ active }: { active: { uploadedAt: string } | null
           </div>
         </section>
       ) : (
-        <div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <input ref={inputRef} type="file" accept="application/pdf" className="hidden" onChange={handleFile} aria-label="Pilih file template PDF" />
           <Button type="button" onClick={() => inputRef.current?.click()} disabled={Boolean(busy)} className={ADMIN_SECONDARY_BUTTON}>
             {busy ? <Loader2 aria-hidden="true" className="size-3.5 animate-spin" /> : <Upload aria-hidden="true" className="size-3.5" />}
             {busy ?? (active ? 'Ganti template' : 'Unggah template')}
           </Button>
+          <a href="/admin/okb/pengumuman/template/contoh" download className={LINK}><Download aria-hidden="true" className="size-3" />Unduh contoh template</a>
         </div>
       )}
 

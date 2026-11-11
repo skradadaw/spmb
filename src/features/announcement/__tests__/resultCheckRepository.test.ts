@@ -12,10 +12,10 @@ function fixture() {
 describe('result check repository', () => {
   it('reads only the columns shown to parents, by Nomor Pendaftaran', async () => {
     const { q, repository } = fixture();
-    q.maybeSingle.mockResolvedValue({ data: { nomor_pendaftaran: 'OB-2027-001', nama_lengkap: 'SITI', tanggal_lahir: '2020-03-12', status: 'Terjadwal OKB', jadwal_okb_tanggal: '2027-01-12', jadwal_okb_gelombang: 2, diumumkan_pada: '2027-02-09T01:00:00Z', kelas_penempatan: 'Reguler', jenis_pendaftaran: 'Pindahan', kelas_tujuan: '3', nomor_va: '7456012627300120' }, error: null });
+    q.maybeSingle.mockResolvedValue({ data: { nomor_pendaftaran: 'OB-2027-001', nama_lengkap: 'SITI', tanggal_lahir: '2020-03-12', asal_sekolah: 'TK AL-MUHAJIRIN', status: 'Terjadwal OKB', jadwal_okb_tanggal: '2027-01-12', jadwal_okb_gelombang: 2, diumumkan_pada: '2027-02-09T01:00:00Z', kelas_penempatan: 'Reguler', jenis_pendaftaran: 'Pindahan', kelas_tujuan: '3', nomor_va: '7456012627300120', nomor_urut_surat: 351 }, error: null });
     expect(await repository.findByNomorPendaftaran('OB-2027-001')).toEqual({
-      nomorPendaftaran: 'OB-2027-001', namaLengkap: 'SITI', tempatLahir: null, tanggalLahir: '2020-03-12', status: 'Terjadwal OKB', jadwalTanggal: '2027-01-12', jadwalGelombang: 2,
-      diumumkanPada: '2027-02-09T01:00:00Z', kelasPenempatan: 'Reguler', jenisPendaftaran: 'Pindahan', kelasTujuan: '3', nomorVa: '7456012627300120',
+      nomorPendaftaran: 'OB-2027-001', namaLengkap: 'SITI', tempatLahir: null, asalSekolah: 'TK AL-MUHAJIRIN', tanggalLahir: '2020-03-12', status: 'Terjadwal OKB', jadwalTanggal: '2027-01-12', jadwalGelombang: 2,
+      diumumkanPada: '2027-02-09T01:00:00Z', kelasPenempatan: 'Reguler', jenisPendaftaran: 'Pindahan', kelasTujuan: '3', nomorVa: '7456012627300120', nomorUrutSurat: 351,
     });
     expect(q.select).toHaveBeenCalledWith(RESULT_CHECK_COLUMNS);
     expect(q.eq).toHaveBeenCalledWith('nomor_pendaftaran', 'OB-2027-001');

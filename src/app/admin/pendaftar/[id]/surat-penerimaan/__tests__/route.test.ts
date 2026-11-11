@@ -20,7 +20,7 @@ describe('admin Surat Penerimaan download', () => {
     vi.clearAllMocks();
     mocks.session.mockResolvedValue(true);
     mocks.getSupabaseAdmin.mockReturnValue({});
-    mocks.findData.mockResolvedValue({ nomorPendaftaran: 'OB-2027-001', letter: { namaLengkap: 'SITI AMINAH', nomorVa: '7456012627300120', tempatLahir: null, tanggalLahir: null } });
+    mocks.findData.mockResolvedValue({ nomorPendaftaran: 'OB-2027-001', letter: { namaLengkap: 'SITI AMINAH', nomorVa: '7456012627300120', asalSekolah: null, tempatLahir: null, tanggalLahir: null, nomorUrutSurat: null } });
     mocks.generate.mockResolvedValue({ bytes: new Uint8Array([37, 80, 68, 70]), fileName: 'Surat-Penerimaan-OB-2027-001-Siti-Aminah.pdf' });
   });
 

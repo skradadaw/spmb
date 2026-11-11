@@ -6,6 +6,7 @@ const record: ApplicantResultRecord = {
   nomorPendaftaran: 'OB-2027-001',
   namaLengkap: 'SITI AMINAH',
   tempatLahir: null,
+  asalSekolah: null,
   tanggalLahir: '2020-03-12',
   status: 'Menunggu Verifikasi',
   jadwalTanggal: null,
@@ -15,6 +16,7 @@ const record: ApplicantResultRecord = {
   jenisPendaftaran: 'Siswa Baru',
   kelasTujuan: null,
   nomorVa: null,
+  nomorUrutSurat: null,
 };
 
 /** Repository palsu: satu Pendaftar dan penghitung kegagalan di memori. */
@@ -68,11 +70,11 @@ describe('Cek Hasil OKB', () => {
   });
 
   it('allows the Surat Penerimaan only for an announced Diterima with a Nomor VA, rechecked every time', async () => {
-    const announced = { ...record, status: 'Diterima', tempatLahir: 'PURWAKARTA', diumumkanPada: '2027-02-09T01:00:00Z', nomorVa: '7456012627300120' };
+    const announced = { ...record, status: 'Diterima', tempatLahir: 'PURWAKARTA', asalSekolah: 'TK AL-MUHAJIRIN', diumumkanPada: '2027-02-09T01:00:00Z', nomorVa: '7456012627300120', nomorUrutSurat: 351 };
     expect(await authorizeAcceptanceLetter(input, 'client', fakeRepository(announced))).toEqual({
       allowed: true,
       nomorPendaftaran: 'OB-2027-001',
-      letter: { namaLengkap: 'SITI AMINAH', nomorVa: '7456012627300120', tempatLahir: 'PURWAKARTA', tanggalLahir: '2020-03-12' },
+      letter: { namaLengkap: 'SITI AMINAH', nomorVa: '7456012627300120', asalSekolah: 'TK AL-MUHAJIRIN', tempatLahir: 'PURWAKARTA', tanggalLahir: '2020-03-12', nomorUrutSurat: 351 },
     });
     for (const changed of [
       { ...announced, diumumkanPada: null },

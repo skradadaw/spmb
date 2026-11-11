@@ -1,6 +1,7 @@
 import { getAdminSession } from '@/features/auth/session';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
 import { buildAcceptanceLetter, PREVIEW_SAMPLES, type PreviewSample } from '@/features/announcement/acceptanceLetter';
+import { createLetterNumberRepository } from '@/features/announcement/server/letterNumberRepository';
 import { createTemplateRepository, isTemplatePath } from '@/features/announcement/server/templateRepository';
 
 export const dynamic = 'force-dynamic';
@@ -20,10 +21,17 @@ export async function GET(request: Request) {
   if (!(sample in PREVIEW_SAMPLES)) return errorResponse('Data contoh tidak dikenal.', 400);
 
   try {
-    const repository = createTemplateRepository(getSupabaseAdmin());
+    const supabase = getSupabaseAdmin();
+    const repository = createTemplateRepository(supabase);
     const path = searchParams.get('path') ?? (await repository.getActive())?.path;
     if (!path || !isTemplatePath(path)) return errorResponse('Template tidak ditemukan.', 404);
-    const letter = await buildAcceptanceLetter(await repository.download(path), PREVIEW_SAMPLES[sample as PreviewSample]);
+    // Nomor surat contoh memakai nomor urut awal; tanpa pengaturan, baris nomor dibiarkan kosong.
+    const numbering = await createLetterNumberRepository(supabase).get();
+    const letter = await buildAcceptanceLetter(
+      await repository.download(path),
+      { ...PREVIEW_SAMPLES[sample as PreviewSample], nomorUrutSurat: numbering?.nomorAwal ?? null },
+      numbering?.format ?? null,
+    );
     return new Response(new Blob([letter as BlobPart]), {
       headers: { ...PRIVATE_HEADERS, 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="pratinjau-surat-penerimaan-${sample}.pdf"` },
     });

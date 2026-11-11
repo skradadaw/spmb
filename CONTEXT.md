@@ -55,7 +55,7 @@ Nomor rekening virtual 16 digit dari bank, diisi admin untuk seorang Pendaftar D
 _Avoid_: rekening, nomor pembayaran
 
 **Surat Penerimaan** (*Acceptance Letter*):
-Dokumen PDF yang diunduh orang tua Pendaftar Diterima setelah Pengumuman Hasil OKB, terdiri atas surat pengumuman berisi nama anak dan Nomor VA, serta Surat Pernyataan orang tua yang ditandatangani di atas materai saat Daftar Ulang. Dibuat otomatis dari satu template yang diunggah admin dan berlaku untuk semua Kelas Penempatan maupun Pindahan. Pendaftar Ditolak tidak mendapat Surat Penerimaan.
+Dokumen PDF yang diunduh orang tua Pendaftar Diterima setelah Pengumuman Hasil OKB, terdiri atas surat pengumuman berisi nomor surat, nama anak, asal sekolah, dan Nomor VA, serta Surat Pernyataan orang tua yang ditandatangani di atas materai saat Daftar Ulang. Dibuat otomatis dari satu template yang diunggah admin dan berlaku untuk semua Kelas Penempatan maupun Pindahan. Nomor suratnya memakai format yang diisi admin dengan nomor urut yang diberikan sekali per anak saat Pengumuman Hasil OKB. Pendaftar Ditolak tidak mendapat Surat Penerimaan.
 _Avoid_: surat kelulusan, SK lulus
 
 **Bukti Pendaftaran** (*Registration Proof*):

@@ -4,7 +4,7 @@ import type { ApplicantResultRecord } from '../contracts';
 import { RESULT_CHECK_LIMIT, RESULT_CHECK_WINDOW_SECONDS, type ResultCheckRepository } from '../resultCheck';
 
 /** Hanya kolom yang ditampilkan kepada orang tua; data pribadi lain tidak pernah dibaca. */
-export const RESULT_CHECK_COLUMNS = 'nomor_pendaftaran,nama_lengkap,tempat_lahir,tanggal_lahir,status,jadwal_okb_tanggal,jadwal_okb_gelombang,diumumkan_pada,kelas_penempatan,jenis_pendaftaran,kelas_tujuan,nomor_va';
+export const RESULT_CHECK_COLUMNS = 'nomor_pendaftaran,nama_lengkap,tempat_lahir,tanggal_lahir,asal_sekolah,status,jadwal_okb_tanggal,jadwal_okb_gelombang,diumumkan_pada,kelas_penempatan,jenis_pendaftaran,kelas_tujuan,nomor_va,nomor_urut_surat';
 
 const text = (value: unknown) => (typeof value === 'string' && value.trim() ? value : null);
 const failure = () => new Error('Cek Hasil OKB tidak dapat diproses.');
@@ -24,6 +24,7 @@ export function createResultCheckRepository(supabase: SupabaseClient): ResultChe
         nomorPendaftaran: String(row.nomor_pendaftaran),
         namaLengkap: text(row.nama_lengkap),
         tempatLahir: text(row.tempat_lahir),
+        asalSekolah: text(row.asal_sekolah),
         tanggalLahir: text(row.tanggal_lahir),
         status: text(row.status) ?? '',
         jadwalTanggal: text(row.jadwal_okb_tanggal),
@@ -33,6 +34,7 @@ export function createResultCheckRepository(supabase: SupabaseClient): ResultChe
         jenisPendaftaran: text(row.jenis_pendaftaran),
         kelasTujuan: text(row.kelas_tujuan),
         nomorVa: text(row.nomor_va),
+        nomorUrutSurat: Number.isInteger(row.nomor_urut_surat) ? row.nomor_urut_surat as number : null,
       };
     },
     async isLocked(clientKey) {

@@ -305,9 +305,22 @@ describe('Supabase registration security schema', () => {
     expect(functionSql).toContain("IF NOT EXISTS (SELECT 1 FROM public.template_surat_penerimaan) THEN RETURN jsonb_build_object('status', 'no-template');");
     expect(functionSql).toContain("AND status = 'Diterima' AND nomor_va IS NULL AND diumumkan_pada IS NULL;");
     expect(functionSql).toContain("RETURN jsonb_build_object('status', 'missing-va', 'pendaftar', v_tanpa_va);");
+    expect(functionSql).toContain("SELECT nomor_awal INTO v_nomor_awal FROM public.pengaturan_nomor_surat WHERE id = 'aktif' FOR UPDATE;");
+    expect(functionSql).toContain("IF v_nomor_awal IS NULL THEN RETURN jsonb_build_object('status', 'no-letter-number');");
     expect(functionSql).toContain("SET diumumkan_pada = now() WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang) AND status IN ('Diterima', 'Ditolak') AND diumumkan_pada IS NULL");
     expect(compactSchema).toContain('REVOKE ALL ON FUNCTION public.announce_results(UUID, SMALLINT, BOOLEAN) FROM PUBLIC, anon, authenticated;');
     expect(compactSchema).toContain('GRANT EXECUTE ON FUNCTION public.announce_results(UUID, SMALLINT, BOOLEAN) TO service_role;');
+  });
+
+  it('numbers Surat Penerimaan once at announcement, continuing from the last number used, in Nomor Pendaftaran order', () => {
+    expect(compactSchema).toContain('ALTER TABLE public.pendaftar ADD COLUMN IF NOT EXISTS nomor_urut_surat INTEGER;');
+    expect(compactSchema).toContain('CREATE UNIQUE INDEX IF NOT EXISTS uq_pendaftar_nomor_urut_surat ON public.pendaftar (nomor_urut_surat) WHERE nomor_urut_surat IS NOT NULL;');
+    expect(compactSchema).toContain("format TEXT NOT NULL CHECK (position('{urut}' in format) > 0)");
+    expect(compactSchema).toContain('REVOKE ALL ON TABLE public.pengaturan_nomor_surat FROM PUBLIC, anon, authenticated;');
+    const functionSql = compactSql(schema.match(/CREATE OR REPLACE FUNCTION public\.announce_results\([\s\S]*?\$\$;/)?.[0] ?? '');
+    expect(functionSql).toContain('SELECT GREATEST(v_nomor_awal, COALESCE(max(nomor_urut_surat) + 1, v_nomor_awal)) INTO v_nomor_berikutnya FROM public.pendaftar;');
+    expect(functionSql).toContain('SET nomor_urut_surat = v_nomor_berikutnya + x.urutan - 1');
+    expect(functionSql).toContain("row_number() OVER (ORDER BY nomor_pendaftaran, id) AS urutan FROM public.pendaftar WHERE (id = p_pendaftar_id OR jadwal_okb_gelombang = p_gelombang) AND status = 'Diterima' AND diumumkan_pada IS NOT NULL AND nomor_urut_surat IS NULL");
   });
 
   it('imports Nomor VA all or nothing, only for Diterima without a Nomor VA and not yet announced', () => {
