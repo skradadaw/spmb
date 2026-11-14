@@ -5,11 +5,11 @@ Menghilangkan badge status kuota (*Tersedia*, *Hampir penuh*, *Penuh*) pada kart
 
 **Blocked by:** 01: Model Kapasitas & Transaksi Pendaftaran Basis Data
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Kartu pilihan kelas di Landing Page tidak menampilkan badge status ketersediaan kuota (*Tersedia*, *Hampir penuh*, *Penuh*).
-- [ ] Dropdown / pilihan kelas di formulir pendaftaran tidak menonaktifkan opsi kelas individual dan tidak menampilkan label "(Kuota penuh)" pada nama kelas.
-- [ ] Opsi Jenis Pendaftaran *Siswa Baru* dinonaktifkan dan dilabeli "(Kuota penuh)" hanya jika total kursi Siswa Baru yang terpakai telah mencapai kuota total.
-- [ ] Opsi Jenis Pendaftaran *Pindahan* tetap selalu aktif dan dapat disubmit walaupun jalur Siswa Baru penuh.
-- [ ] Halaman pendaftaran berhasil memuat dan menyajikan formulir pendaftaran dengan data status kapasitas total terbaru.
-- [ ] Pengujian visual/komponen dan end-to-end pendaftaran publik berjalan hijau.
+- [x] Kartu pilihan kelas di Landing Page tidak menampilkan badge status ketersediaan kuota (*Tersedia*, *Hampir penuh*, *Penuh*).
+- [x] Dropdown / pilihan kelas di formulir pendaftaran tidak menonaktifkan opsi kelas individual dan tidak menampilkan label "(Kuota penuh)" pada nama kelas.
+- [x] Opsi Jenis Pendaftaran *Siswa Baru* dinonaktifkan dan dilabeli "(Kuota penuh)" hanya jika total kursi Siswa Baru yang terpakai telah mencapai kuota total.
+- [x] Opsi Jenis Pendaftaran *Pindahan* tetap selalu aktif dan dapat disubmit walaupun jalur Siswa Baru penuh.
+- [x] Halaman pendaftaran berhasil memuat dan menyajikan formulir pendaftaran dengan data status kapasitas total terbaru.
+- [x] Pengujian visual/komponen dan end-to-end pendaftaran publik berjalan hijau.

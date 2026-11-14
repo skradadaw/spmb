@@ -156,7 +156,6 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
   const [afiliasiDirektorat2Error, setAfiliasiDirektorat2Error] = useState<string | null>(null);
 
   const jenisPendaftaran = useWatch({ control, name: 'jenisPendaftaran' });
-  const isFullForSiswaBaru = (kelas: string) => jenisPendaftaran === 'Siswa Baru' && fullClasses.includes(kelas as ClassOption);
   const siswaBaruClosed = CLASS_OPTIONS.every((kelas) => fullClasses.includes(kelas));
   const adaPengusul = useWatch({ control, name: 'adaPengusul' });
   const tipePengusul = useWatch({ control, name: 'tipePengusul' });
@@ -510,7 +509,6 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                             <Select onValueChange={(val) => {
                               field.onChange(val);
                               clearErrors('jenisPendaftaran');
-                              if (val === 'Siswa Baru' && fullClasses.includes(getValues('pilihanKelas') as ClassOption)) setValue('pilihanKelas', '');
                               if (val !== 'Pindahan') { setValue('kelasTujuan', ''); clearErrors('kelasTujuan'); }
                             }} value={field.value || ''}>
                               <SelectTrigger className={errors.jenisPendaftaran ? "border-red-500" : ""}>
@@ -539,8 +537,8 @@ export default function RegistrationForm({ fullClasses = [], initialClass }: Reg
                               </SelectTrigger>
                               <SelectContent>
                                 {CLASS_OPTIONS.map((kelas) => (
-                                  <SelectItem key={kelas} value={kelas} disabled={isFullForSiswaBaru(kelas)}>
-                                    {isFullForSiswaBaru(kelas) ? `${kelas} (Kuota penuh)` : kelas}
+                                  <SelectItem key={kelas} value={kelas}>
+                                    {kelas}
                                   </SelectItem>
                                 ))}
                               </SelectContent>

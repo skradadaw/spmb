@@ -28,22 +28,14 @@ import {
 import { classHighlights, classProgramDescriptions, schoolFacilities } from '@/features/home/data';
 import {
   CLASS_OPTIONS,
-  classQuotaStatus,
+  isRegistrationFull,
   type ClassCapacity,
   type ClassOption,
-  type ClassQuotaStatus,
 } from '@/features/registration/classCapacity';
 import { AccreditationBadge } from './ContactLinks';
 import SectionBackdrop from './SectionBackdrop';
 import SectionHeading from './SectionHeading';
 import { actionClass } from './actionStyles';
-
-/** Badges sit on the card's deep green band. */
-const statusStyles: Record<ClassQuotaStatus, string> = {
-  Tersedia: 'bg-white/15 text-white ring-white/25',
-  'Hampir penuh': 'bg-amber-300 text-public-deep ring-amber-200',
-  Penuh: 'bg-white/10 text-white/70 ring-white/15',
-};
 
 /** 3D illustrations from Microsoft Fluent Emoji (MIT, see public/images/kelas/LICENSE-fluentui-emoji.txt). */
 const classImages: Record<ClassOption, string> = {
@@ -80,11 +72,6 @@ const classThemes: Record<
   },
 };
 
-const quotaBarStyles: Record<Exclude<ClassQuotaStatus, 'Tersedia'>, string> = {
-  'Hampir penuh': 'bg-amber-400',
-  Penuh: 'bg-public-deep/40',
-};
-
 const programIcons: Record<ClassOption, LucideIcon> = {
   Reguler: Mosque,
   Bilingual: Languages,
@@ -101,36 +88,13 @@ const classHighlightIcons: Record<ClassOption, readonly LucideIcon[]> = {
 /** One icon per entry of schoolFacilities, in the same order. */
 const schoolFacilityIcons = [Presentation, ShieldCheck, Laptop, Volleyball, Palette, LibraryBig, Bus, Brain, Utensils];
 
-function SeatsLeft({
-  capacity,
-  status,
-  availableBar,
-}: {
-  capacity: ClassCapacity;
-  status: ClassQuotaStatus;
-  availableBar: string;
-}) {
-  const remaining = Math.max(0, capacity.kuota - capacity.terpakai);
-  const filled = Math.min(100, Math.round((capacity.terpakai / capacity.kuota) * 100));
-
-  return (
-    <div>
-      <p className="text-sm font-bold text-slate-800">
-        {status === 'Penuh' ? 'Kuota terisi penuh' : `Sisa ${remaining} dari ${capacity.kuota} kursi`}
-      </p>
-      <div aria-hidden="true" className="mt-2 h-2 overflow-hidden rounded-full bg-public-deep/10">
-        <div
-          className={`h-full rounded-full ${status === 'Tersedia' ? availableBar : quotaBarStyles[status]}`} style={{ width: `${filled}%` }} />
-      </div>
-    </div>
-  );
-}
-
 export default function ClassOptions({
   classCapacities,
 }: {
   classCapacities: ClassCapacity[] | null;
 }) {
+  const isFull = classCapacities ? isRegistrationFull(classCapacities) : false;
+
   return (
     <section
       id="kelas"
@@ -163,7 +127,7 @@ export default function ClassOptions({
             id="kelas-title"
             eyebrow="Program kelas"
             title="Pilihan Kelas"
-            description="Pilih program yang paling sesuai untuk Ananda saat mengisi formulir. Pilihan Kelas yang kuotanya penuh tidak dapat dipilih."
+            description="Pilih program yang paling sesuai untuk Ananda saat mengisi formulir pendaftaran."
           />
           <AccreditationBadge className="bg-public-deep px-4 py-2 text-sm text-white shadow-lg shadow-public-deep/15" />
         </div>
@@ -171,8 +135,6 @@ export default function ClassOptions({
         {/* Cards share row tracks (subgrid) so descriptions of different length never shift the highlights */}
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {CLASS_OPTIONS.map((pilihanKelas) => {
-            const capacity = classCapacities?.find((item) => item.pilihanKelas === pilihanKelas);
-            const status = capacity ? classQuotaStatus(capacity) : null;
             const Icon = programIcons[pilihanKelas];
             const titleId = `kelas-${pilihanKelas.toLowerCase()}`;
             const theme = classThemes[pilihanKelas];
@@ -181,13 +143,7 @@ export default function ClassOptions({
               <article
                 key={pilihanKelas}
                 aria-labelledby={titleId}
-                className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-white md:row-span-4 md:grid md:grid-rows-subgrid md:gap-0 shadow-sm shadow-public-deep/5 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-public-deep/10 motion-reduce:hover:translate-y-0 ${
-                  status === 'Hampir penuh'
-                    ? 'border-amber-300 ring-2 ring-amber-200/60'
-                    : status === 'Penuh'
-                      ? 'border-public-deep/5 opacity-90'
-                      : 'border-public-deep/10'
-                }`}
+                className="group relative flex flex-col overflow-hidden rounded-3xl border border-public-deep/10 bg-white md:row-span-4 md:grid md:grid-rows-subgrid md:gap-0 shadow-sm shadow-public-deep/5 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-public-deep/10 motion-reduce:hover:translate-y-0"
               >
                 <div className={`relative isolate overflow-hidden px-6 pb-7 pt-6 text-white sm:px-7 ${theme.band}`}>
                   <div aria-hidden="true" className="texture-dots-on-deep absolute inset-0 -z-10 opacity-30" />
@@ -206,13 +162,6 @@ export default function ClassOptions({
                     >
                       <Icon aria-hidden="true" size={24} />
                     </span>
-                    {status && (
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset ${statusStyles[status]}`}
-                      >
-                        {status}
-                      </span>
-                    )}
                   </div>
                   <p className="mt-6 text-xs font-bold uppercase tracking-wider text-public-mint/80">
                     Kelas
@@ -244,8 +193,7 @@ export default function ClassOptions({
 
                 <div className="mt-auto px-6 pb-6 pt-6 sm:px-7 sm:pb-7">
                   <div className="space-y-4 border-t border-public-deep/10 pt-5">
-                    {capacity && status && <SeatsLeft capacity={capacity} status={status} availableBar={theme.seatBar} />}
-                    {status === 'Penuh' ? (
+                    {isFull ? (
                       <p className="flex min-h-12 items-center justify-center rounded-xl bg-public-deep/5 px-6 text-base font-bold text-public-deep/60">
                         Kuota Siswa Baru penuh
                       </p>

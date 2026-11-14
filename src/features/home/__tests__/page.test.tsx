@@ -211,7 +211,7 @@ describe('Open Booking landing page', () => {
     }
   });
 
-  it('labels each Pilihan Kelas Tersedia, Hampir penuh, or Penuh from its remaining seats', () => {
+  it('does not display per-class quota badges on Pilihan Kelas cards', () => {
     renderHome([
       { pilihanKelas: 'Reguler', kuota: 30, terpakai: 24 },
       { pilihanKelas: 'Bilingual', kuota: 30, terpakai: 23 },
@@ -219,16 +219,15 @@ describe('Open Booking landing page', () => {
     ]);
 
     const card = (kelas: string) => screen.getByRole('article', { name: kelas });
-    expect(within(card('Reguler')).getByText('Hampir penuh')).toBeDefined();
-    expect(within(card('Bilingual')).getByText('Tersedia')).toBeDefined();
-    expect(within(card('Tahfizh')).getByText('Penuh')).toBeDefined();
-    expect(within(card('Reguler')).getByText('Sisa 6 dari 30 kursi')).toBeDefined();
-    expect(within(card('Bilingual')).getByText('Sisa 7 dari 30 kursi')).toBeDefined();
-    expect(within(card('Tahfizh')).getByText('Kuota terisi penuh')).toBeDefined();
+    expect(within(card('Reguler')).queryByText('Hampir penuh')).toBeNull();
+    expect(within(card('Bilingual')).queryByText('Tersedia')).toBeNull();
+    expect(within(card('Tahfizh')).queryByText('Penuh')).toBeNull();
+    expect(within(card('Reguler')).queryByText(/sisa.*kursi/i)).toBeNull();
+    expect(within(card('Tahfizh')).queryByText(/kuota terisi penuh/i)).toBeNull();
   });
 
-  it('links each open Pilihan Kelas to a preselected form and closes full ones to Siswa Baru', () => {
-    renderHome([
+  it('links each Pilihan Kelas to the registration form when seats remain, and closes all to Siswa Baru when total capacity is reached', () => {
+    const { unmount } = renderHome([
       { pilihanKelas: 'Reguler', kuota: 28, terpakai: 10 },
       { pilihanKelas: 'Bilingual', kuota: 56, terpakai: 20 },
       { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: 28 },
@@ -241,8 +240,22 @@ describe('Open Booking landing page', () => {
     expect(
       within(card('Bilingual')).getByRole('link', { name: 'Daftar Bilingual' }).getAttribute('href'),
     ).toBe('/pendaftaran?kelas=Bilingual');
-    expect(within(card('Tahfizh')).queryByRole('link')).toBeNull();
-    expect(within(card('Tahfizh')).getByText('Kuota Siswa Baru penuh')).toBeDefined();
+    expect(
+      within(card('Tahfizh')).getByRole('link', { name: 'Daftar Tahfizh' }).getAttribute('href'),
+    ).toBe('/pendaftaran?kelas=Tahfizh');
+
+    unmount();
+
+    // Total used = 28 + 56 + 28 = 112 (Full)
+    renderHome([
+      { pilihanKelas: 'Reguler', kuota: 28, terpakai: 28 },
+      { pilihanKelas: 'Bilingual', kuota: 56, terpakai: 56 },
+      { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: 28 },
+    ]);
+    for (const kelas of ['Reguler', 'Bilingual', 'Tahfizh']) {
+      expect(within(card(kelas)).queryByRole('link')).toBeNull();
+      expect(within(card(kelas)).getByText('Kuota Siswa Baru penuh')).toBeDefined();
+    }
   });
 
   it('lists program highlights per Pilihan Kelas and the shared school highlights', () => {

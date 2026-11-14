@@ -85,4 +85,17 @@ describe('RegistrationForm validation feedback', () => {
     render(<RegistrationForm initialClass="Tahfizh" />);
     expect(screen.queryByText('Pilih Kelas')).toBeNull();
   });
+
+  it('renders all class options without individual full labels', () => {
+    render(<RegistrationForm fullClasses={[]} />);
+    for (const kelas of ['Reguler', 'Bilingual', 'Tahfizh']) {
+      expect(screen.queryByText(`${kelas} (Kuota penuh)`)).toBeNull();
+    }
+  });
+
+  it('disables Siswa Baru when total capacity is full while keeping Pindahan available', () => {
+    render(<RegistrationForm fullClasses={['Reguler', 'Bilingual', 'Tahfizh']} />);
+    expect(screen.getByText('Siswa Baru (Kuota penuh)')).toBeDefined();
+    expect(screen.getByText('Pindahan')).toBeDefined();
+  });
 });
