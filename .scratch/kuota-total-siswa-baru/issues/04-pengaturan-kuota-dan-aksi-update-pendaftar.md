@@ -1,3 +1,6 @@
+Created At: 2026-11-14T15:52:25+07:00
+Completed At: 2026-11-14T16:00:00+07:00
+
 # 04: Form Pengaturan Kuota Admin & Aksi Update Pendaftar
 
 **What to build:**
@@ -5,12 +8,12 @@ Menyederhanakan antarmuka tab Pengaturan Kuota (`/admin/pengaturan/kuota`) menja
 
 **Blocked by:** 01: Model Kapasitas & Transaksi Pendaftaran Basis Data
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Halaman `/admin/pengaturan/kuota` menampilkan satu input form untuk Kapasitas Total Siswa Baru (nilai saat ini terisi otomatis).
-- [ ] Server action penyimpanan kapasitas menolak input bernilai $\le 0$ atau input yang lebih kecil dari jumlah kursi Siswa Baru yang sedang terpakai.
-- [ ] Server action penyimpanan kapasitas berhasil memperbarui nilai kapasitas total dan memicu revalidasi path cache terkait.
-- [ ] Admin dapat mengubah Pilihan Kelas pendaftar Siswa Baru ke kelas mana pun tanpa dicegat validasi kuota kelas tujuan.
-- [ ] Admin ditolak dengan pesan yang jelas saat mengubah Jenis Pendaftaran dari Pindahan ke Siswa Baru atau mereaktivasi status dari Ditolak/Dibatalkan ke Berproses/Diterima jika total kapasitas 112 sudah penuh.
-- [ ] Mengubah pendaftar Siswa Baru menjadi Pindahan, Ditolak, atau Dibatalkan membebaskan 1 kursi untuk pendaftar lain.
-- [ ] Seluruh unit test server action dan halaman pengaturan berjalan hijau.
+- [x] Halaman `/admin/pengaturan/kuota` menampilkan satu input form untuk Kapasitas Total Siswa Baru (nilai saat ini terisi otomatis).
+- [x] Server action penyimpanan kapasitas menolak input bernilai $\le 0$ atau input yang lebih kecil dari jumlah kursi Siswa Baru yang sedang terpakai.
+- [x] Server action penyimpanan kapasitas berhasil memperbarui nilai kapasitas total dan memicu revalidasi path cache terkait.
+- [x] Admin dapat mengubah Pilihan Kelas pendaftar Siswa Baru ke kelas mana pun tanpa dicegat validasi kuota kelas tujuan.
+- [x] Admin ditolak dengan pesan yang jelas saat mengubah Jenis Pendaftaran dari Pindahan ke Siswa Baru atau mereaktivasi status dari Ditolak/Dibatalkan ke Berproses/Diterima jika total kapasitas 112 sudah penuh.
+- [x] Mengubah pendaftar Siswa Baru menjadi Pindahan, Ditolak, atau Dibatalkan membebaskan 1 kursi untuk pendaftar lain.
+- [x] Seluruh unit test server action dan halaman pengaturan berjalan hijau.

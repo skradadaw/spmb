@@ -2,10 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { getAdminSession } from '@/features/auth/session';
-import { CLASS_OPTIONS, type ClassOption } from '@/features/registration/classCapacity';
-import { updateClassCapacities } from '@/features/registration/server/classCapacityRepository';
+import { updateTotalCapacity } from '@/features/registration/server/classCapacityRepository';
 import { getSupabaseAdmin } from '@/features/registration/server/supabaseAdmin';
-import { REGISTRATION_CAPACITY } from '@/lib/registrationConfig';
 
 export type SaveClassCapacitiesState = { status: 'idle' | 'success' | 'error'; message: string };
 
@@ -15,35 +13,27 @@ export async function saveClassCapacitiesAction(
 ): Promise<SaveClassCapacitiesState> {
   if (!await getAdminSession()) return { status: 'error', message: 'Sesi admin tidak valid. Silakan masuk kembali.' };
 
-  const kuota = {} as Record<ClassOption, number>;
-  for (const kelas of CLASS_OPTIONS) {
-    const raw = String(formData.get(kelas) ?? '').trim();
-    const value = Number(raw);
-    if (!/^\d+$/.test(raw) || !Number.isSafeInteger(value)) {
-      return { status: 'error', message: `Kuota ${kelas} harus berupa bilangan bulat 0 atau lebih.` };
-    }
-    kuota[kelas] = value;
-  }
-
-  const total = CLASS_OPTIONS.reduce((sum, kelas) => sum + kuota[kelas], 0);
-  if (total !== REGISTRATION_CAPACITY) {
-    return { status: 'error', message: `Jumlah kuota harus tepat ${REGISTRATION_CAPACITY} kursi (saat ini ${total}).` };
+  const raw = String(formData.get('kapasitasTotal') ?? formData.get('total') ?? '').trim();
+  const value = Number(raw);
+  if (!/^\d+$/.test(raw) || !Number.isSafeInteger(value) || value <= 0) {
+    return { status: 'error', message: 'Kapasitas total harus berupa bilangan bulat lebih dari 0.' };
   }
 
   try {
-    const result = await updateClassCapacities(getSupabaseAdmin(), kuota, REGISTRATION_CAPACITY);
+    const result = await updateTotalCapacity(getSupabaseAdmin(), value);
     if (result.status === 'below_used') {
-      return { status: 'error', message: `Kuota ${result.pilihanKelas} tidak boleh lebih kecil dari kursi yang sudah terpakai.` };
+      return { status: 'error', message: 'Kapasitas total tidak boleh lebih kecil dari kursi yang sudah terpakai.' };
     }
     if (result.status !== 'ok') {
-      return { status: 'error', message: `Jumlah kuota harus tepat ${REGISTRATION_CAPACITY} kursi.` };
+      return { status: 'error', message: 'Kapasitas total tidak valid.' };
     }
   } catch {
-    return { status: 'error', message: 'Kuota kelas tidak dapat disimpan. Silakan coba lagi.' };
+    return { status: 'error', message: 'Kapasitas tidak dapat disimpan. Silakan coba lagi.' };
   }
 
   revalidatePath('/admin/pengaturan/kuota');
+  revalidatePath('/admin/pendaftar');
   revalidatePath('/pendaftaran');
   revalidatePath('/');
-  return { status: 'success', message: 'Kuota kelas berhasil disimpan.' };
+  return { status: 'success', message: 'Kapasitas berhasil disimpan.' };
 }

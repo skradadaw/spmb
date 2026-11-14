@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 
 # Spec: Kuota Total Siswa Baru Tanpa Pembatasan per Pilihan Kelas
 

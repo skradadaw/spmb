@@ -409,11 +409,8 @@ $$;
 REVOKE ALL ON FUNCTION public.get_class_capacity_usage() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_class_capacity_usage() TO service_role;
 
--- Pembagian kuota diubah admin; total harus tetap dan tidak boleh di bawah kursi terpakai.
-CREATE OR REPLACE FUNCTION public.update_class_capacities(
-  p_reguler INTEGER,
-  p_bilingual INTEGER,
-  p_tahfizh INTEGER,
+-- Kapasitas total Siswa Baru diubah admin; tidak boleh di bawah kursi yang sedang terpakai.
+CREATE OR REPLACE FUNCTION public.update_total_capacity(
   p_total INTEGER
 )
 RETURNS TEXT
@@ -422,35 +419,30 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_kelas TEXT;
+  v_terpakai INTEGER;
+  v_base INTEGER;
+  v_remainder INTEGER;
 BEGIN
-  IF p_reguler IS NULL OR p_bilingual IS NULL OR p_tahfizh IS NULL
-    OR p_reguler < 0 OR p_bilingual < 0 OR p_tahfizh < 0 THEN
+  IF p_total IS NULL OR p_total <= 0 THEN
     RETURN 'invalid';
-  END IF;
-  IF p_reguler + p_bilingual + p_tahfizh <> p_total THEN
-    RETURN 'total_mismatch';
   END IF;
 
   LOCK TABLE public.pendaftar IN SHARE ROW EXCLUSIVE MODE;
 
-  SELECT usage.pilihan_kelas INTO v_kelas
-  FROM public.get_class_capacity_usage() AS usage
-  WHERE usage.terpakai > CASE usage.pilihan_kelas
-    WHEN 'Reguler' THEN p_reguler
-    WHEN 'Bilingual' THEN p_bilingual
-    ELSE p_tahfizh
-  END
-  LIMIT 1;
+  SELECT COALESCE(SUM(usage.terpakai), 0) INTO v_terpakai
+  FROM public.get_class_capacity_usage() AS usage;
 
-  IF v_kelas IS NOT NULL THEN
-    RETURN 'below_used:' || v_kelas;
+  IF p_total < v_terpakai THEN
+    RETURN 'below_used';
   END IF;
 
+  v_base := p_total / 4;
+  v_remainder := p_total - (v_base * 4);
+
   INSERT INTO public.kuota_kelas (pilihan_kelas, kuota, updated_at) VALUES
-    ('Reguler', p_reguler, now()),
-    ('Bilingual', p_bilingual, now()),
-    ('Tahfizh', p_tahfizh, now())
+    ('Reguler', v_base, now()),
+    ('Bilingual', (v_base * 2) + v_remainder, now()),
+    ('Tahfizh', v_base, now())
   ON CONFLICT (pilihan_kelas) DO UPDATE
   SET kuota = EXCLUDED.kuota, updated_at = EXCLUDED.updated_at;
 
@@ -458,12 +450,12 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.update_class_capacities(INTEGER, INTEGER, INTEGER, INTEGER)
+REVOKE ALL ON FUNCTION public.update_total_capacity(INTEGER)
 FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.update_class_capacities(INTEGER, INTEGER, INTEGER, INTEGER)
+GRANT EXECUTE ON FUNCTION public.update_total_capacity(INTEGER)
 TO service_role;
 
--- Pemulihan Pendaftar Dibatalkan ke status sebelumnya, hanya jika kursi Pilihan Kelasnya masih ada.
+-- Pemulihan Pendaftar Dibatalkan ke status sebelumnya, hanya jika kursi Siswa Baru masih ada.
 CREATE OR REPLACE FUNCTION public.restore_cancelled_applicant(p_pendaftar_id UUID)
 RETURNS TEXT
 LANGUAGE plpgsql
@@ -490,11 +482,10 @@ BEGIN
   END IF;
 
   IF v_jenis IS DISTINCT FROM 'Pindahan' THEN
-    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
-    FROM public.get_class_capacity_usage() AS usage
-    WHERE usage.pilihan_kelas = v_kelas;
+    SELECT COALESCE(SUM(usage.kuota), 0), COALESCE(SUM(usage.terpakai), 0) INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage;
 
-    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+    IF v_terpakai >= v_kuota THEN
       RETURN 'full';
     END IF;
   END IF;
@@ -546,11 +537,10 @@ BEGIN
   END IF;
 
   IF p_keputusan = 'Diterima' AND v_status = 'Ditolak' AND v_jenis IS DISTINCT FROM 'Pindahan' THEN
-    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
-    FROM public.get_class_capacity_usage() AS usage
-    WHERE usage.pilihan_kelas = v_kelas;
+    SELECT COALESCE(SUM(usage.kuota), 0), COALESCE(SUM(usage.terpakai), 0) INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage;
 
-    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+    IF v_terpakai >= v_kuota THEN
       RETURN 'full';
     END IF;
   END IF;
@@ -763,15 +753,14 @@ BEGIN
     RETURN 'invalid';
   END IF;
 
-  -- Kursi baru dibutuhkan bila hasilnya Siswa Baru yang memakai kursi di kelas yang belum ditempatinya.
+  -- Kursi baru hanya dibutuhkan bila pendaftar sebelumnya bukan Siswa Baru yang memakai kursi.
   IF p_jenis = 'Siswa Baru'
     AND v_status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')
-    AND (v_jenis IS DISTINCT FROM 'Siswa Baru' OR v_kelas IS DISTINCT FROM p_kelas) THEN
-    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
-    FROM public.get_class_capacity_usage() AS usage
-    WHERE usage.pilihan_kelas = p_kelas;
+    AND v_jenis IS DISTINCT FROM 'Siswa Baru' THEN
+    SELECT COALESCE(SUM(usage.kuota), 0), COALESCE(SUM(usage.terpakai), 0) INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage;
 
-    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+    IF v_terpakai >= v_kuota THEN
       RETURN 'full';
     END IF;
   END IF;

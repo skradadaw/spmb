@@ -77,7 +77,9 @@ export async function updateParticipantDataAction(
       });
       if (error) throw error;
       if (result === 'full') {
-        return fail(`Kuota ${merged.pilihanKelas} sudah penuh. Geser kuota di menu Pengaturan terlebih dahulu.`, { pilihanKelas: 'Kuota kelas ini sudah penuh.' });
+        return fail('Kuota pendaftaran Siswa Baru sudah penuh. Tambah kapasitas di menu Pengaturan terlebih dahulu.', {
+          jenisPendaftaran: 'Kuota Siswa Baru sudah penuh.',
+        });
       }
       if (result !== 'ok') return fail('Data pendaftaran tidak valid.');
     } else {

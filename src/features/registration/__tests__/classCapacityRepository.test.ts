@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ClassCapacityLoadError, fetchClassCapacities } from '../server/classCapacityRepository';
+import { ClassCapacityLoadError, fetchClassCapacities, updateTotalCapacity } from '../server/classCapacityRepository';
 
 function makeClient(data: unknown, error: unknown = null) {
   const rpc = vi.fn().mockResolvedValue({ data, error });
@@ -36,5 +36,19 @@ describe('class capacity repository', () => {
     await expect(fetchClassCapacities(client)).rejects.toEqual(
       new ClassCapacityLoadError(),
     );
+  });
+
+  it('updates total capacity through update_total_capacity RPC', async () => {
+    const { client, rpc } = makeClient('ok');
+
+    await expect(updateTotalCapacity(client, 112)).resolves.toEqual({ status: 'ok' });
+    expect(rpc).toHaveBeenCalledWith('update_total_capacity', { p_total: 112 });
+  });
+
+  it('handles below_used status from RPC', async () => {
+    const { client, rpc } = makeClient('below_used');
+
+    await expect(updateTotalCapacity(client, 80)).resolves.toEqual({ status: 'below_used' });
+    expect(rpc).toHaveBeenCalledWith('update_total_capacity', { p_total: 80 });
   });
 });

@@ -121,7 +121,7 @@ export async function updateParticipantStatusAction(
       result = data === 'ok'
         ? ok(`Keputusan Penerimaan disimpan: ${keputusan}.`)
         : data === 'full'
-          ? fail('Kuota Pilihan Kelas pendaftar ini sudah penuh. Geser kuota di menu Pengaturan terlebih dahulu.')
+          ? fail('Kuota pendaftaran Siswa Baru sudah penuh. Tambah kapasitas di menu Pengaturan terlebih dahulu.')
           : fail(STALE);
     } else if (intent === 'undecide') {
       // Kembalikan ke Sudah OKB: only before the announcement, so parents never see a result vanish.
@@ -173,7 +173,7 @@ export async function updateParticipantStatusAction(
       result = data === 'ok'
         ? ok('Pendaftar berhasil dipulihkan.')
         : data === 'full'
-          ? fail('Kuota Pilihan Kelas pendaftar ini sudah penuh. Geser kuota di menu Pengaturan terlebih dahulu.')
+          ? fail('Kuota pendaftaran Siswa Baru sudah penuh. Tambah kapasitas di menu Pengaturan terlebih dahulu.')
           : fail(STALE);
     } else {
       return fail('Aksi tidak dikenal.');

@@ -11,6 +11,11 @@ export type ClassCapacityUpdateResult =
   | { status: 'total_mismatch' }
   | { status: 'below_used'; pilihanKelas: ClassOption };
 
+export type TotalCapacityUpdateResult =
+  | { status: 'ok' }
+  | { status: 'invalid' }
+  | { status: 'below_used' };
+
 export class ClassCapacityLoadError extends Error {
   constructor() {
     super('Kuota kelas tidak dapat dimuat.');
@@ -56,4 +61,19 @@ export async function updateClassCapacities(
     return { status: 'below_used', pilihanKelas };
   }
   throw new Error('Kuota kelas tidak dapat disimpan.');
+}
+
+export async function updateTotalCapacity(
+  client: Pick<SupabaseClient, 'rpc'>,
+  total: number,
+): Promise<TotalCapacityUpdateResult> {
+  const { data, error } = await client.rpc('update_total_capacity', {
+    p_total: total,
+  });
+  if (error || typeof data !== 'string') throw new Error('Kapasitas tidak dapat disimpan.');
+
+  if (data === 'ok' || data === 'invalid' || data === 'below_used') {
+    return { status: data };
+  }
+  throw new Error('Kapasitas tidak dapat disimpan.');
 }

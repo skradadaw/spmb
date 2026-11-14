@@ -22,19 +22,20 @@ export default async function ClassCapacityPage() {
 
   return <>
     <p className="max-w-2xl text-sm leading-6 text-[var(--admin-muted)]">
-      Bagi {REGISTRATION_CAPACITY} kursi Siswa Baru ke tiap Pilihan Kelas. Kelas yang sudah penuh otomatis tidak bisa dipilih di formulir.
+      Atur kapasitas total kursi Siswa Baru untuk sekolah (default {REGISTRATION_CAPACITY} kursi).
+      Pendaftaran Siswa Baru otomatis ditutup ketika total pendaftar yang berproses mencapai batas ini.
       Pendaftar Ditolak, Dibatalkan, dan Pindahan tidak ikut dihitung.
     </p>
     <div className="mt-5">
       {capacities ? (
-        <Card className="max-w-3xl rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
-          <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Pembagian kuota</CardTitle></CardHeader>
+        <Card className="max-w-xl rounded-2xl border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-sm">
+          <CardHeader className="p-5 pb-3"><CardTitle className="text-base">Kapasitas Siswa Baru</CardTitle></CardHeader>
           <CardContent className="px-5 pb-5 pt-0">
-            <ClassCapacityForm capacities={capacities} total={REGISTRATION_CAPACITY} />
+            <ClassCapacityForm capacities={capacities} />
           </CardContent>
         </Card>
       ) : (
-        <Alert variant="destructive"><AlertTitle>Kuota kelas belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau coba lagi nanti.</AlertDescription></Alert>
+        <Alert variant="destructive"><AlertTitle>Kuota belum dapat dimuat</AlertTitle><AlertDescription>Silakan muat ulang halaman atau coba lagi nanti.</AlertDescription></Alert>
       )}
     </div>
   </>;
