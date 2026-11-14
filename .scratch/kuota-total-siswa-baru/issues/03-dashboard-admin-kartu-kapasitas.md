@@ -5,10 +5,10 @@ Memperbarui kartu kapasitas pada Dashboard Admin (`CapacityCard`) agar menampilk
 
 **Blocked by:** 01: Model Kapasitas & Transaksi Pendaftaran Basis Data
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Kartu kapasitas Dashboard Admin menampilkan satu progress bar keterisian Kuota Total Siswa Baru (kursi terpakai vs total kapasitas 112).
-- [ ] Rincian jumlah peminat per kelas (Reguler, Bilingual, Tahfizh) ditampilkan dalam bentuk daftar/grid angka statistik tanpa batas kapasitas masing-masing kelas.
-- [ ] Tidak ada status atau badge "Penuh" pada masing-masing opsi kelas di dashboard admin.
-- [ ] Tautan navigasi kartu kapasitas tetap mengarahkan admin ke halaman `/admin/pengaturan/kuota`.
-- [ ] Seluruh pengujian komponen dashboard admin berjalan hijau.
+- [x] Kartu kapasitas Dashboard Admin menampilkan satu progress bar keterisian Kuota Total Siswa Baru (kursi terpakai vs total kapasitas 112).
+- [x] Rincian jumlah peminat per kelas (Reguler, Bilingual, Tahfizh) ditampilkan dalam bentuk daftar/grid angka statistik tanpa batas kapasitas masing-masing kelas.
+- [x] Tidak ada status atau badge "Penuh" pada masing-masing opsi kelas di dashboard admin.
+- [x] Tautan navigasi kartu kapasitas tetap mengarahkan admin ke halaman `/admin/pengaturan/kuota`.
+- [x] Seluruh pengujian komponen dashboard admin berjalan hijau.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { AdminDashboardSummary } from '../../contracts';
 import { AdminDashboard } from '../AdminDashboard';
@@ -42,14 +42,21 @@ describe('AdminDashboard', () => {
     expect(tile('Perlu diverifikasi').textContent).not.toContain('Tidak ada yang perlu dikerjakan');
   });
 
-  it('shows Kuota usage per class with full classes marked, and Pindahan outside the quota', () => {
+  it('shows total Kuota usage with one main progress bar and class breakdown without per-class limits', () => {
     render(<AdminDashboard summary={summary} />);
-    expect(screen.getByText('96')).toBeDefined();
-    expect(screen.getByRole('progressbar', { name: 'Bilingual: 48 dari 56 kursi' }).getAttribute('aria-valuenow')).toBe('86');
-    expect(screen.getByText('Penuh')).toBeDefined();
-    expect(screen.getAllByText('Sisa 8 kursi')).toHaveLength(2);
-    expect(screen.getByText(/Pindahan, di luar kuota/).textContent).toContain('7');
-    expect(screen.getByRole('link', { name: 'Atur kuota' }).getAttribute('href')).toBe('/admin/pengaturan/kuota');
+    const card = screen.getByRole('heading', { name: 'Kuota Siswa Baru' }).closest('.rounded-2xl') as HTMLElement;
+    expect(within(card).getByText('96')).toBeDefined();
+    expect(within(card).getByText('/ 112')).toBeDefined();
+    expect(within(card).getByRole('progressbar', { name: 'Kuota Siswa Baru: 96 dari 112 kursi' }).getAttribute('aria-valuenow')).toBe('86');
+    expect(within(card).getByText('Reguler')).toBeDefined();
+    expect(within(card).getByText('20')).toBeDefined();
+    expect(within(card).getByText('Bilingual')).toBeDefined();
+    expect(within(card).getByText('48')).toBeDefined();
+    expect(within(card).getByText('Tahfizh')).toBeDefined();
+    expect(within(card).getByText('28')).toBeDefined();
+    expect(within(card).queryByText('Penuh')).toBeNull();
+    expect(within(card).getByText(/Pindahan, di luar kuota/).textContent).toContain('7');
+    expect(within(card).getByRole('link', { name: 'Atur kuota' }).getAttribute('href')).toBe('/admin/pengaturan/kuota');
   });
 
   it('lists upcoming OKB days, marks today and offers the attendance scan', () => {
