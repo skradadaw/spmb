@@ -204,8 +204,10 @@ describe('Supabase registration security schema', () => {
       "IF EXISTS ( SELECT 1 FROM public.pendaftar WHERE submission_id = p_submission_id AND status <> 'Menunggu Unggahan' ) THEN RETURN TRUE;",
     );
     expect(functionSql).toContain("IF v_jenis IS DISTINCT FROM 'Pindahan' THEN");
-    expect(functionSql).toContain('FROM public.get_class_capacity_usage() AS usage WHERE usage.pilihan_kelas = v_kelas;');
-    expect(functionSql).toContain('IF NOT FOUND OR v_terpakai >= v_kuota THEN RETURN FALSE;');
+    expect(functionSql).toContain(
+      'SELECT COALESCE(SUM(usage.kuota), 0), COALESCE(SUM(usage.terpakai), 0) INTO v_kuota, v_terpakai FROM public.get_class_capacity_usage() AS usage;',
+    );
+    expect(functionSql).toContain('IF v_terpakai >= v_kuota THEN RETURN FALSE;');
     expect(functionSql).toContain("SET status = 'Menunggu Verifikasi'");
     expect(functionSql).toContain("AND status = 'Menunggu Unggahan'");
     expect(compactSchema).toContain('DROP FUNCTION IF EXISTS public.finalize_registration_with_capacity(UUID, INTEGER);');

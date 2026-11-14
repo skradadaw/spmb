@@ -16,7 +16,7 @@ const paths = {
   buktiPembayaran: `registrations/${submissionId}/buktiPembayaran.webp`,
 };
 
-const CAPACITY_ERROR = 'Kuota Pilihan Kelas yang dipilih sudah penuh. Silakan pilih kelas lain atau hubungi panitia untuk informasi lebih lanjut.';
+const CAPACITY_ERROR = 'Kuota pendaftaran Siswa Baru sudah penuh. Silakan hubungi panitia untuk informasi lebih lanjut.';
 
 const registrationData = (overrides: Record<string, string> = {}) => ({
   jenisPendaftaran: 'Siswa Baru',
@@ -68,13 +68,13 @@ function preparationInput(overrides: Record<string, string> = {}) {
   return input;
 }
 
-function preparationRepository(bilingualUsed: number) {
+function preparationRepository(bilingualUsed: number, regulerUsed = 0, tahfizhUsed = 0) {
   return {
     consumeRateLimit: vi.fn().mockResolvedValue(true),
     getClassCapacities: vi.fn().mockResolvedValue([
-      { pilihanKelas: 'Reguler', kuota: 28, terpakai: 0 },
+      { pilihanKelas: 'Reguler', kuota: 28, terpakai: regulerUsed },
       { pilihanKelas: 'Bilingual', kuota: 56, terpakai: bilingualUsed },
-      { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: 0 },
+      { pilihanKelas: 'Tahfizh', kuota: 28, terpakai: tahfizhUsed },
     ]),
     getPending: vi.fn().mockResolvedValue(null),
     createPending: vi.fn().mockResolvedValue(undefined),
@@ -136,24 +136,24 @@ function repositoryWithCapacity(available: boolean) {
 }
 
 describe('signed upload capacity', () => {
-  it('accepts a Siswa Baru while the chosen class still has seats', async () => {
-    const repository = preparationRepository(55);
+  it('accepts a Siswa Baru even when a single class exceeds its nominal quota as long as total seats remain', async () => {
+    const repository = preparationRepository(60, 20, 10); // total 90 / 112, Bilingual 60 > nominal 56
 
     const result = await prepareSignedRegistration(preparationInput(), 'source', repository, () => 'hash');
     expect(result.success).toBe(true);
     expect(repository.createPending).toHaveBeenCalledOnce();
   });
 
-  it('rejects a Siswa Baru when the chosen class is full without creating a pending row', async () => {
-    const repository = preparationRepository(56);
+  it('rejects a Siswa Baru when total capacity is full without creating a pending row', async () => {
+    const repository = preparationRepository(60, 28, 24); // total 112 / 112
 
     await expect(prepareSignedRegistration(preparationInput(), 'source', repository, () => 'hash'))
       .resolves.toEqual({ success: false, error: CAPACITY_ERROR });
     expect(repository.createPending).not.toHaveBeenCalled();
   });
 
-  it('lets a Pindahan register even when the chosen class is full', async () => {
-    const repository = preparationRepository(56);
+  it('lets a Pindahan register even when total capacity is full', async () => {
+    const repository = preparationRepository(60, 28, 24); // total 112 / 112
 
     const result = await prepareSignedRegistration(
       preparationInput({ jenisPendaftaran: 'Pindahan', kelasTujuan: '3' }),

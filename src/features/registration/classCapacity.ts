@@ -27,10 +27,19 @@ export function classQuotaStatus(capacity: ClassCapacity): ClassQuotaStatus {
   return remaining <= capacity.kuota * NEARLY_FULL_SHARE ? 'Hampir penuh' : 'Tersedia';
 }
 
-export function fullClasses(capacities: readonly ClassCapacity[]): ClassOption[] {
-  return capacities.filter(isClassFull).map(({ pilihanKelas }) => pilihanKelas);
-}
-
 export function totalUsedSeats(capacities: readonly ClassCapacity[]) {
   return capacities.reduce((sum, { terpakai }) => sum + terpakai, 0);
+}
+
+export function totalCapacity(capacities: readonly ClassCapacity[]) {
+  return capacities.reduce((sum, { kuota }) => sum + kuota, 0);
+}
+
+export function isRegistrationFull(capacities: readonly ClassCapacity[]) {
+  const total = totalCapacity(capacities);
+  return total > 0 && totalUsedSeats(capacities) >= total;
+}
+
+export function fullClasses(capacities: readonly ClassCapacity[]): ClassOption[] {
+  return isRegistrationFull(capacities) ? [...CLASS_OPTIONS] : [];
 }

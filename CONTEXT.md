@@ -9,7 +9,7 @@ Nama program sekolah untuk menerima pendaftaran calon murid sebelum SPMB resmi d
 _Avoid_: SPMB, PPDB (untuk merujuk program sekolah ini)
 
 **Kuota** (*Capacity*):
-Batas 112 kursi Siswa Baru, setara empat rombongan kelas, yang dibagi per Pilihan Kelas (awalnya 56 Bilingual, 28 Reguler, 28 Tahfizh). Admin dapat menggeser pembagian antarkelas selama totalnya tetap 112. Pilihan Kelas yang kuotanya penuh tidak dapat dipilih lagi. Yang memakai kursi hanya Pendaftar yang masih berproses atau Diterima; Pendaftar Ditolak, Dibatalkan, dan Pindahan tidak dihitung.
+Batas 112 kursi Siswa Baru, setara empat rombongan kelas. Kuota tidak dibagi atau dibatasi per Pilihan Kelas; semua pilihan kelas dapat dipilih bebas oleh pendaftar sampai kuota total 112 terpenuhi. Pembagian rombel definitif ditentukan Panitia melalui Kelas Penempatan. Yang memakai kursi hanya Pendaftar Siswa Baru yang masih berproses atau Diterima; Pendaftar Ditolak, Dibatalkan, dan Pindahan tidak dihitung.
 
 **OKB — Observasi Kesiapan Belajar** (*Learning Readiness Observation*):
 Tes yang diikuti Pendaftar (Siswa Baru maupun Pindahan) setelah Berkasnya terverifikasi; hasilnya menjadi dasar Keputusan Penerimaan oleh Panitia.

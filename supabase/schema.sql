@@ -1078,11 +1078,10 @@ BEGIN
 
   -- Pindahan tidak memakai Kuota.
   IF v_jenis IS DISTINCT FROM 'Pindahan' THEN
-    SELECT usage.kuota, usage.terpakai INTO v_kuota, v_terpakai
-    FROM public.get_class_capacity_usage() AS usage
-    WHERE usage.pilihan_kelas = v_kelas;
+    SELECT COALESCE(SUM(usage.kuota), 0), COALESCE(SUM(usage.terpakai), 0) INTO v_kuota, v_terpakai
+    FROM public.get_class_capacity_usage() AS usage;
 
-    IF NOT FOUND OR v_terpakai >= v_kuota THEN
+    IF v_terpakai >= v_kuota THEN
       RETURN FALSE;
     END IF;
   END IF;

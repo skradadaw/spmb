@@ -1,5 +1,7 @@
 # Kuota dihitung per Pilihan Kelas dan hanya dari kursi yang masih terpakai
 
+> **Status:** Superseded by [ADR-0003](0003-kuota-total-siswa-baru-tanpa-batas-per-kelas.md)
+
 Open Booking menargetkan 112 Siswa Baru dalam empat rombongan kelas (awalnya 56 Bilingual, 28 Reguler, 28 Tahfizh). Kuota ditegakkan per Pilihan Kelas langsung di form pendaftaran: Pilihan Kelas yang penuh tidak dapat dipilih. Pembagian antarkelas dapat digeser admin kapan saja selama totalnya tetap 112, karena Tahfizh sering tidak mencapai satu kelas dan sisa kursinya perlu dibuka untuk Reguler.
 
 Yang memakai kursi hanya Pendaftar Siswa Baru yang masih berproses atau Diterima. Pendaftar Ditolak dan Dibatalkan (termasuk yang mundur setelah Diterima) membebaskan kursinya, sehingga form dapat terbuka kembali di tengah periode. Pendaftar Pindahan tidak memakai Kuota sama sekali dan tidak dibatasi oleh sistem; Panitia mengendalikannya lewat Keputusan Penerimaan.
