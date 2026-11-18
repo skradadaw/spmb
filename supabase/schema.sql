@@ -818,6 +818,16 @@ AS $$
       SELECT jsonb_agg(jsonb_build_object('label', usage.pilihan_kelas, 'kuota', usage.kuota, 'terpakai', usage.terpakai))
       FROM public.get_class_capacity_usage() AS usage
     ), '[]'::jsonb),
+    -- Siswa Baru yang memakai kursi Kuota (cakupan sama dengan get_class_capacity_usage), per jenis kelamin.
+    'seatsByGender', (
+      SELECT jsonb_build_object(
+        'male', count(*) FILTER (WHERE jenis_kelamin = 'Laki-laki'),
+        'female', count(*) FILTER (WHERE jenis_kelamin = 'Perempuan'),
+        'unknown', count(*) FILTER (WHERE jenis_kelamin IS NULL OR jenis_kelamin NOT IN ('Laki-laki', 'Perempuan'))
+      )
+      FROM public.pendaftar
+      WHERE jenis_pendaftaran = 'Siswa Baru' AND status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')
+    ),
     'transfers', (
       SELECT count(*) FROM public.pendaftar
       WHERE jenis_pendaftaran = 'Pindahan' AND status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')
@@ -839,9 +849,22 @@ AS $$
         GROUP BY 1
       ) AS diterima
     ), '[]'::jsonb),
-    -- Empat tanggal OKB terdekat, dihitung per Gelombang OKB.
+    -- Empat tanggal OKB terdekat, dihitung per Gelombang OKB dan per Ruang OKB.
+    -- Pendaftar yang belum mendapat Ruang OKB tidak masuk 'rooms'; selisihnya dari 'total'.
     'schedule', COALESCE((
-      SELECT jsonb_agg(jsonb_build_object('date', tanggal, 'total', total, 'waves', gelombang) ORDER BY tanggal)
+      SELECT jsonb_agg(jsonb_build_object(
+        'date', tanggal, 'total', total, 'waves', gelombang,
+        'rooms', COALESCE((
+          SELECT jsonb_agg(jsonb_build_object('room', ruang.nama, 'count', ruang.jumlah))
+          FROM (
+            SELECT r.nama, count(*)::INTEGER AS jumlah
+            FROM public.pendaftar AS p
+            JOIN public.ruang_okb AS r ON r.id = p.ruang_okb_id
+            WHERE p.status = 'Terjadwal OKB' AND p.jadwal_okb_tanggal = per_tanggal.tanggal
+            GROUP BY r.nama
+          ) AS ruang
+        ), '[]'::jsonb)
+      ) ORDER BY tanggal)
       FROM (
         SELECT tanggal, sum(jumlah)::INTEGER AS total, jsonb_agg(jsonb_build_object('wave', wave, 'count', jumlah) ORDER BY wave) AS gelombang
         FROM (

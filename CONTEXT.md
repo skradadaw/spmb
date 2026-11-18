@@ -107,7 +107,7 @@ Urutan normal: **Menunggu Unggahan** → **Menunggu Verifikasi** → **Terverifi
 **Diterima** / **Ditolak**: hasil Keputusan Penerimaan oleh Panitia. Ditolak selalu berarti tidak lolos OKB.
 _Avoid_: lulus, tidak lulus
 
-**Dibatalkan** (*Withdrawn*): Pendaftar gugur di luar Keputusan Penerimaan atas keputusan admin, misalnya Berkas palsu, tidak hadir OKB dan tidak dijadwalkan ulang, atau mengundurkan diri, termasuk setelah Diterima. Admin dapat memulihkan Pendaftar ke status sebelumnya selama kuota Pilihan Kelasnya masih tersedia.
+**Dibatalkan** (*Withdrawn*): Pendaftar gugur di luar Keputusan Penerimaan atas keputusan admin, misalnya Berkas palsu, tidak hadir OKB dan tidak dijadwalkan ulang, atau mengundurkan diri, termasuk setelah Diterima. Admin dapat memulihkan Pendaftar ke status sebelumnya; Pendaftar Siswa Baru hanya dapat dipulihkan selama Kuota masih tersedia, sedangkan Pindahan selalu dapat dipulihkan.
 _Avoid_: Ditolak (untuk kasus ini)
 
 ## Proses

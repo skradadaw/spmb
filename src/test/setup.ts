@@ -10,3 +10,12 @@ afterEach(() => {
 if (typeof document !== 'undefined' && !document.elementFromPoint) {
   document.elementFromPoint = () => null;
 }
+
+// jsdom tidak menyediakan ResizeObserver; ResponsiveContainer Recharts memakainya untuk mengukur grafik.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
