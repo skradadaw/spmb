@@ -2,12 +2,12 @@ import { CircleQuestionMark, Mars, Venus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { AdminDashboardSummary } from '../contracts';
+import { GENDER_COLORS } from './dashboardColors';
 
-/** Validated as a categorical pair (light surface, CVD-safe) and kept apart from the Pilihan Kelas colors. */
 const PARTS = [
-  { key: 'male', label: 'Laki-laki', icon: Mars, color: '#4f46e5', ink: 'text-white' },
-  { key: 'female', label: 'Perempuan', icon: Venus, color: '#db2777', ink: 'text-white' },
-  { key: 'unknown', label: 'Belum diisi', icon: CircleQuestionMark, color: '#cbd5e1', ink: 'text-slate-900' },
+  { key: 'male', label: 'Laki-laki', icon: Mars, color: GENDER_COLORS['Laki-laki'], ink: 'text-white' },
+  { key: 'female', label: 'Perempuan', icon: Venus, color: GENDER_COLORS.Perempuan, ink: 'text-white' },
+  { key: 'unknown', label: 'Belum diisi', icon: CircleQuestionMark, color: GENDER_COLORS.unknown, ink: 'text-slate-900' },
 ] as const;
 
 /** Share of the bar a block needs before it can print its name beside the symbol and count. */

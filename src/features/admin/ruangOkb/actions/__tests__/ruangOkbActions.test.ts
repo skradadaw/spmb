@@ -40,6 +40,7 @@ const room = '223e4567-e89b-12d3-a456-426614174000';
 const callsTo = (table: string, op: string) => mocks.calls.filter(call => call.table === table && call.op === op);
 const expectPagesRefreshed = () => {
   expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pengaturan/ruang-okb');
+  expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb');
   expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/okb/name-tag');
   expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pendaftar');
   expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/pendaftar/[id]', 'page');

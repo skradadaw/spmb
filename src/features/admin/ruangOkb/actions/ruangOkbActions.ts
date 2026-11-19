@@ -20,6 +20,7 @@ const success = (message: string): RuangOkbActionResult => ({ status: 'success',
 /** Semua halaman yang menampilkan nama atau pilihan ruangan. */
 function revalidateRuangOkbPages() {
   revalidatePath('/admin/pengaturan/ruang-okb');
+  revalidatePath('/admin/okb');
   revalidatePath('/admin/okb/name-tag');
   revalidatePath('/admin/pendaftar');
   revalidatePath('/admin/pendaftar/[id]', 'page');

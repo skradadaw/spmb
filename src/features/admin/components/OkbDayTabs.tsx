@@ -47,8 +47,8 @@ function RoomList({ day }: { day: OkbScheduleDay }) {
   );
 }
 
-/** A small desk-calendar tile: month band on top, day number below; today gets the brighter green band. */
-function CalendarTile({ date, isToday }: { date: string; isToday: boolean }) {
+/** A small desk-calendar tile: month band on top, day number below; today gets the brighter green band. Also used by Ringkasan OKB. */
+export function CalendarTile({ date, isToday }: { date: string; isToday: boolean }) {
   return (
     <span aria-hidden="true" className="flex w-14 shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-center shadow-[0_6px_16px_-12px_rgba(15,23,42,0.45)]">
       <span className={cn('py-1 text-[10px] font-bold uppercase leading-none tracking-[0.12em] text-white', isToday ? 'bg-emerald-600' : 'bg-[var(--admin-sidebar)]')}>{formatDate(date, { month: 'short' })}</span>

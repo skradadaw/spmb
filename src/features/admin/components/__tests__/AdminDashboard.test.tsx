@@ -200,7 +200,7 @@ describe('AdminDashboard', () => {
     expect(screen.queryByRole('link', { name: /Name Tag/ })).toBeNull();
   });
 
-  it('opens the Jadwal tab to see the full schedule', () => {
+  it('opens the Ringkasan OKB tab to see the full schedule', () => {
     render(<AdminDashboard summary={summary} />);
     expect(screen.getByRole('link', { name: 'Lihat semua jadwal' }).getAttribute('href')).toBe('/admin/okb');
   });

@@ -14,10 +14,10 @@ describe('OkbTabs', () => {
     expect(screen.queryByRole('link', { name: 'Scan Kehadiran' })).toBeNull();
   });
 
-  it('marks Jadwal active on the opening address', () => {
+  it('marks Ringkasan active on the opening address', () => {
     render(<OkbTabs />);
 
-    const link = screen.getByRole('link', { name: 'Jadwal' });
+    const link = screen.getByRole('link', { name: 'Ringkasan' });
     expect(link.getAttribute('href')).toBe('/admin/okb');
     expect(link.getAttribute('aria-current')).toBe('page');
   });
@@ -39,6 +39,6 @@ describe('OkbTabs', () => {
     const link = screen.getByRole('link', { name: 'Name Tag' });
     expect(link.getAttribute('href')).toBe('/admin/okb/name-tag');
     expect(link.getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: 'Jadwal' }).getAttribute('aria-current')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Ringkasan' }).getAttribute('aria-current')).toBeNull();
   });
 });

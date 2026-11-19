@@ -19,6 +19,8 @@ function revalidateRuangOkbPages() {
   revalidatePath('/admin/pendaftar');
   revalidatePath('/admin/pendaftar/[id]', 'page');
   revalidatePath('/admin/okb/name-tag');
+  // Ringkasan OKB menampilkan Pembagian Ruang OKB per tanggal.
+  revalidatePath('/admin/okb');
 }
 
 /** Menetapkan satu ruangan dari daftar Ruang OKB, atau mengosongkannya (id kosong), untuk satu atau banyak Pendaftar. */
