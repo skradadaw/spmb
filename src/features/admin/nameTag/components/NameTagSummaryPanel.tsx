@@ -1,11 +1,16 @@
+import { FileSpreadsheet } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { summarizeRuangOkb, type NameTagPendaftar } from '../nameTagGroups';
 import { NAME_TAG_CARD, NAME_TAG_SUBHEADING, NameTagCardHeader } from './NameTagCardHeader';
 
-/** Progres pembagian Ruang OKB satu kelompok dan isi tiap ruangan. */
-export function NameTagSummaryPanel({ members }: { members: NameTagPendaftar[] }) {
+/**
+ * Progres pembagian Ruang OKB satu kelompok dan isi tiap ruangan.
+ * exportHref: unduhan Excel Pendaftar yang sudah punya ruangan; tombolnya nonaktif selama belum ada.
+ */
+export function NameTagSummaryPanel({ members, exportHref }: { members: NameTagPendaftar[]; exportHref?: string }) {
   const { total, withRoom, withoutRoom, perRoom } = summarizeRuangOkb(members);
   const percent = total ? Math.round((withRoom / total) * 100) : 0;
 
@@ -42,6 +47,15 @@ export function NameTagSummaryPanel({ members }: { members: NameTagPendaftar[] }
           )}
         </ul>
       </div>
+
+      {exportHref && (
+        <div className="space-y-1.5 border-t border-[var(--admin-border)] pt-4">
+          {withRoom > 0
+            ? <a href={exportHref} download className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'w-full')}><FileSpreadsheet aria-hidden="true" className="size-4 text-[var(--admin-sidebar)]" />Ekspor Excel</a>
+            : <span aria-disabled="true" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'pointer-events-none w-full opacity-50')}><FileSpreadsheet aria-hidden="true" className="size-4" />Ekspor Excel</span>}
+          <p className="text-xs text-muted-foreground">{withRoom > 0 ? `${withRoom} Pendaftar yang sudah punya Ruang OKB, urut per ruangan.` : 'Bagi Ruang OKB dulu untuk mengekspor.'}</p>
+        </div>
+      )}
     </Card>
   );
 }

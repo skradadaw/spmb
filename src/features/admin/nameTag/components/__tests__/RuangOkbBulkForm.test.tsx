@@ -7,9 +7,9 @@ vi.mock('../../actions/saveRuangOkbAction', () => ({ saveRuangOkbAction: mocks.s
 import { RuangOkbBulkForm } from '../RuangOkbBulkForm';
 
 const members = [
-  { id: 'id-ahmad', namaLengkap: 'AHMAD fauzi', ruangOkb: 'Ruang A' },
-  { id: 'id-aisyah', namaLengkap: 'Aisyah Putri', ruangOkb: null },
-  { id: 'id-bilal', namaLengkap: 'Bilal', ruangOkb: null },
+  { id: 'id-ahmad', namaLengkap: 'AHMAD fauzi', ruangOkb: 'Ruang A', pilihanKelas: 'Tahfizh' },
+  { id: 'id-aisyah', namaLengkap: 'Aisyah Putri', ruangOkb: null, pilihanKelas: 'Bilingual' },
+  { id: 'id-bilal', namaLengkap: 'Bilal', ruangOkb: null, pilihanKelas: null },
 ];
 const success = (updated: number) => ({ status: 'success', message: `Ruang OKB disimpan untuk ${updated} Pendaftar.`, updated });
 
@@ -32,6 +32,12 @@ describe('RuangOkbBulkForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.save.mockResolvedValue(success(2));
+  });
+
+  it("shows each Pendaftar's Pilihan Kelas in its own column, with a dash for old rows without one", () => {
+    renderForm();
+    const rows = within(screen.getByRole('list', { name: 'Daftar Pendaftar' })).getAllByRole('listitem');
+    expect(rows.map(row => row.querySelector('[data-kelas]')!.textContent)).toEqual(['Tahfizh', 'Bilingual', '-']);
   });
 
   it('shows each name tidied and marks who has no room yet', () => {

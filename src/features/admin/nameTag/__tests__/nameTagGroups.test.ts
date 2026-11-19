@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildNameTagView, nameTagHref, summarizeRuangOkb, type NameTagRow } from '../nameTagGroups';
 
-const row = (id: string, namaLengkap: string, tanggal: string, gelombang: 1 | 2 | 3, ruangOkb: string | null = null): NameTagRow => ({ id, namaLengkap, ruangOkb, tanggal, gelombang });
+const row = (id: string, namaLengkap: string, tanggal: string, gelombang: 1 | 2 | 3, ruangOkb: string | null = null): NameTagRow => ({ id, namaLengkap, ruangOkb, pilihanKelas: 'Reguler', tanggal, gelombang });
 
 const rows = [
   row('a', 'Zahra', '2026-11-20', 2, 'Ruang B'),
@@ -25,9 +25,9 @@ describe('buildNameTagView', () => {
 
     expect(view.selected).toEqual({ tanggal: '2026-11-20', gelombang: 1 });
     expect(view.members).toEqual([
-      { id: 'd', namaLengkap: 'AHMAD', ruangOkb: 'Ruang 2' },
-      { id: 'b', namaLengkap: 'Aisyah', ruangOkb: 'Ruang 10' },
-      { id: 'c', namaLengkap: 'bilal', ruangOkb: null },
+      { id: 'd', namaLengkap: 'AHMAD', ruangOkb: 'Ruang 2', pilihanKelas: 'Reguler' },
+      { id: 'b', namaLengkap: 'Aisyah', ruangOkb: 'Ruang 10', pilihanKelas: 'Reguler' },
+      { id: 'c', namaLengkap: 'bilal', ruangOkb: null, pilihanKelas: 'Reguler' },
     ]);
   });
 
@@ -62,7 +62,7 @@ describe('nameTagHref', () => {
 });
 
 describe('summarizeRuangOkb', () => {
-  const member = (id: string, ruangOkb: string | null) => ({ id, namaLengkap: id, ruangOkb });
+  const member = (id: string, ruangOkb: string | null) => ({ id, namaLengkap: id, ruangOkb, pilihanKelas: null });
 
   it('counts who already has a room and how many are in each room, in natural order', () => {
     const summary = summarizeRuangOkb([member('a', 'Kelas 10'), member('b', null), member('c', 'Kelas 2'), member('d', 'Kelas 10'), member('e', '  ')]);

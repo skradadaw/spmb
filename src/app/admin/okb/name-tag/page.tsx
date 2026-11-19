@@ -8,6 +8,7 @@ import { NAME_TAG_CARD, NameTagCardHeader } from '@/features/admin/nameTag/compo
 import { NameTagSummaryPanel } from '@/features/admin/nameTag/components/NameTagSummaryPanel';
 import { RuangOkbBulkForm } from '@/features/admin/nameTag/components/RuangOkbBulkForm';
 import { buildNameTagView, nameTagGroupKey } from '@/features/admin/nameTag/nameTagGroups';
+import { ruangOkbExportHref } from '@/features/admin/nameTag/ruangOkbExport';
 import { fetchNameTagRows } from '@/features/admin/nameTag/server/nameTagRepository';
 import { fetchRuangOkbList } from '@/features/admin/ruangOkb/server/ruangOkbRepository';
 import { getAdminSession } from '@/features/auth/session';
@@ -48,7 +49,7 @@ export default async function NameTagPage({ searchParams }: Props) {
             {/* key: centang, saringan, dan pesan tidak terbawa ke kelompok lain. */}
             <RuangOkbBulkForm key={nameTagGroupKey(view.selected)} members={view.members} rooms={rooms} />
             <div className="space-y-4 lg:sticky lg:top-4">
-              <NameTagSummaryPanel members={view.members} />
+              <NameTagSummaryPanel members={view.members} exportHref={ruangOkbExportHref(view.selected)} />
               {/* key: pesan gagal tidak terbawa ke kelompok lain. */}
               <DownloadNameTagZip key={`zip/${nameTagGroupKey(view.selected)}`} selected={view.selected} members={view.members} />
             </div>

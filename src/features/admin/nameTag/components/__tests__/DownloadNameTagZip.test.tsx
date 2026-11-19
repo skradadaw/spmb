@@ -12,7 +12,7 @@ vi.mock('../../nameTagCard', () => card);
 const selected = { tanggal: '2026-11-20', gelombang: 2 as const };
 const template = { template: true };
 const pngOf = (text: string) => new Blob([text], { type: 'image/png' });
-const member = (id: string, namaLengkap: string, ruangOkb: string | null) => ({ id, namaLengkap, ruangOkb });
+const member = (id: string, namaLengkap: string, ruangOkb: string | null) => ({ id, namaLengkap, ruangOkb, pilihanKelas: null });
 const button = () => screen.getByRole('button', { name: 'Unduh ZIP Name Tag' }) as HTMLButtonElement;
 
 describe('DownloadNameTagZip', () => {

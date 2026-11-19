@@ -3,11 +3,28 @@ import { describe, expect, it } from 'vitest';
 
 import { NameTagSummaryPanel } from '../NameTagSummaryPanel';
 
-const member = (id: string, ruangOkb: string | null) => ({ id, namaLengkap: id, ruangOkb });
+const member = (id: string, ruangOkb: string | null) => ({ id, namaLengkap: id, ruangOkb, pilihanKelas: null });
 const progressText = () => screen.getByText(/\/ \d+ Pendaftar/).closest('p')?.textContent;
 const members = [member('a', 'Kelas 10'), member('b', null), member('c', 'Kelas 2'), member('d', 'Kelas 10')];
 
 describe('NameTagSummaryPanel', () => {
+  it('offers the Excel export of Pendaftar who already have a room', () => {
+    render(<NameTagSummaryPanel members={members} exportHref="/admin/okb/name-tag/ekspor?tanggal=2026-11-21&gelombang=1" />);
+
+    const link = screen.getByRole('link', { name: 'Ekspor Excel' });
+    expect(link.getAttribute('href')).toBe('/admin/okb/name-tag/ekspor?tanggal=2026-11-21&gelombang=1');
+    expect(link.hasAttribute('download')).toBe(true);
+    expect(screen.getByText('3 Pendaftar yang sudah punya Ruang OKB, urut per ruangan.')).toBeDefined();
+  });
+
+  it('disables the export until someone has a room', () => {
+    render(<NameTagSummaryPanel members={[member('a', null)]} exportHref="/admin/okb/name-tag/ekspor?tanggal=2026-11-21&gelombang=1" />);
+
+    expect(screen.queryByRole('link', { name: 'Ekspor Excel' })).toBeNull();
+    expect(screen.getByText('Ekspor Excel').closest('[aria-disabled]')?.getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByText('Bagi Ruang OKB dulu untuk mengekspor.')).toBeDefined();
+  });
+
   it('shows how far the room assignment is', () => {
     render(<NameTagSummaryPanel members={members} />);
 

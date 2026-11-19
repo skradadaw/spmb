@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { classColor } from '@/features/admin/components/dashboardColors';
 import { formatParticipantFieldValue } from '@/features/admin/participants/presentation';
 import type { RuangOkb } from '@/features/admin/ruangOkb/ruangOkb';
 import { cn } from '@/lib/utils';
@@ -15,8 +16,19 @@ import { summarizeRuangOkb, type NameTagPendaftar } from '../nameTagGroups';
 import { NAME_TAG_CARD, NameTagCardHeader } from './NameTagCardHeader';
 import { initialRuangOkbResult, RuangOkbChoice, RuangOkbResultMessage } from './RuangOkbField';
 
-/** Kolom: kotak centang, nama, Ruang OKB. */
-const TABLE_GRID = 'grid grid-cols-[1rem_minmax(0,1fr)_minmax(7rem,11rem)] items-center gap-x-3 px-5';
+/** Kolom: kotak centang, nama, Pilihan Kelas (sm ke atas; di layar kecil turun ke bawah nama), Ruang OKB. */
+const TABLE_GRID = 'grid grid-cols-[1rem_minmax(0,1fr)_minmax(7rem,11rem)] items-center gap-x-3 px-5 sm:grid-cols-[1rem_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] sm:gap-x-6';
+
+/** Pilihan Kelas dengan titik warna yang sama seperti di Ringkasan. */
+function ClassPreference({ value, className }: { value: string | null; className?: string }) {
+  if (!value) return <span className={cn('text-xs text-muted-foreground', className)}>-</span>;
+  return (
+    <span className={cn('inline-flex min-w-0 items-center gap-1.5 text-xs text-slate-600', className)}>
+      <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: classColor(value) }} />
+      <span className="truncate">{value}</span>
+    </span>
+  );
+}
 
 const displayName = (member: NameTagPendaftar) => formatParticipantFieldValue('identity', 'namaLengkap', member.namaLengkap);
 
@@ -154,6 +166,7 @@ export function RuangOkbBulkForm({ members, rooms }: { members: NameTagPendaftar
       <div aria-hidden="true" className={cn(TABLE_GRID, 'border-b border-[var(--admin-border)] py-2 text-xs font-medium text-muted-foreground')}>
         <span />
         <span>Nama Pendaftar</span>
+        <span className="hidden sm:block">Pilihan Kelas</span>
         <span>Ruang OKB</span>
       </div>
 
@@ -176,7 +189,11 @@ export function RuangOkbBulkForm({ members, rooms }: { members: NameTagPendaftar
                 )}
               >
                 <Checkbox aria-label={`Pilih ${name}`} checked={checked} disabled={pending} onCheckedChange={next => toggle(member.id, next)} />
-                <span data-name className="min-w-0 break-words text-sm font-medium text-foreground">{name}</span>
+                <span className="min-w-0">
+                  <span data-name className="block break-words text-sm font-medium text-foreground">{name}</span>
+                  <ClassPreference value={member.pilihanKelas} className="mt-0.5 sm:hidden" />
+                </span>
+                <span data-kelas className="hidden min-w-0 sm:flex"><ClassPreference value={member.pilihanKelas} className="text-sm" /></span>
                 {member.ruangOkb
                   ? <span className="min-w-0 truncate text-sm text-foreground">{member.ruangOkb}</span>
                   : <Badge variant="warning" className="w-fit">Belum ada ruangan</Badge>}

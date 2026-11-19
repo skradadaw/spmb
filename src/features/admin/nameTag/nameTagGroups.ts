@@ -1,6 +1,7 @@
 import { parseOkbWave, type OkbWave } from '@/features/admin/okbWave';
 
-export type NameTagPendaftar = { id: string; namaLengkap: string; ruangOkb: string | null };
+/** pilihanKelas: Pilihan Kelas saat mendaftar (Reguler, Bilingual, Tahfizh); kosong pada data lama. */
+export type NameTagPendaftar = { id: string; namaLengkap: string; ruangOkb: string | null; pilihanKelas: string | null };
 /** Pendaftar Terjadwal OKB dengan tanggal hari ini atau setelahnya. */
 export type NameTagRow = NameTagPendaftar & { tanggal: string; gelombang: OkbWave };
 export type NameTagSelection = { tanggal: string; gelombang: OkbWave };
@@ -42,7 +43,7 @@ export function buildNameTagView(rows: NameTagRow[], params: { tanggal?: unknown
   const selected = pickGroup(groups, params.tanggal, params.gelombang);
   const members = rows
     .filter(row => row.tanggal === selected?.tanggal && row.gelombang === selected.gelombang)
-    .map(({ id, namaLengkap, ruangOkb }) => ({ id, namaLengkap, ruangOkb }))
+    .map(({ id, namaLengkap, ruangOkb, pilihanKelas }) => ({ id, namaLengkap, ruangOkb, pilihanKelas }))
     .sort((left, right) => compareText(left.namaLengkap, right.namaLengkap) || left.id.localeCompare(right.id));
   return { groups, selected, members };
 }

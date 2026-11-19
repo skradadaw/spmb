@@ -400,14 +400,25 @@ describe('Supabase registration security schema', () => {
     expect(compactSchema).toContain("ADD CONSTRAINT pendaftar_jadwal_okb_check CHECK (status <> 'Terjadwal OKB' OR (jadwal_okb_tanggal IS NOT NULL AND jadwal_okb_gelombang IS NOT NULL));");
   });
 
-  it('counts upcoming OKB days per Gelombang on the dashboard', () => {
+  it('counts upcoming OKB days per Gelombang and per Ruang OKB on the dashboard', () => {
     const functionSql = compactSql(schema.match(
       /CREATE OR REPLACE FUNCTION public\.get_admin_dashboard_summary\([\s\S]*?\$\$;/,
     )?.[0] ?? '');
 
-    expect(functionSql).toContain("jsonb_build_object('date', tanggal, 'total', total, 'waves', gelombang)");
+    expect(functionSql).toContain("'date', tanggal, 'total', total, 'waves', gelombang, 'rooms'");
     expect(functionSql).toContain('GROUP BY jadwal_okb_tanggal, jadwal_okb_gelombang');
+    // Only Pendaftar with a Ruang OKB are in 'rooms'; the rest are total minus rooms.
+    expect(functionSql).toContain('JOIN public.ruang_okb AS r ON r.id = p.ruang_okb_id');
     expect(functionSql).not.toContain('jadwal_okb_sesi');
+  });
+
+  it('counts seated Siswa Baru per jenis kelamin on the dashboard, with the same scope as Kuota', () => {
+    const functionSql = compactSql(schema.match(
+      /CREATE OR REPLACE FUNCTION public\.get_admin_dashboard_summary\([\s\S]*?\$\$;/,
+    )?.[0] ?? '');
+
+    expect(functionSql).toContain("'seatsByGender'");
+    expect(functionSql).toContain("WHERE jenis_pendaftaran = 'Siswa Baru' AND status NOT IN ('Menunggu Unggahan', 'Ditolak', 'Dibatalkan')");
   });
 
   it('stores NISN Tidak Sesuai and per-applicant document counts for the participant list', () => {
